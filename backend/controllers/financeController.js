@@ -11,14 +11,9 @@ const addQuickFinance = async (req, res) => {
       userId = req.user.id;
     } else {
       const [users] = await db.promise().query('SELECT id FROM users LIMIT 1');
-      
       if (users.length === 0) {
-        return res.status(400).json({ 
-          success: false, 
-          message: 'Error: Tidak ada user di database. Silakan register dulu!' 
-        });
+        return res.status(400).json({ success: false, message: 'Error: Tidak ada user di database. Silakan register dulu!' });
       }
-      
       userId = users[0].id;
     }
 
@@ -32,43 +27,12 @@ const addQuickFinance = async (req, res) => {
   }
 };
 
-// 2. Tambah Pembayaran Hutang
-const payDebt = async (req, res) => {
-  const { amount, date } = req.body;
-  const userId = req.user.id;
-
-  try {
-    const dbPromise = db.promise();
-    // Cari hutang yang masih ada sisanya
-    const [debts] = await dbPromise.query('SELECT id, remaining_amount FROM debts WHERE user_id = ? AND remaining_amount > 0 LIMIT 1', [userId]);
-    
-    if (debts.length === 0) {
-      return res.status(400).json({ success: false, message: 'Tidak ada hutang tersisa yang perlu dibayar.' });
-    }
-
-    const debtId = debts[0].id;
-
-    // Masukkan ke riwayat pembayaran
-    await dbPromise.query('INSERT INTO debt_payments (debt_id, amount, payment_date) VALUES (?, ?, ?)', [debtId, amount, date]);
-    
-    // Kurangi sisa hutang
-    await dbPromise.query('UPDATE debts SET remaining_amount = remaining_amount - ? WHERE id = ?', [amount, debtId]);
-
-    res.status(200).json({ success: true, message: 'Pembayaran hutang berhasil dicatat!' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: 'Server error saat mencatat hutang' });
-  }
-};
-
-// 3. Ambil Semua Data Keuangan Sekaligus
 const getFullFinanceStats = async (req, res) => {
   const userId = req.user.id;
-  
   try {
     const dbPromise = db.promise();
 
-    // A. Saldo & Ringkasan Bulan Ini
+    // A & B (Saldo & Transaksi)
     const [allFinances] = await dbPromise.query('SELECT type, SUM(amount) as total FROM finances WHERE user_id = ? GROUP BY type', [userId]);
     const [monthFinances] = await dbPromise.query('SELECT type, SUM(amount) as total FROM finances WHERE user_id = ? AND MONTH(date) = MONTH(CURRENT_DATE()) AND YEAR(date) = YEAR(CURRENT_DATE()) GROUP BY type', [userId]);
     
@@ -77,21 +41,19 @@ const getFullFinanceStats = async (req, res) => {
     monthFinances.forEach(i => { if(i.type === 'income') monthIncome = Number(i.total); else monthExpense = Number(i.total); });
     const balance = totalIncome - totalExpense;
 
-    // B. Data Tabel: 10 Transaksi Terakhir
     const [transactions] = await dbPromise.query('SELECT id, date, type, category, amount, description as note FROM finances WHERE user_id = ? ORDER BY date DESC, id DESC LIMIT 10', [userId]);
 
-    // C. Hutang
-    const [debtStats] = await dbPromise.query('SELECT COALESCE(SUM(total_amount), 0) as total_debt, COALESCE(SUM(total_amount - remaining_amount), 0) as total_paid, COALESCE(SUM(remaining_amount), 0) as remaining_debt FROM debts WHERE user_id = ?', [userId]);
+    // C. MULTI-HUTANG: Ambil SEMUA daftar hutang
+    const [debts] = await dbPromise.query(
+      'SELECT id, name, due_date, total_amount as total_debt, (total_amount - remaining_amount) as total_paid, remaining_amount as remaining_debt FROM debts WHERE user_id = ? ORDER BY id DESC', 
+      [userId]
+    );
+    
+    let totalDebtRemaining = 0;
+    debts.forEach(d => totalDebtRemaining += Number(d.remaining_debt));
 
-    // D. Grafik Bar & Tabel Bulanan (6 Bulan Terakhir)
-    const [monthlyRaw] = await dbPromise.query(`
-      SELECT DATE_FORMAT(date, '%b') as month, type, SUM(amount) as total 
-      FROM finances 
-      WHERE user_id = ? AND date >= DATE_SUB(CURRENT_DATE(), INTERVAL 6 MONTH)
-      GROUP BY YEAR(date), MONTH(date), DATE_FORMAT(date, '%b'), type
-      ORDER BY YEAR(date) ASC, MONTH(date) ASC
-    `, [userId]);
-
+    // D & E (Grafik)
+    const [monthlyRaw] = await dbPromise.query(`SELECT DATE_FORMAT(date, '%b') as month, type, SUM(amount) as total FROM finances WHERE user_id = ? AND date >= DATE_SUB(CURRENT_DATE(), INTERVAL 6 MONTH) GROUP BY YEAR(date), MONTH(date), DATE_FORMAT(date, '%b'), type ORDER BY YEAR(date) ASC, MONTH(date) ASC`, [userId]);
     const chartMap = {};
     monthlyRaw.forEach(row => {
       if(!chartMap[row.month]) chartMap[row.month] = { name: row.month, Income: 0, Expense: 0 };
@@ -100,29 +62,101 @@ const getFullFinanceStats = async (req, res) => {
     });
     const barChart = Object.values(chartMap);
 
-    // E. Grafik Pie: Pengeluaran Berdasarkan Kategori Bulan Ini
-    const [pieRaw] = await dbPromise.query(`
-      SELECT category as name, SUM(amount) as value 
-      FROM finances 
-      WHERE user_id = ? AND type = 'expense' AND MONTH(date) = MONTH(CURRENT_DATE()) AND YEAR(date) = YEAR(CURRENT_DATE())
-      GROUP BY category ORDER BY value DESC
-    `, [userId]);
+    const [pieRaw] = await dbPromise.query(`SELECT category as name, SUM(amount) as value FROM finances WHERE user_id = ? AND type = 'expense' AND MONTH(date) = MONTH(CURRENT_DATE()) AND YEAR(date) = YEAR(CURRENT_DATE()) GROUP BY category ORDER BY value DESC`, [userId]);
 
     res.status(200).json({
       success: true,
       data: {
         summary: { balance, monthIncome, monthExpense },
-        debt: debtStats[0] || { total_debt: 0, total_paid: 0, remaining_debt: 0 },
+        debts: debts, // Array Hutang
+        totalDebtRemaining, 
         transactions,
         barChart,
         pieChart: pieRaw.map(p => ({ ...p, value: Number(p.value) }))
       }
     });
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ success: false, message: 'Server error' });
-  }
+  } catch (error) { res.status(500).json({ success: false, message: 'Server error' }); }
 };
 
-module.exports = { addQuickFinance, payDebt, getFullFinanceStats };
+// Tambah Hutang Baru
+const addDebt = async (req, res) => {
+  const { name, totalAmount, dueDate } = req.body;
+  try {
+    await db.promise().query(
+      'INSERT INTO debts (user_id, name, total_amount, remaining_amount, due_date) VALUES (?, ?, ?, ?, ?)', 
+      [req.user.id, name, totalAmount, totalAmount, dueDate || null]
+    );
+    res.status(201).json({ success: true, message: 'Hutang ditambahkan!' });
+  } catch (error) { res.status(500).json({ success: false, message: 'Gagal menambah hutang' }); }
+};
+
+// Edit Hutang Spesifik
+const updateDebt = async (req, res) => {
+  const { name, newTotalAmount, dueDate } = req.body;
+  try {
+    const dbPromise = db.promise();
+    const [debts] = await dbPromise.query('SELECT total_amount, remaining_amount FROM debts WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
+    
+    if (debts.length > 0) {
+      const alreadyPaid = debts[0].total_amount - debts[0].remaining_amount;
+      const newRemaining = newTotalAmount - alreadyPaid;
+      await dbPromise.query(
+        'UPDATE debts SET name = ?, total_amount = ?, remaining_amount = ?, due_date = ? WHERE id = ?', 
+        [name, newTotalAmount, newRemaining, dueDate || null, req.params.id]
+      );
+      res.status(200).json({ success: true, message: 'Hutang diperbarui!' });
+    } else {
+      res.status(404).json({ success: false, message: 'Hutang tidak ditemukan' });
+    }
+  } catch (error) { res.status(500).json({ success: false, message: 'Gagal update hutang' }); }
+};
+
+// Hapus Hutang Spesifik
+const deleteDebt = async (req, res) => {
+  try {
+    await db.promise().query('DELETE FROM debts WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
+    res.status(200).json({ success: true, message: 'Hutang dihapus!' });
+  } catch (error) { res.status(500).json({ success: false, message: 'Gagal menghapus hutang' }); }
+};
+
+// Bayar Hutang Spesifik
+const payDebt = async (req, res) => {
+  const { debtId, amount } = req.body;
+  try {
+    await db.promise().query(
+      'UPDATE debts SET remaining_amount = remaining_amount - ? WHERE id = ? AND user_id = ?', 
+      [amount, debtId, req.user.id]
+    );
+    res.status(200).json({ success: true, message: 'Pembayaran berhasil!' });
+  } catch (error) { res.status(500).json({ success: false, message: 'Gagal bayar hutang' }); }
+};
+
+const deleteTransaction = async (req, res) => {
+  try {
+    await db.promise().query('DELETE FROM finances WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
+    res.status(200).json({ success: true, message: 'Transaksi dihapus!' });
+  } catch (error) { res.status(500).json({ success: false, message: 'Gagal menghapus transaksi' }); }
+};
+
+// Edit Transaksi Terakhir
+const updateTransaction = async (req, res) => {
+  const { type, amount, category, date, description } = req.body;
+  try {
+    await db.promise().query(
+      'UPDATE finances SET type = ?, amount = ?, category = ?, date = ?, description = ? WHERE id = ? AND user_id = ?', 
+      [type, amount, category, date, description, req.params.id, req.user.id]
+    );
+    res.status(200).json({ success: true, message: 'Transaksi diperbarui!' });
+  } catch (error) { res.status(500).json({ success: false, message: 'Gagal update transaksi' }); }
+};
+
+module.exports = { 
+  addQuickFinance, 
+  getFullFinanceStats, 
+  addDebt, 
+  updateDebt, 
+  deleteDebt, 
+  payDebt, 
+  deleteTransaction, 
+  updateTransaction 
+};

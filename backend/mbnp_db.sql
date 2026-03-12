@@ -2,10 +2,10 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1:3307
--- Waktu pembuatan: 12 Mar 2026 pada 11.39
--- Versi server: 10.4.32-MariaDB
--- Versi PHP: 8.2.12
+-- Host: 127.0.0.1
+-- Waktu pembuatan: 12 Mar 2026 pada 21.11
+-- Versi server: 10.4.28-MariaDB
+-- Versi PHP: 8.2.4
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -31,6 +31,7 @@ CREATE TABLE `debts` (
   `id` int(11) NOT NULL,
   `user_id` int(11) DEFAULT NULL,
   `name` varchar(100) NOT NULL,
+  `due_date` date DEFAULT NULL,
   `total_amount` decimal(15,2) NOT NULL,
   `remaining_amount` decimal(15,2) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
@@ -40,8 +41,9 @@ CREATE TABLE `debts` (
 -- Dumping data untuk tabel `debts`
 --
 
-INSERT INTO `debts` (`id`, `user_id`, `name`, `total_amount`, `remaining_amount`, `created_at`) VALUES
-(4, 2, 'Hutang Pribadi', 1400000.00, 1350000.00, '2026-03-12 10:21:54');
+INSERT INTO `debts` (`id`, `user_id`, `name`, `due_date`, `total_amount`, `remaining_amount`, `created_at`) VALUES
+(5, 2, 'Cicilan Gopay', '2026-04-01', 900000.00, 900000.00, '2026-03-12 19:23:28'),
+(6, 2, 'Shopee', '2026-05-02', 1200000.00, 1200000.00, '2026-03-12 19:34:04');
 
 -- --------------------------------------------------------
 
@@ -57,13 +59,6 @@ CREATE TABLE `debt_payments` (
   `note` varchar(255) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data untuk tabel `debt_payments`
---
-
-INSERT INTO `debt_payments` (`id`, `debt_id`, `amount`, `payment_date`, `note`, `created_at`) VALUES
-(1, 4, 50000.00, '2026-03-12', NULL, '2026-03-12 10:23:24');
 
 -- --------------------------------------------------------
 
@@ -87,11 +82,9 @@ CREATE TABLE `finances` (
 --
 
 INSERT INTO `finances` (`id`, `user_id`, `date`, `category`, `description`, `amount`, `type`, `created_at`) VALUES
-(3, 2, '2026-03-12', 'makan', '', 20000.00, 'expense', '2026-03-12 10:23:08'),
-(7, 2, '2026-03-12', 'makan', '', 200000.00, 'expense', '2026-03-12 10:28:00'),
-(11, 2, '2026-03-12', 'makan', '123', 1231.00, 'expense', '2026-03-12 10:34:37'),
-(12, 2, '2026-03-12', 'Transport', '', 132123.00, 'income', '2026-03-12 10:34:50'),
-(14, 2, '2026-03-12', 'makan', '', 12312.00, 'expense', '2026-03-12 10:36:33');
+(16, 2, '2026-03-12', 'Saldo BJB', '', 200000.00, 'income', '2026-03-12 19:34:37'),
+(17, 2, '2026-03-12', 'Saldo dana', '', 100000.00, 'income', '2026-03-12 19:35:02'),
+(18, 2, '2026-03-11', 'Sahur ', 'Hari Jumat', 11000.00, 'expense', '2026-03-12 19:36:01');
 
 -- --------------------------------------------------------
 
@@ -200,7 +193,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT untuk tabel `debts`
 --
 ALTER TABLE `debts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT untuk tabel `debt_payments`
@@ -212,7 +205,7 @@ ALTER TABLE `debt_payments`
 -- AUTO_INCREMENT untuk tabel `finances`
 --
 ALTER TABLE `finances`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT untuk tabel `goals`

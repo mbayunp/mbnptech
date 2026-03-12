@@ -1,14 +1,24 @@
-// backend/routes/financeRoutes.js
 const express = require('express');
 const router = express.Router();
-const { addQuickFinance, payDebt, getFullFinanceStats } = require('../controllers/financeController');
+const { 
+  addQuickFinance, getFullFinanceStats, 
+  addDebt, updateDebt, deleteDebt, payDebt, 
+  deleteTransaction, updateTransaction 
+} = require('../controllers/financeController');
 const { protect } = require('../middleware/authMiddleware');
 
-// 🔓 ROUTE PUBLIK: Tidak butuh token JWT (Keamanannya diatur oleh PIN di Frontend)
 router.post('/quick', addQuickFinance);
 
-// 🔒 ROUTE PRIVATE: Wajib pakai Token JWT (Hanya bisa diakses dari dalam Dashboard)
-router.post('/pay-debt', protect, payDebt);
 router.get('/full-stats', protect, getFullFinanceStats);
+
+// CRUD Transaksi
+router.delete('/transaction/:id', protect, deleteTransaction);
+router.put('/transaction/:id', protect, updateTransaction);
+
+// CRUD Multi-Hutang
+router.post('/debt', protect, addDebt);                // Tambah
+router.put('/debt/:id', protect, updateDebt);          // Edit
+router.delete('/debt/:id', protect, deleteDebt);       // Hapus
+router.post('/pay-debt', protect, payDebt);            // Bayar
 
 module.exports = router;
