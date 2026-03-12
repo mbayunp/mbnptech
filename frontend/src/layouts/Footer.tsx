@@ -88,7 +88,7 @@ const Footer = () => {
           © {new Date().getFullYear()} MBNP Tech — Solusi Website Profesional
         </p>
         <p className="text-[10px] text-slate-600 mt-2 font-medium">
-          Built with React + Tailwind <span className="mx-2 text-slate-700">|</span> <span className="text-[#38BDF8]">Versi Website 1.0</span>
+        <span className="text-[#38BDF8]">Versi Website 1.0</span>
         </p>
       </div>
     </footer>

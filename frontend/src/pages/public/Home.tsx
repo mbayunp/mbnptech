@@ -138,41 +138,46 @@ const FeaturedProject = () => (
         </div>
         <h2 className="text-3xl md:text-5xl font-black text-slate-900">Picme Studio</h2>
       </div>
-      <div className="bg-[#1E1B4B] rounded-[2.5rem] overflow-hidden flex flex-col lg:flex-row shadow-2xl">
+      <div className="bg-blue-500 rounded-[2.5rem] overflow-hidden flex flex-col lg:flex-row shadow-2xl">
         <div className="w-full lg:w-1/2 p-10 md:p-16 flex flex-col justify-center relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-fuchsia-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
           <div className="relative z-10">
-            <p className="text-slate-300 text-lg leading-relaxed mb-6">Picme Studio adalah platform digital interaktif yang dirancang khusus untuk studio kreatif. Website ini tidak hanya berfungsi sebagai portfolio karya, tetapi juga sebagai hub interaksi dengan klien.</p>
-            <p className="text-slate-400 leading-relaxed mb-8">Dibangun menggunakan arsitektur modern berbasis React dan Express.js, sistem ini menjamin performa render gambar yang sangat cepat dan pengalaman pengguna (UX) yang mulus.</p>
+            <p className="text-slate-200 text-lg leading-relaxed mb-6">Picme Studio adalah platform digital interaktif yang dirancang khusus untuk studio kreatif. Website ini tidak hanya berfungsi sebagai portfolio karya, tetapi juga sebagai hub interaksi dengan klien.</p>
+            <p className="text-slate-200 leading-relaxed mb-8">Dibangun menggunakan arsitektur modern berbasis React dan Express.js, sistem ini menjamin performa render gambar yang sangat cepat dan pengalaman pengguna (UX) yang mulus.</p>
             <div className="space-y-3 mb-10">
-              <div className="flex items-center gap-3 text-slate-300"><span className="w-6 h-6 rounded bg-fuchsia-500/20 text-fuchsia-400 flex items-center justify-center text-xs">✓</span>Dynamic Portfolio Gallery</div>
-              <div className="flex items-center gap-3 text-slate-300"><span className="w-6 h-6 rounded bg-fuchsia-500/20 text-fuchsia-400 flex items-center justify-center text-xs">✓</span>Service & Pricing Showcase</div>
-              <div className="flex items-center gap-3 text-slate-300"><span className="w-6 h-6 rounded bg-fuchsia-500/20 text-fuchsia-400 flex items-center justify-center text-xs">✓</span>Fast Image Rendering</div>
-              <div className="flex items-center gap-3 text-slate-300"><span className="w-6 h-6 rounded bg-fuchsia-500/20 text-fuchsia-400 flex items-center justify-center text-xs">✓</span>Express.js Backend Integration</div>
+              <div className="flex items-center gap-3 text-slate-300"><span className="w-6 h-6 rounded bg-white text-green-500 flex items-center justify-center text-xs">✓</span>Dynamic Portfolio Gallery</div>
+              <div className="flex items-center gap-3 text-slate-300"><span className="w-6 h-6 rounded bg-white text-green-500 flex items-center justify-center text-xs">✓</span>Service & Pricing Showcase</div>
+              <div className="flex items-center gap-3 text-slate-300"><span className="w-6 h-6 rounded bg-white text-green-500 flex items-center justify-center text-xs">✓</span>Fast Image Rendering</div>
+              <div className="flex items-center gap-3 text-slate-300"><span className="w-6 h-6 rounded bg-white text-green-500 flex items-center justify-center text-xs">✓</span>Express.js Backend Integration</div>
             </div>
-            <a href="https://picmestudio.id/" target="_blank" rel="noopener noreferrer" className="inline-block px-6 py-3 bg-fuchsia-600 text-white font-bold rounded-xl hover:bg-fuchsia-500 transition-colors shadow-lg shadow-fuchsia-600/30">
+            <a href="https://picmestudio.id/" target="_blank" rel="noopener noreferrer" className="inline-block px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/30">
               Kunjungi Website →
             </a>
           </div>
         </div>
-        <div className="w-full lg:w-1/2 bg-slate-900 p-8 md:p-12 flex items-center justify-center border-l border-slate-800">
-          <div className="w-full aspect-[4/3] bg-[#0F172A] rounded-2xl border border-slate-700 shadow-2xl overflow-hidden flex flex-col">
-            <div className="h-8 bg-slate-800 border-b border-slate-700 flex items-center px-4 gap-2">
-              <div className="w-3 h-3 rounded-full bg-red-500/50"></div>
-              <div className="w-3 h-3 rounded-full bg-yellow-500/50"></div>
-              <div className="w-3 h-3 rounded-full bg-green-500/50"></div>
-              <div className="ml-4 w-32 h-3 bg-slate-700 rounded-full"></div>
+
+        {/* 📸 BAGIAN GAMBAR YANG DIPERBARUI */}
+        <div className="w-full lg:w-1/2 bg-slate-900 p-6 md:p-10 flex items-center justify-center border-l border-slate-800">
+          <div className="w-full aspect-[4/3] bg-[#0F172A] rounded-2xl border border-slate-700 shadow-2xl overflow-hidden flex flex-col group">
+            {/* Browser Header Mockup */}
+            <div className="h-8 bg-slate-800 border-b border-slate-700 flex items-center px-4 gap-2 shrink-0">
+              <div className="w-2.5 h-2.5 rounded-full bg-red-500/50"></div>
+              <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/50"></div>
+              <div className="w-2.5 h-2.5 rounded-full bg-green-500/50"></div>
+              <div className="ml-2 px-3 py-1 bg-slate-900/50 rounded-md">
+                 <div className="w-24 h-1.5 bg-slate-700 rounded-full"></div>
+              </div>
             </div>
-            <div className="flex-1 p-4 grid grid-cols-2 gap-3 overflow-hidden">
-              <div className="flex flex-col gap-3">
-                <div className="h-24 bg-slate-800 rounded-lg"></div>
-                <div className="h-40 bg-slate-700/50 rounded-lg"></div>
-              </div>
-              <div className="flex flex-col gap-3">
-                <div className="h-40 bg-slate-800 rounded-lg"></div>
-                <div className="h-24 bg-slate-700/50 rounded-lg"></div>
-              </div>
+            {/* Image Content */}
+            <div className="flex-1 overflow-hidden relative bg-slate-900">
+              <img 
+                src="/p1.jpeg" 
+                alt="Picme Studio Preview" 
+                className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-700 ease-in-out" 
+              />
+              {/* Overlay agar teks di atas gambar (jika ada) lebih terbaca */}
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </div>
           </div>
         </div>
@@ -186,7 +191,7 @@ const ProjectsSection = () => {
     { title: "Portal Garut Satu Data", category: "Government", tech: ["React", "PHP"], description: "Portal data terpadu resmi Pemerintah Kabupaten Garut yang bertujuan untuk menyediakan akses data publik secara transparan dan terintegrasi. Dirancang dengan antarmuka modern dan responsif." },
     { title: "Picme Studio", category: "Creative Platform", tech: ["React", "Express.js"], description: "Platform digital untuk studio kreatif Picme Studio yang menampilkan layanan fotografi dan portfolio karya. Sistem dibangun menggunakan arsitektur modern untuk performa cepat." },
     { title: "IMN Business Group", category: "Corporate Profile", tech: ["React", "Express.js"], description: "Website profil perusahaan profesional untuk IMN Business Group yang dirancang untuk merepresentasikan kredibilitas bisnis secara modern dengan backend yang stabil." },
-    { title: "Bidang Statistik Garut", category: "Government Data Portal", tech: ["Next.js", "Laravel", "MySQL"], description: "Website Internal Bidang Statistik Diskominfo Kabupaten Garut yang menyediakan identitas bidang dan serta dokumentasi kegiatan bidang statistik." }
+    { title: "Bidang Statistik Garut", category: "Internal Government", tech: ["Next.js", "Express.js", "MySQL"], description: "Website Internal Bidang Statistik Diskominfo Kabupaten Garut yang menyediakan identitas bidang dan serta dokumentasi kegiatan bidang statistik." }
   ];
   return (
     <section id="projects" className="py-24 bg-slate-50 border-t border-slate-100">
@@ -221,7 +226,7 @@ const TechStackSection = () => {
   const stacks = [
     { title: "Frontend", items: ["React", "Next.js", "Tailwind CSS", "JavaScript"] },
     { title: "Backend", items: ["Node.js", "Express.js", "PHP", "Laravel"] },
-    { title: "Database", items: ["MySQL", "PostgreSQL"] },
+    { title: "Database", items: ["MySQL", "PostgreSQL", "Laragon", "MongoDB"] },
     { title: "Tools", items: ["Git", "Linux Server", "REST API", "Docker"] }
   ];
   return (

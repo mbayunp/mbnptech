@@ -166,7 +166,7 @@ const TechApproach = () => {
   const stacks = [
     { title: "Frontend", items: ["React", "Next.js", "Tailwind CSS", "JavaScript"] },
     { title: "Backend", items: ["Node.js", "Express.js", "PHP", "Laravel"] },
-    { title: "Database", items: ["MySQL", "PostgreSQL"] },
+    { title: "Database", items: ["MySQL", "PostgreSQL", "Laragon", "MongoDB"] },
     { title: "Deployment", items: ["Linux Server", "Nginx", "Cloud Hosting"] }
   ];
   return (

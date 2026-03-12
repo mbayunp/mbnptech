@@ -20,6 +20,9 @@ const AboutHero = () => (
     <div className="absolute bottom-0 left-0 w-96 h-96 bg-sky-200/40 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4"></div>
     
     <div className="container mx-auto max-w-4xl relative z-10">
+        <span className="inline-block py-1.5 px-4 rounded-full bg-blue-50 text-blue-600 text-sm font-bold uppercase tracking-wider mb-6 border border-blue-100">
+            This Us
+          </span>
       <h1 className="text-4xl md:text-6xl font-black text-slate-900 mb-6 tracking-tight">
         About <span className="text-blue-600">MBNP Tech</span>
       </h1>

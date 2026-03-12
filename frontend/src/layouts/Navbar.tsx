@@ -1,17 +1,26 @@
+// src/components/layout/Navbar.tsx
 import { useState, useEffect } from 'react';
-import { NavLink, Link } from 'react-router-dom';
+import { NavLink, Link, useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate();
 
-  // Efek untuk Sticky Navbar dengan efek blur
+  // Efek untuk Sticky Navbar
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Mengecek status login setiap kali komponen di-render
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    setIsLoggedIn(!!token);
   }, []);
 
   const navLinks = [
@@ -23,6 +32,15 @@ const Navbar = () => {
     { name: 'Contact', path: '/contact' },
   ];
 
+  const handleAuthAction = () => {
+    setIsMobileMenuOpen(false);
+    if (isLoggedIn) {
+      navigate('/admin/dashboard'); // Jika sudah login, pergi ke dashboard
+    } else {
+      navigate('/login'); // Jika belum, pergi ke halaman login
+    }
+  };
+
   return (
     <nav 
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
@@ -33,8 +51,7 @@ const Navbar = () => {
         
         {/* Brand / Logo Terintegrasi */}
         <Link to="/" className="flex items-center gap-3">
-          {/* Logo dari folder public */}
-          <img src="/logo.png" alt="MBNP Tech Logo" className="h-10 w-auto object-contain" />
+          <img src="/logo1.png" alt="MBNP Tech Logo" className="h-10 w-auto object-contain" />
           
           <div className="flex flex-col">
             <span className="text-2xl font-black text-slate-900 tracking-tight leading-none">
@@ -66,12 +83,12 @@ const Navbar = () => {
 
         {/* Call to Action & Mobile Toggle */}
         <div className="flex items-center gap-4">
-          <Link 
-            to="/dashboard"
+          <button 
+            onClick={handleAuthAction}
             className="hidden md:inline-block bg-[#2563EB] text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-blue-700 hover:shadow-lg hover:shadow-blue-200 transition-all active:scale-95"
           >
-            Dashboard
-          </Link>
+            {isLoggedIn ? 'Dashboard' : 'Login'}
+          </button>
           
           {/* Hamburger Menu (Mobile) */}
           <button 
@@ -98,13 +115,12 @@ const Navbar = () => {
               {link.name}
             </NavLink>
           ))}
-          <Link 
-            to="/dashboard"
-            onClick={() => setIsMobileMenuOpen(false)}
+          <button 
+            onClick={handleAuthAction}
             className="text-center bg-[#2563EB] text-white px-4 py-3 rounded-xl font-bold mt-2"
           >
-            Dashboard Login
-          </Link>
+            {isLoggedIn ? 'Buka Dashboard' : 'Login ke Sistem'}
+          </button>
         </div>
       )}
     </nav>
