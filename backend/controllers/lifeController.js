@@ -20,7 +20,7 @@ const updateLifePlan = async (req, res) => {
             'UPDATE life_plans SET title = ?, description = ?, progress = ?, target_year = ?, status = ? WHERE id = ? AND user_id = ?',
             [title, description, progress, target_year, status, req.params.id, req.user.id]
         );
-        
+
         // --- LOG ACTIVITY ---
         await logActivity(req.user.id, 'life_planning', 'update', 'Life Plan Diperbarui', `Target: ${title} diupdate.`);
 
@@ -31,33 +31,33 @@ const updateLifePlan = async (req, res) => {
 };
 
 const addLifePlan = async (req, res) => {
-  const { category, title, description, progress, target_year, status } = req.body;
-  try {
-    await db.promise().query(
-      'INSERT INTO life_plans (user_id, category, title, description, progress, target_year, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [req.user.id, category, title, description || null, progress || 0, target_year || null, status || 'upcoming']
-    );
-    
-    // --- LOG ACTIVITY ---
-    await logActivity(req.user.id, 'life_planning', 'create', 'Life Plan Baru', `Menambahkan target baru: ${title}.`);
+    const { category, title, description, progress, target_year, status } = req.body;
+    try {
+        await db.promise().query(
+            'INSERT INTO life_plans (user_id, category, title, description, progress, target_year, status) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [req.user.id, category, title, description || null, progress || 0, target_year || null, status || 'upcoming']
+        );
 
-    res.status(201).json({ success: true, message: 'Life Plan ditambahkan!' });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Gagal menambah Life Plan' });
-  }
+        // --- LOG ACTIVITY ---
+        await logActivity(req.user.id, 'life_planning', 'create', 'Life Plan Baru', `Menambahkan target baru: ${title}.`);
+
+        res.status(201).json({ success: true, message: 'Life Plan ditambahkan!' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Gagal menambah Life Plan' });
+    }
 };
 
 const deleteLifePlan = async (req, res) => {
-  try {
-    await db.promise().query('DELETE FROM life_plans WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
-    
-    // --- LOG ACTIVITY ---
-    await logActivity(req.user.id, 'life_planning', 'delete', 'Life Plan Dihapus', 'Satu target hidup telah dihapus dari sistem.');
+    try {
+        await db.promise().query('DELETE FROM life_plans WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
 
-    res.status(200).json({ success: true, message: 'Life Plan dihapus!' });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Gagal menghapus Life Plan' });
-  }
+        // --- LOG ACTIVITY ---
+        await logActivity(req.user.id, 'life_planning', 'delete', 'Life Plan Dihapus', 'Satu target hidup telah dihapus dari sistem.');
+
+        res.status(200).json({ success: true, message: 'Life Plan dihapus!' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Gagal menghapus Life Plan' });
+    }
 };
 
 // --- 2. HABITS & TRACKER ---
@@ -80,26 +80,26 @@ const getHabits = async (req, res) => {
 };
 
 const toggleHabitLog = async (req, res) => {
-    const { habit_id, log_date } = req.body; 
+    const { habit_id, log_date } = req.body;
     const userId = req.user.id;
 
     try {
         const dbPromise = db.promise();
         const [existing] = await dbPromise.query('SELECT id FROM habit_logs WHERE user_id = ? AND habit_id = ? AND log_date = ?', [userId, habit_id, log_date]);
-        
+
         // Ambil nama habit untuk ditulis di log
         const [[habit]] = await dbPromise.query('SELECT title FROM habits WHERE id = ?', [habit_id]);
 
         if (existing.length > 0) {
             await dbPromise.query('DELETE FROM habit_logs WHERE id = ?', [existing[0].id]);
-            
+
             // --- LOG ACTIVITY ---
             await logActivity(userId, 'habits', 'delete', 'Habit Batal Diceklis', `Membatalkan ceklis habit: ${habit?.title || 'Unknown'}.`);
 
             res.status(200).json({ success: true, action: 'removed' });
         } else {
             await dbPromise.query('INSERT INTO habit_logs (user_id, habit_id, log_date) VALUES (?, ?, ?)', [userId, habit_id, log_date]);
-            
+
             // --- LOG ACTIVITY ---
             await logActivity(userId, 'habits', 'complete', 'Habit Selesai ✔️', `Menyelesaikan habit: ${habit?.title || 'Unknown'}.`);
 
@@ -127,7 +127,7 @@ const addAchievement = async (req, res) => {
             'INSERT INTO achievements (user_id, title, category, description, achieved_year) VALUES (?, ?, ?, ?, ?)',
             [req.user.id, title, category, description, achieved_year]
         );
-        
+
         // --- LOG ACTIVITY ---
         await logActivity(req.user.id, 'achievements', 'create', 'Achievement Baru! 🏆', `Menambahkan pencapaian: ${title}.`);
 
@@ -137,8 +137,66 @@ const addAchievement = async (req, res) => {
     }
 };
 
+const addHabit = async (req, res) => {
+    const { title, target_per_week, color } = req.body;
+    try {
+        await db.promise().query(
+            'INSERT INTO habits (user_id, title, target_per_week, color) VALUES (?, ?, ?, ?)',
+            [req.user.id, title, target_per_week || 5, color || 'blue']
+        );
+
+        // --- LOG ACTIVITY ---
+        await logActivity(req.user.id, 'habits', 'create', 'Habit Baru', `Mulai membangun kebiasaan: ${title}`);
+
+        res.status(201).json({ success: true, message: 'Habit ditambahkan!' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Gagal menambah Habit' });
+    }
+};
+
+const updateHabit = async (req, res) => {
+    const { title, target_per_week, color } = req.body;
+    try {
+        await db.promise().query(
+            'UPDATE habits SET title = ?, target_per_week = ?, color = ? WHERE id = ? AND user_id = ?',
+            [title, target_per_week, color, req.params.id, req.user.id]
+        );
+
+        await logActivity(req.user.id, 'habits', 'update', 'Habit Diperbarui', `Mengedit detail kebiasaan: ${title}`);
+
+        res.status(200).json({ success: true, message: 'Habit diperbarui!' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Gagal update Habit' });
+    }
+};
+
+const deleteHabit = async (req, res) => {
+    try {
+        await db.promise().query('DELETE FROM habits WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
+
+        await logActivity(req.user.id, 'habits', 'delete', 'Habit Dihapus', 'Satu kebiasaan telah dihapus dari tracker.');
+
+        res.status(200).json({ success: true, message: 'Habit dihapus!' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Gagal menghapus Habit' });
+    }
+};
+
+const deleteAchievement = async (req, res) => {
+    try {
+        await db.promise().query('DELETE FROM achievements WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
+
+        // --- LOG ACTIVITY ---
+        await logActivity(req.user.id, 'achievements', 'delete', 'Achievement Dihapus', 'Satu rekam jejak pencapaian telah dihapus.');
+
+        res.status(200).json({ success: true, message: 'Achievement dihapus!' });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Gagal menghapus Achievement' });
+    }
+};
+
 module.exports = {
     getLifePlans, updateLifePlan, addLifePlan, deleteLifePlan,
-    getHabits, toggleHabitLog,
-    getAchievements, addAchievement,
+    getHabits, toggleHabitLog, addHabit, updateHabit, deleteHabit,
+    getAchievements, addAchievement, deleteAchievement,
 };

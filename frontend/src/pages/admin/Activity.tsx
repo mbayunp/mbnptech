@@ -2,13 +2,13 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
-import { 
-  FaHistory, FaFilter, FaTrash, FaWallet, FaBullseye, 
-  FaCompass, FaListUl, FaTrophy, FaCog, FaCalendarDay, 
+import {
+  FaHistory, FaFilter, FaTrash, FaWallet, FaBullseye,
+  FaCompass, FaListUl, FaTrophy, FaCog, FaCalendarDay,
   FaChartBar, FaSearch
 } from 'react-icons/fa';
-import { 
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell 
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Cell
 } from 'recharts';
 
 interface ActivityLog {
@@ -49,11 +49,11 @@ const Activity = () => {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const result = await res.json();
-      
+
       if (res.ok && result.success) {
         setLogs(result.data.logs);
         setStats(result.data.stats);
-        
+
         // Format chart data
         const formattedChart = result.data.chartData.map((item: any) => ({
           name: item.module.charAt(0).toUpperCase() + item.module.slice(1).replace('_', ' '),
@@ -81,7 +81,7 @@ const Activity = () => {
 
     if (result.isConfirmed) {
       const token = localStorage.getItem('token');
-      await fetch('http://localhost:5000/api/activities/clear', { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` }});
+      await fetch('http://localhost:5000/api/activities/clear', { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
       fetchActivities();
       Swal.fire('Dibersihkan!', 'Riwayat kosong.', 'success');
     }
@@ -90,13 +90,13 @@ const Activity = () => {
   const showDetailModal = (log: ActivityLog) => {
     const icon = getModuleConfig(log.module).iconHtml;
     const color = getModuleConfig(log.module).color;
-    
+
     let dataHtml = '';
     if (log.data) {
       try {
         const parsed = JSON.parse(log.data);
         dataHtml = `<div class="text-left bg-slate-50 p-4 rounded-xl mt-4 text-xs font-mono overflow-x-auto border border-slate-200"><pre>${JSON.stringify(parsed, null, 2)}</pre></div>`;
-      } catch(e) { dataHtml = ''; }
+      } catch (e) { dataHtml = ''; }
     }
 
     Swal.fire({
@@ -121,14 +121,15 @@ const Activity = () => {
 
   // Utility Konfigurasi Tampilan
   const getModuleConfig = (module: string) => {
-    switch(module) {
-      case 'finance': return { icon: <FaWallet/>, iconHtml: '💰', color: 'emerald' };
-      case 'goals': return { icon: <FaBullseye/>, iconHtml: '🎯', color: 'amber' };
-      case 'life_planning': return { icon: <FaCompass/>, iconHtml: '🧭', color: 'indigo' };
-      case 'habits': return { icon: <FaListUl/>, iconHtml: '📈', color: 'blue' };
-      case 'achievements': return { icon: <FaTrophy/>, iconHtml: '🏆', color: 'fuchsia' };
-      case 'system': return { icon: <FaCog/>, iconHtml: '⚙️', color: 'slate' };
-      default: return { icon: <FaHistory/>, iconHtml: '📌', color: 'slate' };
+    switch (module) {
+      case 'finance': return { icon: <FaWallet />, iconHtml: '💰', color: 'emerald' };
+      case 'todo': return { icon: <FaListUl />, iconHtml: '📈', color: 'blue' };
+      case 'goals': return { icon: <FaBullseye />, iconHtml: '🎯', color: 'amber' };
+      case 'life_planning': return { icon: <FaCompass />, iconHtml: '🧭', color: 'indigo' };
+      case 'habits': return { icon: <FaListUl />, iconHtml: '📈', color: 'blue' };
+      case 'achievements': return { icon: <FaTrophy />, iconHtml: '🏆', color: 'fuchsia' };
+      case 'system': return { icon: <FaCog />, iconHtml: '⚙️', color: 'slate' };
+      default: return { icon: <FaHistory />, iconHtml: '📌', color: 'slate' };
     }
   };
 
@@ -139,7 +140,7 @@ const Activity = () => {
       const dateObj = new Date(log.created_at);
       const today = new Date();
       const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
-      
+
       let dateKey = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
       if (dateObj.toDateString() === today.toDateString()) dateKey = "Hari Ini";
       else if (dateObj.toDateString() === yesterday.toDateString()) dateKey = "Kemarin";
@@ -154,7 +155,7 @@ const Activity = () => {
 
   return (
     <div className="max-w-7xl mx-auto font-sans bg-[#F8FAFC] pb-20">
-      
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
@@ -188,15 +189,16 @@ const Activity = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
+
         {/* Kolom Kiri: Timeline & Filter */}
         <div className="lg:col-span-2 flex flex-col gap-6">
-          
+
           {/* 2️⃣ Filter Bar */}
           <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-wrap gap-3">
             <select value={filterModule} onChange={e => setFilterModule(e.target.value)} className="bg-slate-50 border border-slate-200 text-sm font-bold text-slate-600 rounded-xl px-4 py-2 outline-none focus:border-blue-400">
               <option value="all">Semua Modul</option>
               <option value="finance">Finance</option>
+              <option value="todo">Todo</option>
               <option value="goals">Goals</option>
               <option value="life_planning">Life Planning</option>
               <option value="habits">Habits</option>
@@ -231,18 +233,18 @@ const Activity = () => {
                   <div key={date}>
                     <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 bg-slate-50 inline-block px-3 py-1 rounded-lg">{date}</h4>
                     <div className="relative border-l-2 border-slate-100 ml-4 space-y-6 pb-2">
-                      
+
                       {groupedLogs[date].map((log) => {
                         const config = getModuleConfig(log.module);
                         const timeString = new Date(log.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-                        
+
                         return (
                           <div key={log.id} onClick={() => showDetailModal(log)} className="relative pl-8 cursor-pointer group">
                             {/* Node / Titik */}
                             <div className={`absolute -left-[17px] top-1 w-8 h-8 bg-white border-2 border-${config.color}-400 text-${config.color}-500 rounded-full flex items-center justify-center text-sm shadow-sm group-hover:scale-110 group-hover:bg-${config.color}-50 transition-all`}>
                               {config.icon}
                             </div>
-                            
+
                             {/* Konten Activity */}
                             <div className="bg-slate-50 border border-slate-100 p-4 rounded-2xl group-hover:shadow-md group-hover:border-blue-200 transition-all">
                               <div className="flex justify-between items-start mb-1">
@@ -250,7 +252,7 @@ const Activity = () => {
                                 <span className="text-[10px] font-bold text-slate-400 shrink-0 mt-1">{timeString}</span>
                               </div>
                               <p className="text-xs text-slate-500 font-medium mb-3">{log.description}</p>
-                              
+
                               <div className="flex gap-2">
                                 <span className={`text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-${config.color}-100 text-${config.color}-700`}>{log.module.replace('_', ' ')}</span>
                                 <span className="text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-slate-200 text-slate-600">{log.action}</span>
@@ -277,9 +279,9 @@ const Activity = () => {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData} layout="vertical" margin={{ top: 0, right: 20, left: 0, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#F1F5F9" />
-                    <XAxis type="number" axisLine={false} tickLine={false} tick={{fill: '#94A3B8', fontSize: 10}} />
-                    <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{fill: '#475569', fontSize: 11, fontWeight: 'bold'}} width={90} />
-                    <RechartsTooltip cursor={{fill: '#F8FAFC'}} contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
+                    <XAxis type="number" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 10 }} />
+                    <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fill: '#475569', fontSize: 11, fontWeight: 'bold' }} width={90} />
+                    <RechartsTooltip cursor={{ fill: '#F8FAFC' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
                     <Bar dataKey="count" fill="#3B82F6" radius={[0, 4, 4, 0]} barSize={20}>
                       {chartData.map((_entry, index) => (
                         <Cell key={`cell-${index}`} fill={['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#F43F5E'][index % 5]} />

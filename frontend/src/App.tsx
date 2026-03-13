@@ -23,6 +23,8 @@ import Activity from './pages/admin/Activity';
 import Finance from './pages/admin/Finance';
 import Todo from './pages/admin/Todo';
 import LifePlan from './pages/admin/LifePlan';
+import Habits from './pages/admin/Habits';
+import Achievements from './pages/admin/Achievements';
 // import FinanceList from './pages/dashboard/finance/FinanceList';
 
 function App() {
@@ -44,14 +46,16 @@ function App() {
         {/* 🔐 PRIVATE / ADMIN ROUTES (Dashboard & Analytics) */}
         {/* Kita buat /admin sebagai rute induk tunggal */}
         <Route path="/admin" element={<AdminLayout />}>
-          <Route index element={<Dashboard />} /> 
+          <Route index element={<Dashboard />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="activity" element={<Activity />} />
 
           <Route path="finance" element={<Finance />} />
           <Route path="todo" element={<Todo />} />
           <Route path="planing" element={<LifePlan />} />
-          
+          <Route path="habits" element={<Habits />} />
+          <Route path="achievements" element={<Achievements />} />
+
           {/* Nanti route lain ditambahkan di sini, contoh: */}
           {/* <Route path="finance" element={<FinanceList />} /> */}
         </Route>
