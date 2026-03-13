@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3307
--- Waktu pembuatan: 13 Mar 2026 pada 10.21
+-- Waktu pembuatan: 13 Mar 2026 pada 11.07
 -- Versi server: 10.4.32-MariaDB
 -- Versi PHP: 8.2.12
 
@@ -43,8 +43,16 @@ CREATE TABLE `achievements` (
 
 INSERT INTO `achievements` (`id`, `user_id`, `title`, `category`, `description`, `achieved_year`, `created_at`) VALUES
 (1, 2, 'Lulus S1 Teknik Informatika UIN Bandung', 'Education', 'Menyelesaikan pendidikan sarjana.', 2024, '2026-03-13 06:58:25'),
-(2, 2, 'Full Stack Developer', 'Career', 'Berkarir profesional sebagai Full Stack Engineer.', 2024, '2026-03-13 06:58:25'),
-(3, 2, 'Rilis Portal Garut Satu Data', 'Project', 'Membangun sistem portal data terintegrasi.', 2025, '2026-03-13 06:58:25');
+(3, 2, 'Rilis Portal Garut Satu Data', 'Project', 'Membangun sistem portal data terintegrasi.', 2025, '2026-03-13 06:58:25'),
+(4, 2, 'Rilis Website Picme Studio', 'Project', 'Pembuatan awal memakan waktu 3 Bulan dan saya bangga ini project kedua saya yang dikerjakan sendiri', 2025, '2026-03-13 09:56:45'),
+(5, 2, 'Rilis Website UKBI Garut Dinas Pendidikan', 'Project', 'Mendapatkan kerja sama dengan Ibu Kiki Kabid KBPS kemudian pengerjaan memakan waktu 1 minggu', 2026, '2026-03-13 09:57:51'),
+(6, 2, 'Motor CBR 150R 2017 Repsol', 'Finance', 'Aset Kendaraan Pertama saya yang sangat berharga dan membuat saya bisa bepergian keluar kota dengan tenang', 2025, '2026-03-13 09:59:21'),
+(7, 2, 'HP Redmi Note 14 Pro 5G', 'Finance', 'Hp yang insyaallah jangka panjang saya pakai dan diberikan dana talang oleh kaka perempuan saya Rianti', 2025, '2026-03-13 10:00:13'),
+(8, 2, 'Trail Run 30km Batu Raden Forest Run Purwokerto', 'Personal', 'Lari memakan waktu 6 jam dan saya bangga bisa menyelesaikannya\n', 2025, '2026-03-13 10:01:27'),
+(9, 2, 'Magang BSI Bandung Buah Batu 2', 'Career', 'Posisi sebagai Intership Digital Marketing selama 4 Bulan dan mendapat banyak pengalaman dari Ibu Putri, Pak Tedi dan karyawan bsi bubat lainnya', 2024, '2026-03-13 10:02:40'),
+(10, 2, 'IT Technical Support PT IMN Business Group', 'Career', 'Setelah Lebaran saya mendapat kerja sebagai IT dan bertahan selama 5 Bulan di Cileunyi ', 2025, '2026-03-13 10:03:23'),
+(11, 2, 'Programmer Diskominfo Garut', 'Career', 'Berada di Bidang Statistik dan alhamdulillah mendapat lingkungan yang support dari Ibu Kiki, Pa Asfre, Pa Indra dan lainnya', 2025, '2026-03-13 10:04:28'),
+(12, 2, 'Rilis Website Bidang Statistik', 'Project', 'Membuat website sistem administrasi online untuk memudahkan kerja bidang dalam jangka panjang\n', 2026, '2026-03-13 10:05:48');
 
 -- --------------------------------------------------------
 
@@ -82,7 +90,26 @@ INSERT INTO `activity_logs` (`id`, `user_id`, `module`, `action`, `title`, `desc
 (12, 2, 'todo', 'update', 'Status Task Diperbarui', 'Task dipindah menjadi status: dikerjakan.', NULL, '2026-03-13 08:32:44'),
 (13, 2, 'todo', 'update', 'Status Task Diperbarui', 'Task dipindah menjadi status: dikerjakan.', NULL, '2026-03-13 08:52:12'),
 (14, 2, 'todo', 'complete', 'Pomodoro Selesai 🍅', 'Menyelesaikan sesi fokus selama 25 menit.', NULL, '2026-03-13 08:52:24'),
-(15, 2, 'todo', 'complete', 'Pomodoro Selesai 🍅', 'Menyelesaikan sesi fokus selama 25 menit.', NULL, '2026-03-13 09:18:13');
+(15, 2, 'todo', 'complete', 'Pomodoro Selesai 🍅', 'Menyelesaikan sesi fokus selama 25 menit.', NULL, '2026-03-13 09:18:13'),
+(16, 2, 'todo', 'complete', 'Pomodoro Selesai 🍅', 'Menyelesaikan sesi fokus selama 25 menit.', NULL, '2026-03-13 09:28:57'),
+(17, 2, 'todo', 'complete', 'Pomodoro Selesai 🍅', 'Menyelesaikan sesi fokus selama 25 menit.', NULL, '2026-03-13 09:33:10'),
+(18, 2, 'todo', 'complete', 'Status Task Diperbarui', 'Task dipindah menjadi status: diselesaikan.', NULL, '2026-03-13 09:34:00'),
+(19, 2, 'todo', 'complete', 'Pomodoro Selesai 🍅', 'Menyelesaikan sesi fokus selama 25 menit.', NULL, '2026-03-13 09:37:46'),
+(20, 2, 'todo', 'delete', 'Task Dihapus', 'Satu task telah dihapus dari board.', NULL, '2026-03-13 09:38:06'),
+(21, 2, 'habits', 'create', 'Habit Baru', 'Mulai membangun kebiasaan: Lari', NULL, '2026-03-13 09:46:00'),
+(22, 2, 'life_planning', 'create', 'Life Plan Baru', 'Menambahkan target baru: Umroh.', NULL, '2026-03-13 09:47:12'),
+(23, 2, 'life_planning', 'update', 'Life Plan Diperbarui', 'Target: Umroh diupdate.', NULL, '2026-03-13 09:47:32'),
+(24, 2, 'life_planning', 'update', 'Life Plan Diperbarui', 'Target: Umroh diupdate.', NULL, '2026-03-13 09:47:49'),
+(25, 2, 'achievements', 'create', 'Achievement Baru! 🏆', 'Menambahkan pencapaian: Rilis Website Picme Studio.', NULL, '2026-03-13 09:56:45'),
+(26, 2, 'achievements', 'create', 'Achievement Baru! 🏆', 'Menambahkan pencapaian: Rilis Website UKBI Garut Dinas Pendidikan.', NULL, '2026-03-13 09:57:51'),
+(27, 2, 'achievements', 'create', 'Achievement Baru! 🏆', 'Menambahkan pencapaian: Motor CBR 150R 2017 Repsol.', NULL, '2026-03-13 09:59:21'),
+(28, 2, 'achievements', 'create', 'Achievement Baru! 🏆', 'Menambahkan pencapaian: HP Redmi Note 14 Pro 5G.', NULL, '2026-03-13 10:00:13'),
+(29, 2, 'achievements', 'create', 'Achievement Baru! 🏆', 'Menambahkan pencapaian: Trail Run 30km Batu Raden Forest Run Purwokerto.', NULL, '2026-03-13 10:01:27'),
+(30, 2, 'achievements', 'delete', 'Achievement Dihapus', 'Satu rekam jejak pencapaian telah dihapus.', NULL, '2026-03-13 10:01:46'),
+(31, 2, 'achievements', 'create', 'Achievement Baru! 🏆', 'Menambahkan pencapaian: Magang BSI Bandung Buah Batu 2.', NULL, '2026-03-13 10:02:40'),
+(32, 2, 'achievements', 'create', 'Achievement Baru! 🏆', 'Menambahkan pencapaian: IT Technical Support PT IMN Business Group.', NULL, '2026-03-13 10:03:23'),
+(33, 2, 'achievements', 'create', 'Achievement Baru! 🏆', 'Menambahkan pencapaian: Programmer Diskominfo Garut.', NULL, '2026-03-13 10:04:28'),
+(34, 2, 'achievements', 'create', 'Achievement Baru! 🏆', 'Menambahkan pencapaian: Rilis Website Bidang Statistik.', NULL, '2026-03-13 10:05:48');
 
 -- --------------------------------------------------------
 
@@ -189,7 +216,8 @@ CREATE TABLE `habits` (
 INSERT INTO `habits` (`id`, `user_id`, `title`, `target_per_week`, `color`, `created_at`) VALUES
 (1, 2, 'Latihan Bahasa Jepang (Zoom)', 2, 'emerald', '2026-03-13 06:58:25'),
 (2, 2, 'Latihan Soal CPNS', 4, 'blue', '2026-03-13 06:58:25'),
-(3, 2, 'Coding / Mengerjakan Projek', 5, 'indigo', '2026-03-13 06:58:25');
+(3, 2, 'Coding / Mengerjakan Projek', 5, 'indigo', '2026-03-13 06:58:25'),
+(4, 2, 'Lari', 5, 'rose', '2026-03-13 09:46:00');
 
 -- --------------------------------------------------------
 
@@ -238,7 +266,8 @@ INSERT INTO `life_plans` (`id`, `user_id`, `category`, `title`, `description`, `
 (8, 2, 'finance', 'Dana Darurat (Emergency Fund)', 'Rp 50.000.000', 0, 2026, 'current', '2026-03-13 06:58:25'),
 (9, 2, 'finance', 'Upgrade Motor CBR', 'Rp 8.000.000 All In', 20, 2026, 'current', '2026-03-13 06:58:25'),
 (10, 2, 'timeline', 'Menikah', NULL, 0, 2028, 'upcoming', '2026-03-13 07:16:22'),
-(11, 2, 'relationship', 'Tunangan', '', 20, 2027, 'current', '2026-03-13 07:21:06');
+(11, 2, 'relationship', 'Tunangan', '', 20, 2027, 'current', '2026-03-13 07:21:06'),
+(12, 2, 'finance', 'Umroh', 'Rp. 30.000.000', 0, 2027, 'upcoming', '2026-03-13 09:47:12');
 
 -- --------------------------------------------------------
 
@@ -262,7 +291,10 @@ INSERT INTO `pomodoro_sessions` (`id`, `user_id`, `task_id`, `duration`, `create
 (1, 2, 2, 1500, '2026-03-13 01:46:50'),
 (2, 2, 2, 1500, '2026-03-13 04:36:05'),
 (3, 2, 3, 1500, '2026-03-13 08:52:24'),
-(4, 2, 5, 1500, '2026-03-13 09:18:13');
+(4, 2, 5, 1500, '2026-03-13 09:18:13'),
+(5, 2, 5, 1500, '2026-03-13 09:28:57'),
+(6, 2, 5, 1500, '2026-03-13 09:33:09'),
+(7, 2, 5, 1500, '2026-03-13 09:37:46');
 
 -- --------------------------------------------------------
 
@@ -289,11 +321,10 @@ CREATE TABLE `tasks` (
 --
 
 INSERT INTO `tasks` (`id`, `user_id`, `title`, `category`, `priority`, `status`, `target_pomo`, `completed_pomo`, `deadline`, `created_at`, `updated_at`) VALUES
-(1, 2, 'Backend Garut Satu Data', 'Kerja', 'High', 'todo', 1, 0, '2026-03-13', '2026-03-13 00:55:28', '2026-03-13 00:55:38'),
 (2, 2, 'Halaman Pemeriksaan Backend', 'Kerja', 'Medium', 'done', 3, 2, '2026-03-13', '2026-03-13 01:08:52', '2026-03-13 06:47:10'),
 (3, 2, 'Website MBNP Project', 'Pribadi', 'Medium', 'in_progress', 4, 1, '2026-03-13', '2026-03-13 07:38:17', '2026-03-13 08:52:24'),
 (4, 2, 'Website Picme Update Styling', 'Kerja', 'Medium', 'todo', 2, 0, '2026-03-13', '2026-03-13 07:48:08', '2026-03-13 07:48:08'),
-(5, 2, 'Zoom Bahasa Jepang Jam 3-5', 'Belajar', 'High', 'in_progress', 3, 1, '2026-03-13', '2026-03-13 07:48:49', '2026-03-13 09:18:13');
+(5, 2, 'Zoom Bahasa Jepang Jam 3-5', 'Belajar', 'High', 'done', 3, 4, '2026-03-13', '2026-03-13 07:48:49', '2026-03-13 09:37:46');
 
 -- --------------------------------------------------------
 
@@ -437,13 +468,13 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT untuk tabel `achievements`
 --
 ALTER TABLE `achievements`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT untuk tabel `activity_logs`
 --
 ALTER TABLE `activity_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
 
 --
 -- AUTO_INCREMENT untuk tabel `debts`
@@ -473,7 +504,7 @@ ALTER TABLE `goals`
 -- AUTO_INCREMENT untuk tabel `habits`
 --
 ALTER TABLE `habits`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT untuk tabel `habit_logs`
@@ -485,13 +516,13 @@ ALTER TABLE `habit_logs`
 -- AUTO_INCREMENT untuk tabel `life_plans`
 --
 ALTER TABLE `life_plans`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT untuk tabel `pomodoro_sessions`
 --
 ALTER TABLE `pomodoro_sessions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT untuk tabel `tasks`
