@@ -15,12 +15,18 @@ app.use(express.json());
 // Import Routes
 const financeRoutes = require('./routes/financeRoutes');
 const authRoutes = require('./routes/authRoutes');
+const todoRoutes = require('./routes/todoRoutes');
+const lifeRoutes = require('./routes/lifeRoutes');
+const activityRoutes = require('./routes/activityRoutes');
 
 // Gunakan Routes
 app.use('/api/auth', authRoutes);
 
 // Gunakan Routes
 app.use('/api/finances', financeRoutes);
+app.use('/api/todos', require('./routes/todoRoutes'));
+app.use('/api/life', require('./routes/lifeRoutes'));
+app.use('/api/activities', require('./routes/activityRoutes'));
 
 // Route Dasar
 app.get('/', (req, res) => {

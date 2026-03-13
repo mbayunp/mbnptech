@@ -2,16 +2,17 @@
 import { useState, useEffect, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
-import { 
-  FaWallet, FaArrowDown, FaArrowUp, FaCreditCard, 
-  FaFileExcel, FaSearch, FaFilter, 
+import {
+  FaWallet, FaArrowDown, FaArrowUp, FaCreditCard,
+  FaFileExcel, FaSearch, FaFilter,
   FaEdit, FaTrash, FaPlus, FaCalendarAlt
 } from 'react-icons/fa';
-import { 
-  BarChart, Bar, PieChart, Pie, Cell, 
-  XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, 
-  Legend, ResponsiveContainer 
+import {
+  BarChart, Bar, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip,
+  Legend, ResponsiveContainer
 } from 'recharts';
+import { API_URL } from '../../config/api';
 
 const formatRp = (angka: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka || 0);
 const PIE_COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6'];
@@ -32,7 +33,7 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
 const Finance = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
-  
+
   const [data, setData] = useState({
     summary: { balance: 0, monthIncome: 0, monthExpense: 0 },
     debts: [] as any[], // Array Hutang
@@ -42,12 +43,12 @@ const Finance = () => {
     pieChart: [] as any[]
   });
 
-  const [qaType, setQaType] = useState<'expense'|'income'>('expense');
+  const [qaType, setQaType] = useState<'expense' | 'income'>('expense');
   const [qaAmount, setQaAmount] = useState('');
   const [qaCategory, setQaCategory] = useState('');
   const [qaDate, setQaDate] = useState(new Date().toISOString().split('T')[0]);
   const [qaNote, setQaNote] = useState('');
-  
+
   // Form Pembayaran Hutang
   const [payDebtId, setPayDebtId] = useState('');
   const [debtAmount, setDebtAmount] = useState('');
@@ -56,11 +57,11 @@ const Finance = () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return navigate('/login');
-      const res = await fetch('http://localhost:5000/api/finances/full-stats', { headers: { 'Authorization': `Bearer ${token}` } });
+      const res = await fetch(`${API_URL}/api/finances/full-stats`, { headers: { 'Authorization': `Bearer ${token}` } });
       const result = await res.json();
       if (res.status === 401 || res.status === 403) { localStorage.removeItem('token'); navigate('/login'); return; }
       if (result.success) setData(result.data);
-    } catch (err) { console.error(err); } 
+    } catch (err) { console.error(err); }
     finally { setIsLoading(false); }
   };
 
@@ -71,7 +72,7 @@ const Finance = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/finances/quick', {
+      const res = await fetch(`${API_URL}/api/finances/quick`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ type: qaType, amount: parseInt(qaAmount.replace(/\D/g, '')), category: qaCategory, date: qaDate, description: qaNote })
       });
@@ -86,7 +87,7 @@ const Finance = () => {
     const result = await Swal.fire({ title: 'Hapus Transaksi?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Ya, Hapus!' });
     if (result.isConfirmed) {
       const token = localStorage.getItem('token');
-      await fetch(`http://localhost:5000/api/finances/transaction/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+      await fetch(`${API_URL}/api/finances/transaction/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
       fetchFinanceData();
     }
   };
@@ -95,7 +96,7 @@ const Finance = () => {
     const { value: formValues } = await Swal.fire({
       title: 'Edit Transaksi',
       html: `
-        <select id="swal-type" class="w-full p-3 mb-3 border rounded-lg outline-none"><option value="expense" ${trx.type==='expense'?'selected':''}>Pengeluaran</option><option value="income" ${trx.type==='income'?'selected':''}>Pemasukan</option></select>
+        <select id="swal-type" class="w-full p-3 mb-3 border rounded-lg outline-none"><option value="expense" ${trx.type === 'expense' ? 'selected' : ''}>Pengeluaran</option><option value="income" ${trx.type === 'income' ? 'selected' : ''}>Pemasukan</option></select>
         <input id="swal-amount" type="number" class="w-full p-3 mb-3 border rounded-lg outline-none" placeholder="Jumlah" value="${trx.amount}">
         <input id="swal-category" type="text" class="w-full p-3 mb-3 border rounded-lg outline-none" placeholder="Kategori" value="${trx.category}">
         <input id="swal-date" type="date" class="w-full p-3 mb-3 border rounded-lg outline-none" value="${trx.date.split('T')[0]}">
@@ -112,7 +113,7 @@ const Finance = () => {
     });
     if (formValues) {
       const token = localStorage.getItem('token');
-      await fetch(`http://localhost:5000/api/finances/transaction/${trx.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(formValues) });
+      await fetch(`${API_URL}/api/finances/transaction/${trx.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(formValues) });
       Swal.fire('Berhasil', 'Transaksi telah diperbarui', 'success'); fetchFinanceData();
     }
   };
@@ -137,7 +138,7 @@ const Finance = () => {
 
     if (formValues && formValues.name && formValues.totalAmount) {
       const token = localStorage.getItem('token');
-      await fetch('http://localhost:5000/api/finances/debt', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(formValues) });
+      await fetch(`${API_URL}/api/finances/debt`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(formValues) });
       fetchFinanceData(); Swal.fire('Berhasil', 'Hutang ditambahkan', 'success');
     }
   };
@@ -160,7 +161,7 @@ const Finance = () => {
     });
     if (formValues) {
       const token = localStorage.getItem('token');
-      await fetch(`http://localhost:5000/api/finances/debt/${debt.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(formValues) });
+      await fetch(`${API_URL}/api/finances/debt/${debt.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(formValues) });
       fetchFinanceData(); Swal.fire('Berhasil', 'Hutang diperbarui', 'success');
     }
   };
@@ -169,7 +170,7 @@ const Finance = () => {
     const result = await Swal.fire({ title: 'Hapus Hutang?', text: "Data ini akan hilang permanen.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33' });
     if (result.isConfirmed) {
       const token = localStorage.getItem('token');
-      await fetch(`http://localhost:5000/api/finances/debt/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+      await fetch(`${API_URL}/api/finances/debt/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
       fetchFinanceData();
     }
   };
@@ -179,7 +180,7 @@ const Finance = () => {
     if (!debtAmount || !payDebtId) return;
     try {
       const token = localStorage.getItem('token');
-      await fetch('http://localhost:5000/api/finances/pay-debt', {
+      await fetch(`${API_URL}/api/finances/pay-debt`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ debtId: payDebtId, amount: parseInt(debtAmount.replace(/\D/g, '')) })
       });
@@ -191,8 +192,8 @@ const Finance = () => {
   if (isLoading) return <div className="flex h-screen items-center justify-center bg-[#F8FAFC]"><div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div></div>;
 
   return (
-    <div className="max-w-7xl mx-auto font-sans bg-[#F8FAFC] pb-20">
-      
+    <div className="max-w-8xl mx-auto font-sans bg-[#F8FAFC] pb-20">
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
@@ -226,7 +227,7 @@ const Finance = () => {
         <form onSubmit={handleQuickAdd} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 relative z-10 items-end">
           <div className="lg:col-span-1">
             <label className="block text-xs font-bold text-slate-500 mb-2">Jenis</label>
-            <select value={qaType} onChange={(e) => setQaType(e.target.value as 'income'|'expense')} className={`w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-bold outline-none`}>
+            <select value={qaType} onChange={(e) => setQaType(e.target.value as 'income' | 'expense')} className={`w-full p-3 rounded-xl border border-slate-200 bg-slate-50 font-bold outline-none`}>
               <option value="expense">📉 Pengeluaran</option>
               <option value="income">📈 Pemasukan</option>
             </select>
@@ -261,10 +262,10 @@ const Finance = () => {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data.barChart} margin={{ top: 0, right: 0, left: 10, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94A3B8', fontSize: 12}} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: '#94A3B8', fontSize: 12}} tickFormatter={(val) => `Rp${val/1000}k`} />
-                <RechartsTooltip cursor={{fill: '#F8FAFC'}} contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}} />
-                <Legend iconType="circle" wrapperStyle={{fontSize: '12px', paddingTop: '10px'}} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 12 }} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 12 }} tickFormatter={(val) => `Rp${val / 1000}k`} />
+                <RechartsTooltip cursor={{ fill: '#F8FAFC' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
                 <Bar dataKey="Income" fill="#10B981" radius={[4, 4, 0, 0]} maxBarSize={40} />
                 <Bar dataKey="Expense" fill="#EF4444" radius={[4, 4, 0, 0]} maxBarSize={40} />
               </BarChart>
@@ -275,14 +276,14 @@ const Finance = () => {
           <h3 className="text-lg font-black text-slate-800 mb-1">📈 Kategori Pengeluaran</h3>
           <p className="text-xs text-slate-500 mb-6">Analisis biaya bulan ini.</p>
           <div className="h-56 w-full relative">
-             <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie data={data.pieChart} cx="50%" cy="50%" innerRadius={45} outerRadius={65} paddingAngle={4} dataKey="value" label={renderCustomizedLabel} labelLine={true}>
-                    {data.pieChart.map((_, index) => <Cell key={index} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
-                  </Pie>
-                  <RechartsTooltip formatter={(value) => formatRp(Number(value))} />
-                </PieChart>
-              </ResponsiveContainer>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={data.pieChart} cx="50%" cy="50%" innerRadius={45} outerRadius={65} paddingAngle={4} dataKey="value" label={renderCustomizedLabel} labelLine={true}>
+                  {data.pieChart.map((_, index) => <Cell key={index} fill={PIE_COLORS[index % PIE_COLORS.length]} />)}
+                </Pie>
+                <RechartsTooltip formatter={(value) => formatRp(Number(value))} />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>
@@ -345,11 +346,11 @@ const Finance = () => {
                     <div className="flex justify-between items-start mb-2">
                       <div>
                         <h4 className="font-bold text-slate-800">{debt.name}</h4>
-                        <p className="text-xs text-slate-500 flex items-center gap-1"><FaCalendarAlt/> {debt.due_date ? new Date(debt.due_date).toLocaleDateString('id-ID') : '-'}</p>
+                        <p className="text-xs text-slate-500 flex items-center gap-1"><FaCalendarAlt /> {debt.due_date ? new Date(debt.due_date).toLocaleDateString('id-ID') : '-'}</p>
                       </div>
                       <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button onClick={() => handleEditDebt(debt)} className="text-blue-500 hover:text-blue-700 text-sm"><FaEdit/></button>
-                        <button onClick={() => handleDeleteDebt(debt.id)} className="text-red-500 hover:text-red-700 text-sm"><FaTrash/></button>
+                        <button onClick={() => handleEditDebt(debt)} className="text-blue-500 hover:text-blue-700 text-sm"><FaEdit /></button>
+                        <button onClick={() => handleDeleteDebt(debt.id)} className="text-red-500 hover:text-red-700 text-sm"><FaTrash /></button>
                       </div>
                     </div>
                     <div className="flex justify-between text-sm mb-1">

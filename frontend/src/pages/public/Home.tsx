@@ -1,219 +1,208 @@
-// src/pages/public/Home.tsx
 import { Link } from 'react-router-dom';
 
-// --- SUB-COMPONENTS ---
-
 const HeroSection = () => (
-  <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-28 overflow-hidden bg-slate-50">
-    <div className="container mx-auto px-6 relative z-10">
-      <div className="max-w-4xl mx-auto text-center">
-        <span className="inline-block py-1.5 px-4 rounded-full bg-blue-100 text-blue-700 text-sm font-bold uppercase tracking-wider mb-6 border border-blue-200">
-          MBNP Tech
-        </span>
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-slate-900 mb-8 leading-[1.1]">
-          Solusi Website & Sistem Informasi <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-sky-400">Modern</span>
+  <section className="relative min-h-[90vh] md:min-h-[95vh] flex items-center justify-center pb-12 md:pb-20 overflow-hidden bg-[#fafafa]">
+    {/* Modern Animated Gradient Background blobs */}
+    <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden">
+      <div className="absolute top-[-10%] left-[-10%] w-[80%] md:w-[50%] h-[50%] bg-blue-400/20 rounded-full blur-[80px] md:blur-[120px] mix-blend-multiply"></div>
+      <div className="absolute top-[20%] right-[-10%] w-[60%] md:w-[40%] h-[50%] bg-indigo-400/20 rounded-full blur-[80px] md:blur-[120px] mix-blend-multiply border border-indigo-200"></div>
+      <div className="absolute bottom-[-10%] left-[10%] md:left-[20%] w-[80%] md:w-[60%] h-[40%] bg-emerald-400/20 rounded-full blur-[80px] md:blur-[120px] mix-blend-multiply"></div>
+      <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
+    </div>
+
+    <div className="container mx-auto px-4 md:px-6 relative z-10 pt-20 md:pt-10">
+      <div className="max-w-5xl mx-auto text-center">
+        {/* Pill Badge */}
+        <div className="inline-flex items-center gap-2 md:gap-3 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-white/70 backdrop-blur-md border border-slate-200/60 shadow-sm mb-8 md:mb-10 hover:bg-white hover:scale-105 transition-all cursor-pointer">
+          <span className="relative flex h-2.5 w-2.5 md:h-3 md:w-3">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2.5 w-2.5 md:h-3 md:w-3 bg-blue-600"></span>
+          </span>
+          <span className="text-xs md:text-sm font-bold text-slate-800 tracking-wide uppercase">MBNP Tech • IT Solutions</span>
+        </div>
+
+        {/* Headline */}
+        <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-[5.5rem] font-black text-slate-900 tracking-tight mb-6 md:mb-8 leading-[1.1] md:leading-[1.05]">
+          Membangun Ekosistem <br className="hidden md:block" />
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600">
+            Digital Terskalabel
+          </span>
         </h1>
-        <p className="text-lg md:text-xl text-slate-600 mb-10 max-w-2xl mx-auto leading-relaxed">
-          Kami membangun website profesional, portal data, dan sistem informasi berbasis web dengan teknologi modern untuk Bisnis, Organisasi, dan Instansi Pemerintah.
+
+        <p className="text-base sm:text-lg md:text-2xl text-slate-600 mb-10 md:mb-12 max-w-3xl mx-auto leading-relaxed font-medium px-2">
+          Mentransformasi ide kompleks menjadi sistem informasi modern, super cepat, dan impact-driven untuk Bisnis & Pemerintahan.
         </p>
-        <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-          <Link to="/projects" className="px-8 py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 hover:shadow-xl hover:shadow-blue-200 transition-all active:scale-95">
+
+        {/* Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 md:gap-5 justify-center items-center px-4">
+          <Link to="/contact" className="group relative w-full sm:w-auto px-8 py-4 bg-slate-900 text-white rounded-2xl font-bold text-base md:text-lg overflow-hidden transition-all hover:scale-105 hover:shadow-2xl hover:shadow-slate-900/30 flex justify-center items-center gap-2">
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            <span className="relative z-10">Mulai Kolaborasi</span>
+            <span className="relative z-10 group-hover:translate-x-1 transition-transform">→</span>
+          </Link>
+          <Link to="/projects" className="w-full sm:w-auto px-8 py-4 bg-white/60 backdrop-blur-sm text-slate-800 border border-slate-200/80 rounded-2xl font-bold text-base md:text-lg hover:bg-white hover:border-slate-300 transition-all hover:scale-105 shadow-sm flex justify-center items-center">
             Lihat Portfolio
           </Link>
-          <Link to="/contact" className="px-8 py-4 bg-white text-slate-700 border border-slate-200 rounded-xl font-bold hover:bg-slate-50 hover:border-blue-200 transition-all">
-            Konsultasi Proyek
+        </div>
+      </div>
+    </div>
+  </section>
+);
+
+const FeaturesBentoSection = () => (
+  <section className="py-16 md:py-24 bg-white relative z-20 -mt-6 md:-mt-10 rounded-t-[2rem] md:rounded-t-[3rem] border-t border-slate-100 shadow-[0_-20px_40px_-15px_rgba(0,0,0,0.05)]">
+    <div className="container mx-auto px-4 md:px-6 max-w-6xl">
+      <div className="text-center mb-12 md:mb-16">
+        <h2 className="text-xs md:text-sm font-black text-blue-600 uppercase tracking-widest mb-3 md:mb-4">Layanan Unggulan</h2>
+        <h3 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight mb-4 md:mb-6">Expertise Teknologi Modern</h3>
+        <p className="text-base md:text-xl text-slate-500 max-w-2xl mx-auto px-4">Solusi komprehensif dari perancangan arsitektur hingga deployment produksi, didesain untuk performa maksimal.</p>
+      </div>
+
+      {/* Modern Bento Grid - Changed auto-rows for mobile */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 auto-rows-auto md:auto-rows-[280px]">
+        {/* Main Feature */}
+        <div className="md:col-span-2 bg-gradient-to-br from-slate-900 to-[#0B1120] rounded-[2rem] md:rounded-[2.5rem] p-8 md:p-10 relative overflow-hidden group hover:shadow-2xl hover:shadow-blue-900/40 transition-all duration-500 border border-slate-800">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/20 rounded-full blur-[80px] group-hover:bg-blue-500/30 transition-colors"></div>
+          <div className="relative z-10 h-full flex flex-col justify-between min-h-[200px] md:min-h-0">
+            <div className="w-12 h-12 md:w-14 md:h-14 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center text-2xl md:text-3xl shadow-inner border border-white/10 ring-1 ring-white/5 mb-6 md:mb-0">💻</div>
+            <div>
+              <h4 className="text-2xl md:text-3xl font-black text-white mb-2 md:mb-3">Enterprise Web Apps</h4>
+              <p className="text-slate-400 text-sm md:text-lg leading-relaxed max-w-md">Pengembangan sistem web kompleks (React, Express) yang scalable, terstruktur, dan siap untuk enterprise.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Small Feature 1 */}
+        <div className="bg-gradient-to-br from-blue-50 to-indigo-50/50 rounded-[2rem] md:rounded-[2.5rem] p-8 md:p-10 border border-blue-100/50 hover:shadow-xl hover:shadow-blue-100/50 transition-all duration-300 group min-h-[200px] md:min-h-0">
+          <div className="h-full flex flex-col justify-between">
+            <div className="w-12 h-12 md:w-14 md:h-14 bg-blue-600 text-white rounded-2xl flex items-center justify-center text-2xl md:text-3xl shadow-lg shadow-blue-600/30 group-hover:scale-110 transition-transform mb-6 md:mb-0">📊</div>
+            <div>
+              <h4 className="text-xl md:text-2xl font-black text-slate-900 mb-2">Portal Data</h4>
+              <p className="text-sm md:text-base text-slate-600 font-medium leading-relaxed">Dashboard & open data portal untuk Pemerintah.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Small Feature 2 */}
+        <div className="bg-gradient-to-br from-emerald-50 to-teal-50/50 rounded-[2rem] md:rounded-[2.5rem] p-8 md:p-10 border border-emerald-100/50 hover:shadow-xl hover:shadow-emerald-100/50 transition-all duration-300 group min-h-[200px] md:min-h-0">
+          <div className="h-full flex flex-col justify-between">
+            <div className="w-12 h-12 md:w-14 md:h-14 bg-emerald-500 text-white rounded-2xl flex items-center justify-center text-2xl md:text-3xl shadow-lg shadow-emerald-500/30 group-hover:scale-110 transition-transform mb-6 md:mb-0">⚡</div>
+            <div>
+              <h4 className="text-xl md:text-2xl font-black text-slate-900 mb-2">Modern UI/UX</h4>
+              <p className="text-sm md:text-base text-slate-600 font-medium leading-relaxed">Eksplorasi antarmuka estetik yang interaktif.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Wide Informational Feature */}
+        <div className="md:col-span-2 bg-white rounded-[2rem] md:rounded-[2.5rem] p-8 md:p-10 border border-slate-200 hover:border-slate-300 hover:shadow-2xl hover:shadow-slate-200/50 transition-all duration-500 relative overflow-hidden group min-h-[220px] md:min-h-0">
+          <div className="absolute right-0 bottom-0 top-0 w-full md:w-1/2 bg-[radial-gradient(#E2E8F0_1px,transparent_1px)] [background-size:16px_16px] [mask-image:linear-gradient(to_bottom,white,transparent)] md:[mask-image:linear-gradient(to_left,white,transparent)] pointer-events-none"></div>
+          <div className="relative z-10 h-full flex flex-col justify-between">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-slate-100 text-slate-600 rounded-lg text-[10px] md:text-xs font-bold uppercase tracking-wider w-max border border-slate-200 mb-6 md:mb-0">
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> Performance First
+            </div>
+            <div>
+              <h4 className="text-2xl md:text-3xl font-black text-slate-900 mb-3 md:mb-4 tracking-tight">Sistem Pemerintahan (SPBE) & Corporate</h4>
+              <p className="text-slate-600 text-sm md:text-lg lg:text-xl max-w-xl leading-relaxed">
+                Penerapan <em>clean code rules</em> menjamin sistem yang cepat, aman, dan mudah di-maintain. Spesialisasi kami ada pada transformasi digital instansi publik.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+);
+
+const FeaturedProjectSection = () => (
+  <section className="py-16 md:py-24 bg-slate-50 border-y border-slate-100 relative overflow-hidden">
+    <div className="container mx-auto px-4 md:px-6 max-w-7xl">
+      <div className="mb-10 md:mb-16 md:flex md:items-end md:justify-between text-center md:text-left">
+        <div className="max-w-2xl mx-auto md:mx-0">
+          <h2 className="text-xs md:text-sm font-black text-blue-600 uppercase tracking-widest mb-3 md:mb-4">Showcase Utama</h2>
+          <h3 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight">Karya Terbaik Tersorot</h3>
+        </div>
+        <div className="mt-6 md:mt-0 hidden md:block">
+          <Link to="/projects" className="inline-flex items-center gap-2 px-6 py-3 bg-white text-slate-800 font-bold border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors shadow-sm">
+            Semua Portfolio <span className="text-blue-600">→</span>
           </Link>
         </div>
-        <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 text-sm font-semibold text-slate-500">
-          <span className="flex items-center gap-2"><span className="text-blue-500">✔</span> Government Website Development</span>
-          <span className="flex items-center gap-2"><span className="text-blue-500">✔</span> Modern Web Application</span>
-          <span className="flex items-center gap-2"><span className="text-blue-500">✔</span> Data Portal & Dashboard</span>
-          <span className="flex items-center gap-2"><span className="text-blue-500">✔</span> Clean & Scalable System</span>
-        </div>
       </div>
-    </div>
-    <div className="absolute top-1/4 left-0 w-96 h-96 bg-blue-300/20 rounded-full blur-3xl -translate-x-1/2"></div>
-    <div className="absolute bottom-0 right-0 w-96 h-96 bg-sky-300/20 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
-  </section>
-);
 
-const ExperienceSection = () => {
-  const stats = [
-    { label: 'Projects Completed', value: '4+', color: 'text-blue-600' },
-    { label: 'Technologies Used', value: 'React • Express • PHP • MySQL', color: 'text-slate-800', isText: true },
-    { label: 'Domains', value: 'Government • Creative • Corporate', color: 'text-slate-800', isText: true },
-  ];
-  return (
-    <section className="py-12 bg-white border-b border-slate-100">
-      <div className="container mx-auto px-6">
-        <div className="text-center mb-10">
-          <h2 className="text-sm font-bold text-slate-400 uppercase tracking-widest">Experience in Digital System Development</h2>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          {stats.map((stat, index) => (
-            <div key={index} className="bg-slate-50 p-6 rounded-2xl border border-slate-100 text-center hover:border-blue-200 transition-colors">
-              <div className={`mb-2 font-black ${stat.isText ? 'text-lg md:text-xl' : 'text-4xl md:text-5xl'} ${stat.color}`}>{stat.value}</div>
-              <div className="text-sm font-medium text-slate-500">{stat.label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-};
+      <div className="bg-[#0F172A] rounded-[2rem] md:rounded-[3rem] p-6 md:p-14 flex flex-col lg:flex-row gap-8 md:gap-12 items-center relative overflow-hidden shadow-2xl shadow-blue-900/10 border border-slate-800">
+        {/* Glow Effects */}
+        <div className="absolute top-0 right-0 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-blue-600/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3"></div>
+        <div className="absolute bottom-0 left-0 w-[300px] md:w-[400px] h-[300px] md:h-[400px] bg-indigo-600/20 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/4"></div>
 
-const AboutSection = () => (
-  <section id="about" className="py-24 bg-white">
-    <div className="container mx-auto px-6">
-      <div className="flex flex-col lg:flex-row items-center gap-16 max-w-6xl mx-auto">
-        <div className="w-full lg:w-1/2 relative">
-          <div className="aspect-square md:aspect-[4/3] bg-slate-100 rounded-3xl overflow-hidden relative border border-slate-200 shadow-inner flex items-center justify-center">
-            <div className="absolute inset-0 bg-gradient-to-tr from-blue-100 to-sky-50 opacity-50"></div>
-            <div className="relative z-10 text-center">
-              <div className="text-6xl mb-4">💻</div>
-              <div className="text-xl font-bold text-slate-800">MBNP Tech</div>
-              <div className="text-sm font-medium text-blue-600">Digital Transformation</div>
-            </div>
+        <div className="w-full lg:w-[45%] relative z-10 text-center lg:text-left pt-4 lg:pt-0">
+          <div className="inline-block px-3 py-1.5 bg-blue-500/20 text-blue-300 border border-blue-500/30 rounded-lg text-[10px] md:text-xs font-bold uppercase tracking-wider mb-4 md:mb-6">
+            Creative Portfolio Studio
           </div>
-          <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-[radial-gradient(#CBD5E1_2px,transparent_2px)] [background-size:8px_8px] rounded-full"></div>
-        </div>
-        <div className="w-full lg:w-1/2">
-          <h2 className="text-sm font-bold text-blue-600 uppercase tracking-widest mb-3">About MBNP Tech</h2>
-          <h3 className="text-3xl md:text-4xl font-black text-slate-900 mb-6 leading-tight">
-            Membangun Ekosistem Digital yang <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-sky-500">Scalable & Modern</span>
-          </h3>
-          <div className="space-y-4 text-slate-600 leading-relaxed text-lg">
-            <p>MBNP Tech merupakan layanan pengembangan website dan sistem informasi yang berfokus pada pembuatan solusi digital modern untuk organisasi, bisnis, dan instansi pemerintahan.</p>
-            <p>Dengan pendekatan teknologi modern seperti <strong>React, Express.js,</strong> dan sistem database yang terstruktur, kami membantu membangun sistem yang cepat, <em>scalable</em>, dan mudah digunakan.</p>
-            <p>Kami tidak hanya membuat website, tetapi juga membangun portal data, sistem administrasi digital, dan aplikasi berbasis web untuk mendukung transformasi digital secara menyeluruh.</p>
+          <h3 className="text-3xl md:text-5xl font-black text-white mb-4 md:mb-6 leading-tight">Picme Studio</h3>
+          <p className="text-slate-400 text-sm md:text-lg leading-relaxed mb-6 md:mb-8">
+            Platform portfolio interaktif dengan performa render dinamis yang dirancang khusus untuk menampilkan layanan fotografi studio kreatif secara elegan.
+          </p>
+          <div className="flex flex-wrap justify-center lg:justify-start gap-2 md:gap-3 mb-8 md:mb-10">
+            {['React', 'Express.js', 'Tailwind', 'Dynamic Gallery'].map((tech, i) => (
+              <span key={i} className="px-3 py-1.5 md:px-4 md:py-2 bg-white/5 border border-white/10 rounded-xl text-slate-300 text-xs md:text-sm font-medium">
+                {tech}
+              </span>
+            ))}
           </div>
-        </div>
-      </div>
-    </div>
-  </section>
-);
-
-const ServicesSection = () => {
-  const services = [
-    { icon: "🌐", title: "Website Development", description: "Pembuatan website modern untuk organisasi dan bisnis.", features: ["Responsive Design", "Modern UI", "SEO Friendly", "Fast Performance"] },
-    { icon: "⚙️", title: "Sistem Informasi", description: "Pengembangan sistem berbasis web untuk administrasi digital.", features: ["Sistem Manajemen Data", "Dashboard Monitoring", "Sistem Administrasi"] },
-    { icon: "📊", title: "Portal Data & Dashboard", description: "Pengembangan portal data publik dan dashboard analitik.", features: ["Visualisasi Data", "Grafik Statistik", "Manajemen Dataset"] },
-    { icon: "📱", title: "Web Application", description: "Pengembangan aplikasi berbasis web untuk kebutuhan operasional bisnis yang kompleks.", features: ["Custom Workflow", "API Integration", "Secure Architecture"] }
-  ];
-  return (
-    <section id="services" className="py-24 bg-slate-50 border-y border-slate-100">
-      <div className="container mx-auto px-6 max-w-6xl">
-        <div className="text-center mb-16">
-          <h2 className="text-sm font-bold text-blue-600 uppercase tracking-widest mb-3">Our Services</h2>
-          <h3 className="text-3xl md:text-4xl font-black text-slate-900">Solusi Teknologi Terintegrasi</h3>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {services.map((service, index) => (
-            <div key={index} className="bg-white p-8 rounded-3xl border border-slate-200 hover:shadow-xl hover:shadow-slate-200/50 hover:border-blue-200 transition-all duration-300 group">
-              <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center text-3xl mb-6 group-hover:scale-110 transition-transform">{service.icon}</div>
-              <h4 className="text-xl font-bold text-slate-900 mb-3">{service.title}</h4>
-              <p className="text-slate-600 mb-6 leading-relaxed">{service.description}</p>
-              <ul className="space-y-2">
-                {service.features.map((feature, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm font-medium text-slate-500">
-                    <span className="text-blue-500 text-xs">✔</span> {feature}
-                  </li>
-                ))}
-              </ul>
+          <a href="https://picmestudio.id/" target="_blank" rel="noopener noreferrer" className="group inline-flex w-full sm:w-auto justify-center items-center gap-3 px-6 md:px-8 py-3.5 md:py-4 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-500 transition-all shadow-lg shadow-blue-600/30">
+            Kunjungi Website
+            <div className="w-6 h-6 md:w-8 md:h-8 rounded-full bg-white/20 flex items-center justify-center group-hover:translate-x-1 transition-transform">
+              <span className="text-xs md:text-sm">↗</span>
             </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-};
-
-const FeaturedProject = () => (
-  <section className="py-24 bg-white">
-    <div className="container mx-auto px-6 max-w-6xl">
-      <div className="mb-12">
-        <div className="flex items-center gap-3 mb-4">
-          <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
-          <span className="text-sm font-bold text-slate-500 uppercase tracking-widest">Featured Creative Project</span>
-        </div>
-        <h2 className="text-3xl md:text-5xl font-black text-slate-900">Picme Studio</h2>
-      </div>
-      <div className="bg-blue-500 rounded-[2.5rem] overflow-hidden flex flex-col lg:flex-row shadow-2xl">
-        <div className="w-full lg:w-1/2 p-10 md:p-16 flex flex-col justify-center relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-fuchsia-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
-          <div className="relative z-10">
-            <p className="text-slate-200 text-lg leading-relaxed mb-6">Picme Studio adalah platform digital interaktif yang dirancang khusus untuk studio kreatif. Website ini tidak hanya berfungsi sebagai portfolio karya, tetapi juga sebagai hub interaksi dengan klien.</p>
-            <p className="text-slate-200 leading-relaxed mb-8">Dibangun menggunakan arsitektur modern berbasis React dan Express.js, sistem ini menjamin performa render gambar yang sangat cepat dan pengalaman pengguna (UX) yang mulus.</p>
-            <div className="space-y-3 mb-10">
-              <div className="flex items-center gap-3 text-slate-300"><span className="w-6 h-6 rounded bg-white text-green-500 flex items-center justify-center text-xs">✓</span>Dynamic Portfolio Gallery</div>
-              <div className="flex items-center gap-3 text-slate-300"><span className="w-6 h-6 rounded bg-white text-green-500 flex items-center justify-center text-xs">✓</span>Service & Pricing Showcase</div>
-              <div className="flex items-center gap-3 text-slate-300"><span className="w-6 h-6 rounded bg-white text-green-500 flex items-center justify-center text-xs">✓</span>Fast Image Rendering</div>
-              <div className="flex items-center gap-3 text-slate-300"><span className="w-6 h-6 rounded bg-white text-green-500 flex items-center justify-center text-xs">✓</span>Express.js Backend Integration</div>
-            </div>
-            <a href="https://picmestudio.id/" target="_blank" rel="noopener noreferrer" className="inline-block px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/30">
-              Kunjungi Website →
-            </a>
-          </div>
+          </a>
         </div>
 
-        {/* 📸 BAGIAN GAMBAR YANG DIPERBARUI */}
-        <div className="w-full lg:w-1/2 bg-slate-900 p-6 md:p-10 flex items-center justify-center border-l border-slate-800">
-          <div className="w-full aspect-[4/3] bg-[#0F172A] rounded-2xl border border-slate-700 shadow-2xl overflow-hidden flex flex-col group">
-            {/* Browser Header Mockup */}
-            <div className="h-8 bg-slate-800 border-b border-slate-700 flex items-center px-4 gap-2 shrink-0">
-              <div className="w-2.5 h-2.5 rounded-full bg-red-500/50"></div>
-              <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/50"></div>
-              <div className="w-2.5 h-2.5 rounded-full bg-green-500/50"></div>
-              <div className="ml-2 px-3 py-1 bg-slate-900/50 rounded-md">
-                 <div className="w-24 h-1.5 bg-slate-700 rounded-full"></div>
+        {/* Browser Mockup */}
+        <div className="w-full lg:w-[55%] relative z-10">
+          <div className="rounded-xl md:rounded-2xl bg-slate-800/80 backdrop-blur-xl border border-slate-700/80 shadow-2xl overflow-hidden transform transition-transform hover:-translate-y-2 hover:scale-[1.02] duration-500 group">
+            <div className="h-8 md:h-10 bg-slate-900 border-b border-slate-700/80 flex items-center px-3 md:px-4 gap-1.5 md:gap-2">
+              <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-[#FF5F56]"></div>
+              <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-[#FFBD2E]"></div>
+              <div className="w-2.5 h-2.5 md:w-3 md:h-3 rounded-full bg-[#27C93F]"></div>
+              <div className="ml-2 md:ml-4 flex-1 flex justify-center">
+                <div className="w-2/3 md:w-1/2 h-4 md:h-5 bg-slate-800 rounded-md border border-slate-700 text-[8px] md:text-[10px] text-slate-500 flex items-center justify-center tracking-widest font-mono">picmestudio.id</div>
               </div>
             </div>
-            {/* Image Content */}
-            <div className="flex-1 overflow-hidden relative bg-slate-900">
-              <img 
-                src="/p1.jpeg" 
-                alt="Picme Studio Preview" 
-                className="w-full h-full object-cover object-top group-hover:scale-110 transition-transform duration-700 ease-in-out" 
-              />
-              {/* Overlay agar teks di atas gambar (jika ada) lebih terbaca */}
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div className="relative overflow-hidden aspect-[4/3] bg-slate-900">
+              <img src="/p1.jpeg" alt="Picme Preview" className="w-full h-full object-cover object-top border-none group-hover:scale-105 transition-transform duration-700" />
             </div>
           </div>
         </div>
+      </div>
+      
+      {/* Mobile only "See All" button */}
+      <div className="mt-8 text-center md:hidden">
+        <Link to="/projects" className="inline-flex w-full justify-center items-center gap-2 px-6 py-4 bg-white text-slate-800 font-bold border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors shadow-sm">
+          Semua Portfolio <span className="text-blue-600">→</span>
+        </Link>
       </div>
     </div>
   </section>
 );
 
-const ProjectsSection = () => {
+const OtherProjectsSection = () => {
   const projects = [
-    { title: "Portal Garut Satu Data", category: "Government", tech: ["React", "PHP"], description: "Portal data terpadu resmi Pemerintah Kabupaten Garut yang bertujuan untuk menyediakan akses data publik secara transparan dan terintegrasi. Dirancang dengan antarmuka modern dan responsif." },
-    { title: "Picme Studio", category: "Creative Platform", tech: ["React", "Express.js"], description: "Platform digital untuk studio kreatif Picme Studio yang menampilkan layanan fotografi dan portfolio karya. Sistem dibangun menggunakan arsitektur modern untuk performa cepat." },
-    { title: "IMN Business Group", category: "Corporate Profile", tech: ["React", "Express.js"], description: "Website profil perusahaan profesional untuk IMN Business Group yang dirancang untuk merepresentasikan kredibilitas bisnis secara modern dengan backend yang stabil." },
-    { title: "Bidang Statistik Garut", category: "Internal Government", tech: ["Next.js", "Express.js", "MySQL"], description: "Website Internal Bidang Statistik Diskominfo Kabupaten Garut yang menyediakan identitas bidang dan serta dokumentasi kegiatan bidang statistik." }
+    { title: "Portal Garut Satu Data", category: "Government", tech: ["React", "PHP API"] },
+    { title: "IMN Business Group", category: "Corporate", tech: ["React", "Express.js"] },
+    { title: "Statistik Diskominfo", category: "Internal App", tech: ["Next.js", "MySQL"] }
   ];
   return (
-    <section id="projects" className="py-24 bg-slate-50 border-t border-slate-100">
-      <div className="container mx-auto px-6 max-w-6xl">
-        <div className="mb-16">
-          <h2 className="text-sm font-bold text-blue-600 uppercase tracking-widest mb-3">Project Showcase</h2>
-          <h3 className="text-3xl md:text-4xl font-black text-slate-900">Karya Terbaik Kami</h3>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {projects.map((project, index) => (
-            <div key={index} className="bg-white rounded-[2rem] p-8 md:p-10 border border-slate-200 hover:shadow-2xl hover:shadow-slate-200 hover:-translate-y-1 transition-all duration-300 flex flex-col h-full">
-              <div className="flex justify-between items-start mb-6">
-                <span className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-bold uppercase tracking-wider rounded-full">{project.category}</span>
-                <div className="flex gap-2">
-                  {project.tech.map((t, i) => <span key={i} className="px-2 py-1 bg-slate-100 text-slate-600 text-[10px] font-bold uppercase rounded">{t}</span>)}
-                </div>
+    <section className="py-16 md:py-24 bg-white">
+      <div className="container mx-auto px-4 md:px-6 max-w-6xl">
+        <h3 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight mb-8 md:mb-10 text-center">Lebih Banyak Projek</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+          {projects.map((p, i) => (
+            <div key={i} className="bg-slate-50 border border-slate-200 rounded-[1.5rem] md:rounded-[2rem] p-6 md:p-8 hover:shadow-xl hover:shadow-slate-200 hover:-translate-y-1 transition-all">
+              <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-[10px] font-black uppercase tracking-wider rounded-lg mb-3 md:mb-4">{p.category}</span>
+              <h4 className="text-lg md:text-xl font-black text-slate-800 mb-3 md:mb-4">{p.title}</h4>
+              <div className="flex flex-wrap gap-2">
+                {p.tech.map((t, idx) => <span key={idx} className="bg-white border border-slate-200 text-slate-500 text-[10px] font-bold px-2 py-1 rounded-md">{t}</span>)}
               </div>
-              <h4 className="text-2xl font-bold text-slate-900 mb-4">{project.title}</h4>
-              <p className="text-slate-600 leading-relaxed mb-8 flex-grow">{project.description}</p>
-              <button className="self-start font-bold text-blue-600 hover:text-blue-800 flex items-center gap-2 group">
-                Kunjungi Website <span className="group-hover:translate-x-1 transition-transform">→</span>
-              </button>
             </div>
           ))}
         </div>
@@ -222,102 +211,62 @@ const ProjectsSection = () => {
   );
 };
 
-const TechStackSection = () => {
-  const stacks = [
-    { title: "Frontend", items: ["React", "Next.js", "Tailwind CSS", "JavaScript"] },
-    { title: "Backend", items: ["Node.js", "Express.js", "PHP", "Laravel"] },
-    { title: "Database", items: ["MySQL", "PostgreSQL", "Laragon", "MongoDB"] },
-    { title: "Tools", items: ["Git", "Linux Server", "REST API", "Docker"] }
-  ];
-  return (
-    <section className="py-24 bg-white">
-      <div className="container mx-auto px-6 max-w-5xl text-center">
-        <h2 className="text-sm font-bold text-blue-600 uppercase tracking-widest mb-3">Technology Stack</h2>
-        <h3 className="text-3xl md:text-4xl font-black text-slate-900 mb-16">Teknologi Modern & Handal</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {stacks.map((category, index) => (
-            <div key={index} className="p-6 rounded-2xl bg-slate-50 border border-slate-100 text-left">
-              <h4 className="font-bold text-slate-900 mb-4 border-b border-slate-200 pb-2">{category.title}</h4>
-              <ul className="space-y-3">
-                {category.items.map((item, i) => (
-                  <li key={i} className="flex items-center gap-2 text-slate-600 font-medium text-sm">
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>{item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-        </div>
+const FlowSection = () => (
+  <section className="py-16 md:py-24 bg-[#0F172A] text-white overflow-hidden relative border-t border-slate-800">
+    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 mix-blend-overlay pointer-events-none"></div>
+    <div className="container mx-auto px-4 md:px-6 max-w-6xl relative z-10">
+      <div className="mb-12 md:mb-16 md:w-1/2 text-center md:text-left">
+        <h2 className="text-xs md:text-sm font-bold text-sky-400 uppercase tracking-widest mb-3 md:mb-4">Eksekusi Tanpa Kompromi</h2>
+        <h3 className="text-3xl md:text-5xl font-black text-white tracking-tight">Alur Kerja Sistematis</h3>
       </div>
-    </section>
-  );
-};
-
-const WorkflowSection = () => {
-  const steps = [
-    { num: "01", title: "Konsultasi", desc: "Diskusi mendalam mengenai kebutuhan sistem atau website Anda." },
-    { num: "02", title: "Perencanaan", desc: "Perancangan arsitektur sistem, struktur database, dan desain UI/UX." },
-    { num: "03", title: "Development", desc: "Tahap pengkodean menggunakan teknologi modern dan best practices." },
-    { num: "04", title: "Deployment", desc: "Sistem di-deploy ke server, diuji, dan siap digunakan oleh publik." },
-    { num: "05", title: "Maintenance", desc: "Support teknis berkala dan pengembangan fitur lanjutan." }
-  ];
-  return (
-    <section className="py-24 bg-slate-900 text-white relative overflow-hidden">
-      <div className="container mx-auto px-6 max-w-6xl relative z-10">
-        <div className="mb-16 md:w-1/2">
-          <h2 className="text-sm font-bold text-sky-400 uppercase tracking-widest mb-3">Cara Kerja Kami</h2>
-          <h3 className="text-3xl md:text-4xl font-black text-white">Alur Kerja yang Sistematis & Transparan</h3>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-          {steps.map((step, index) => (
-            <div key={index} className="relative">
-              <div className="text-5xl font-black text-slate-800 mb-4">{step.num}</div>
-              <h4 className="text-lg font-bold text-white mb-2">{step.title}</h4>
-              <p className="text-sm text-slate-400 leading-relaxed">{step.desc}</p>
-              {index < steps.length - 1 && <div className="hidden md:block absolute top-6 left-12 w-full h-[1px] bg-slate-800"></div>}
-            </div>
-          ))}
-        </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 md:gap-8">
+        {[
+          { n: "01", t: "Diskusi & Riset", d: "Memahami visi dan kebutuhan kompleks sistem Anda." },
+          { n: "02", t: "Arsitektur", d: "Merancang fondasi UI/UX dan struktur database yang kokoh." },
+          { n: "03", t: "Development", d: "Membangun dengan teknologi terbaru dan clean code." },
+          { n: "04", t: "Deploy & Scale", d: "Uji coba menyeluruh dan perilisan ke production." }
+        ].map((s, idx) => (
+          <div key={idx} className="relative group text-center md:text-left border-b md:border-none border-slate-800 pb-6 md:pb-0 last:border-none">
+            <div className="text-5xl md:text-6xl font-black text-slate-800/80 mb-3 md:mb-4 group-hover:text-blue-500/20 transition-colors">{s.n}</div>
+            <h4 className="text-lg md:text-xl font-bold text-white mb-2 md:mb-3">{s.t}</h4>
+            <p className="text-sm md:text-base text-slate-400 font-medium leading-relaxed max-w-xs mx-auto md:mx-0">{s.d}</p>
+            {idx < 3 && <div className="hidden md:block absolute top-10 left-16 right-4 h-[1px] bg-gradient-to-r from-slate-700 to-transparent"></div>}
+          </div>
+        ))}
       </div>
-    </section>
-  );
-};
+    </div>
+  </section>
+);
 
-const CTASection = () => (
-  <section className="py-24 bg-white">
-    <div className="container mx-auto px-6 max-w-4xl text-center">
-      <h2 className="text-4xl md:text-5xl font-black text-slate-900 mb-6">
-        Bangun Website atau Sistem <span className="text-blue-600">Digital Anda</span>
+const ModernCTAButton = () => (
+  <section className="py-20 md:py-32 bg-white relative overflow-hidden">
+    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] md:w-[800px] md:h-[800px] bg-gradient-to-tr from-blue-100/50 to-purple-100/50 rounded-full blur-3xl -z-10"></div>
+    <div className="container mx-auto px-4 md:px-6 max-w-4xl text-center relative z-10">
+      <h2 className="text-4xl sm:text-5xl md:text-7xl font-black text-slate-900 mb-6 md:mb-8 tracking-tight">
+        Siap Kolaborasi <br className="hidden sm:block" />
+        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Level Selanjutnya?</span>
       </h2>
-      <p className="text-xl text-slate-600 mb-10 max-w-2xl mx-auto leading-relaxed">
-        MBNP Tech siap membantu mengembangkan website dan sistem informasi modern untuk bisnis, organisasi, dan instansi Anda.
+      <p className="text-base sm:text-lg md:text-2xl text-slate-600 mb-8 md:mb-12 max-w-2xl mx-auto font-medium px-4">
+        Jadwalkan diskusi santai tentang visi digital Anda dan mari buat eksekusi yang nyata.
       </p>
-      <Link to="/contact" className="inline-block px-10 py-5 bg-blue-600 text-white rounded-2xl font-black text-lg hover:bg-blue-700 hover:shadow-2xl hover:shadow-blue-200 hover:-translate-y-1 transition-all">
+      <Link to="/contact" className="inline-flex items-center justify-center gap-2 md:gap-3 px-8 md:px-12 py-4 md:py-6 bg-slate-900 text-white rounded-[1.5rem] md:rounded-[2rem] font-black text-lg md:text-xl hover:bg-black hover:shadow-2xl hover:shadow-slate-900/30 hover:-translate-y-1 transition-all group border border-slate-700 shadow-xl w-full sm:w-auto">
         Konsultasi Sekarang
+        <span className="group-hover:translate-x-1 transition-transform">🚀</span>
       </Link>
-      <div className="mt-12 flex flex-wrap justify-center gap-6 text-sm font-bold text-slate-400">
-        <span className="flex items-center gap-2"><span className="text-green-500">✔</span> Modern Tech Stack</span>
-        <span className="flex items-center gap-2"><span className="text-green-500">✔</span> Clean Code</span>
-        <span className="flex items-center gap-2"><span className="text-green-500">✔</span> Scalable Architecture</span>
-      </div>
     </div>
   </section>
 );
 
 // --- MAIN HOME COMPONENT ---
-
 const Home = () => {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen font-sans selection:bg-blue-200 selection:text-blue-900">
       <HeroSection />
-      <ExperienceSection />
-      <AboutSection />
-      <ServicesSection />
-      <FeaturedProject />
-      <ProjectsSection />
-      <TechStackSection />
-      <WorkflowSection />
-      <CTASection />
+      <FeaturesBentoSection />
+      <FeaturedProjectSection />
+      <OtherProjectsSection />
+      <FlowSection />
+      <ModernCTAButton />
     </div>
   );
 };

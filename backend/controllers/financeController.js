@@ -1,12 +1,13 @@
 // backend/controllers/financeController.js
 const db = require('../config/db');
+// Import logActivity dari activityController
+const { logActivity } = require('./activityController');
 
 const addQuickFinance = async (req, res) => {
   const { date, category, description, amount, type } = req.body;
   
   try {
     let userId;
-    
     if (req.user && req.user.id) {
       userId = req.user.id;
     } else {
@@ -20,6 +21,10 @@ const addQuickFinance = async (req, res) => {
     const query = 'INSERT INTO finances (user_id, date, category, description, amount, type) VALUES (?, ?, ?, ?, ?, ?)';
     await db.promise().query(query, [userId, date, category, description || '', amount, type]);
     
+    // --- LOG ACTIVITY ---
+    const actionType = type === 'income' ? 'Pemasukan' : 'Pengeluaran';
+    await logActivity(userId, 'finance', 'create', `${actionType} Baru`, `${actionType} sebesar Rp${amount} dicatat.`, { category, amount, description });
+
     res.status(201).json({ success: true, message: 'Transaksi berhasil dicatat!' });
   } catch (error) {
     console.error('❌ Database Error Detail:', error);
@@ -68,7 +73,7 @@ const getFullFinanceStats = async (req, res) => {
       success: true,
       data: {
         summary: { balance, monthIncome, monthExpense },
-        debts: debts, // Array Hutang
+        debts: debts, 
         totalDebtRemaining, 
         transactions,
         barChart,
@@ -78,7 +83,6 @@ const getFullFinanceStats = async (req, res) => {
   } catch (error) { res.status(500).json({ success: false, message: 'Server error' }); }
 };
 
-// Tambah Hutang Baru
 const addDebt = async (req, res) => {
   const { name, totalAmount, dueDate } = req.body;
   try {
@@ -86,11 +90,14 @@ const addDebt = async (req, res) => {
       'INSERT INTO debts (user_id, name, total_amount, remaining_amount, due_date) VALUES (?, ?, ?, ?, ?)', 
       [req.user.id, name, totalAmount, totalAmount, dueDate || null]
     );
+    
+    // --- LOG ACTIVITY ---
+    await logActivity(req.user.id, 'finance', 'create', 'Hutang Baru Dicatat', `Hutang: ${name}`, { amount: totalAmount });
+
     res.status(201).json({ success: true, message: 'Hutang ditambahkan!' });
   } catch (error) { res.status(500).json({ success: false, message: 'Gagal menambah hutang' }); }
 };
 
-// Edit Hutang Spesifik
 const updateDebt = async (req, res) => {
   const { name, newTotalAmount, dueDate } = req.body;
   try {
@@ -104,6 +111,10 @@ const updateDebt = async (req, res) => {
         'UPDATE debts SET name = ?, total_amount = ?, remaining_amount = ?, due_date = ? WHERE id = ?', 
         [name, newTotalAmount, newRemaining, dueDate || null, req.params.id]
       );
+      
+      // --- LOG ACTIVITY ---
+      await logActivity(req.user.id, 'finance', 'update', 'Edit Total Hutang', `Hutang ${name} diperbarui.`, { new_total: newTotalAmount });
+
       res.status(200).json({ success: true, message: 'Hutang diperbarui!' });
     } else {
       res.status(404).json({ success: false, message: 'Hutang tidak ditemukan' });
@@ -111,15 +122,17 @@ const updateDebt = async (req, res) => {
   } catch (error) { res.status(500).json({ success: false, message: 'Gagal update hutang' }); }
 };
 
-// Hapus Hutang Spesifik
 const deleteDebt = async (req, res) => {
   try {
     await db.promise().query('DELETE FROM debts WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
+    
+    // --- LOG ACTIVITY ---
+    await logActivity(req.user.id, 'finance', 'delete', 'Hutang Dihapus', 'Satu riwayat hutang telah dihapus permanen.');
+
     res.status(200).json({ success: true, message: 'Hutang dihapus!' });
   } catch (error) { res.status(500).json({ success: false, message: 'Gagal menghapus hutang' }); }
 };
 
-// Bayar Hutang Spesifik
 const payDebt = async (req, res) => {
   const { debtId, amount } = req.body;
   try {
@@ -127,6 +140,10 @@ const payDebt = async (req, res) => {
       'UPDATE debts SET remaining_amount = remaining_amount - ? WHERE id = ? AND user_id = ?', 
       [amount, debtId, req.user.id]
     );
+
+    // --- LOG ACTIVITY ---
+    await logActivity(req.user.id, 'finance', 'complete', 'Cicilan Dibayar', `Melakukan pembayaran cicilan sebesar Rp${amount}.`, { amount });
+
     res.status(200).json({ success: true, message: 'Pembayaran berhasil!' });
   } catch (error) { res.status(500).json({ success: false, message: 'Gagal bayar hutang' }); }
 };
@@ -134,11 +151,14 @@ const payDebt = async (req, res) => {
 const deleteTransaction = async (req, res) => {
   try {
     await db.promise().query('DELETE FROM finances WHERE id = ? AND user_id = ?', [req.params.id, req.user.id]);
+    
+    // --- LOG ACTIVITY ---
+    await logActivity(req.user.id, 'finance', 'delete', 'Transaksi Dihapus', 'Satu baris riwayat transaksi dihapus.');
+
     res.status(200).json({ success: true, message: 'Transaksi dihapus!' });
   } catch (error) { res.status(500).json({ success: false, message: 'Gagal menghapus transaksi' }); }
 };
 
-// Edit Transaksi Terakhir
 const updateTransaction = async (req, res) => {
   const { type, amount, category, date, description } = req.body;
   try {
@@ -146,6 +166,10 @@ const updateTransaction = async (req, res) => {
       'UPDATE finances SET type = ?, amount = ?, category = ?, date = ?, description = ? WHERE id = ? AND user_id = ?', 
       [type, amount, category, date, description, req.params.id, req.user.id]
     );
+
+    // --- LOG ACTIVITY ---
+    await logActivity(req.user.id, 'finance', 'update', 'Transaksi Diedit', `Perubahan data transaksi pada kategori ${category}.`);
+
     res.status(200).json({ success: true, message: 'Transaksi diperbarui!' });
   } catch (error) { res.status(500).json({ success: false, message: 'Gagal update transaksi' }); }
 };

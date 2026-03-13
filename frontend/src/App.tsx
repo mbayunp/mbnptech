@@ -19,7 +19,10 @@ import FinanceQuickAdd from './pages/public/FinanceQuickAdd';
 
 // Import Admin/Dashboard Pages
 import Dashboard from './pages/admin/Dashboard';
+import Activity from './pages/admin/Activity';
 import Finance from './pages/admin/Finance';
+import Todo from './pages/admin/Todo';
+import LifePlan from './pages/admin/LifePlan';
 // import FinanceList from './pages/dashboard/finance/FinanceList';
 
 function App() {
@@ -43,7 +46,11 @@ function App() {
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<Dashboard />} /> 
           <Route path="dashboard" element={<Dashboard />} />
+          <Route path="activity" element={<Activity />} />
+
           <Route path="finance" element={<Finance />} />
+          <Route path="todo" element={<Todo />} />
+          <Route path="planing" element={<LifePlan />} />
           
           {/* Nanti route lain ditambahkan di sini, contoh: */}
           {/* <Route path="finance" element={<FinanceList />} /> */}
