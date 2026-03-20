@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import { API_URL } from '../config/api';
 import {
   FaThLarge, FaWallet, FaTasks, FaFolderOpen, FaEnvelope, 
   FaCog, FaSignOutAlt, FaBars, FaBell, FaSearch, FaGlobe, 
@@ -49,7 +50,7 @@ const AdminLayout = () => {
   const fetchNotifications = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:5000/api/inquiries', {
+      const res = await fetch(`${API_URL}/api/inquiries`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const result = await res.json();

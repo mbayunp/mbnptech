@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import { API_URL } from '../../config/api';
 import { 
   FaRocket, FaStar, FaGraduationCap, 
   FaBriefcase, FaMoneyBillWave, FaHeart, 
@@ -33,7 +34,7 @@ const LifePlan = () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return navigate('/login');
-      const res = await fetch('http://localhost:5000/api/life/plans', { headers: { 'Authorization': `Bearer ${token}` } });
+      const res = await fetch(`${API_URL}/api/life/plans`, { headers: { 'Authorization': `Bearer ${token}` } });
       const result = await res.json();
       if (res.status === 401 || res.status === 403) { localStorage.removeItem('token'); navigate('/login'); return; }
       if (result.success) setPlans(result.data);
@@ -88,7 +89,7 @@ const LifePlan = () => {
     if (formValues) {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch('http://localhost:5000/api/life/plans', {
+        const res = await fetch(`${API_URL}/api/life/plans`, {
           method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify(formValues)
         });
@@ -138,7 +139,7 @@ const LifePlan = () => {
     // Jika Klik Update (Biru)
     if (result.isConfirmed) {
       try {
-        const res = await fetch(`http://localhost:5000/api/life/plans/${item.id}`, {
+        const res = await fetch(`${API_URL}/api/life/plans/${item.id}`, {
           method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(result.value)
         });
         if (res.ok) { Swal.fire({ icon: 'success', title: 'Diperbarui!', toast: true, position: 'top-end', timer: 1500, showConfirmButton: false }); fetchLifePlans(); }
@@ -149,7 +150,7 @@ const LifePlan = () => {
       const confirmDelete = await Swal.fire({ title: 'Yakin Hapus?', text: "Data ini tidak bisa dikembalikan.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33' });
       if (confirmDelete.isConfirmed) {
         try {
-          const res = await fetch(`http://localhost:5000/api/life/plans/${item.id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+          const res = await fetch(`${API_URL}/api/life/plans/${item.id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
           if (res.ok) { Swal.fire({ icon: 'success', title: 'Dihapus!', toast: true, position: 'top-end', timer: 1500, showConfirmButton: false }); fetchLifePlans(); }
         } catch (err) { Swal.fire('Error', 'Gagal menghapus', 'error'); }
       }

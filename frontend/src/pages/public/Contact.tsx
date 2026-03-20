@@ -12,6 +12,7 @@ import {
   FaArrowRight
 } from 'react-icons/fa';
 import Swal from 'sweetalert2';
+import { API_URL } from '../../config/api';
 
 const Contact = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -37,7 +38,7 @@ const Contact = () => {
 
     try {
       // 1. POST Data ke Database via API
-      const res = await fetch('http://localhost:5000/api/inquiries', {
+      const res = await fetch(`${API_URL}/api/inquiries`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: nama, email, phone, service: layanan, budget, message: pesan })

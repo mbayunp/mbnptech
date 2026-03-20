@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import { API_URL } from '../../config/api';
 import {
     FaFire, FaCheckCircle, FaCalendarCheck,
     FaChartLine, FaPlus, FaTimes, FaTrophy, FaEdit, FaTrash
@@ -33,7 +34,7 @@ const Habits = () => {
             const token = localStorage.getItem('token');
             if (!token) return navigate('/login');
 
-            const res = await fetch('http://localhost:5000/api/life/habits', {
+            const res = await fetch(`${API_URL}/api/life/habits`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const result = await res.json();
@@ -119,7 +120,7 @@ const Habits = () => {
                 setLogs([...logs, { habit_id: habitId, log_date: todayStr }]);
             }
 
-            await fetch('http://localhost:5000/api/life/habits/toggle', {
+            await fetch(`${API_URL}/api/life/habits/toggle`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ habit_id: habitId, log_date: todayStr })
@@ -162,7 +163,7 @@ const Habits = () => {
         if (formValues) {
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch('http://localhost:5000/api/life/habits', {
+                const res = await fetch(`${API_URL}/api/life/habits`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify(formValues)
                 });
@@ -210,7 +211,7 @@ const Habits = () => {
 
         if (result.isConfirmed) {
             try {
-                const res = await fetch(`http://localhost:5000/api/life/habits/${habit.id}`, {
+                const res = await fetch(`${API_URL}/api/life/habits/${habit.id}`, {
                     method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(result.value)
                 });
                 if (res.ok) { Swal.fire({ icon: 'success', title: 'Diperbarui!', toast: true, position: 'top-end', timer: 1500, showConfirmButton: false }); fetchHabits(); }
@@ -219,7 +220,7 @@ const Habits = () => {
             const confirmDelete = await Swal.fire({ title: 'Hapus Habit?', text: "Data log juga akan terhapus.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33' });
             if (confirmDelete.isConfirmed) {
                 try {
-                    const res = await fetch(`http://localhost:5000/api/life/habits/${habit.id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                    const res = await fetch(`${API_URL}/api/life/habits/${habit.id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
                     if (res.ok) { Swal.fire({ icon: 'success', title: 'Dihapus!', toast: true, position: 'top-end', timer: 1500, showConfirmButton: false }); fetchHabits(); }
                 } catch (err) { Swal.fire('Error', 'Gagal hapus', 'error'); }
             }

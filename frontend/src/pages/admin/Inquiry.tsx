@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import { API_URL } from '../../config/api';
 import { 
   FaEnvelope, FaWhatsapp, FaUser, FaPhoneAlt, 
   FaBriefcase, FaMoneyBillWave, FaTrash, FaCheckCircle, 
@@ -31,7 +32,7 @@ const Inquiry = () => {
       const token = localStorage.getItem('token');
       if (!token) return navigate('/login');
 
-      const res = await fetch('http://localhost:5000/api/inquiries', {
+      const res = await fetch(`${API_URL}/api/inquiries`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const result = await res.json();
@@ -54,7 +55,7 @@ const Inquiry = () => {
   const handleUpdateStatus = async (id: number, newStatus: string) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:5000/api/inquiries/${id}/status`, {
+      const res = await fetch(`${API_URL}/api/inquiries/${id}/status`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ status: newStatus })
@@ -71,7 +72,7 @@ const Inquiry = () => {
     if (confirm.isConfirmed) {
       try {
         const token = localStorage.getItem('token');
-        const res = await fetch(`http://localhost:5000/api/inquiries/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+        const res = await fetch(`${API_URL}/api/inquiries/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
         if (res.ok) {
           fetchInquiries();
           Swal.fire({ icon: 'success', title: 'Dihapus!', toast: true, position: 'top-end', timer: 1500, showConfirmButton: false });

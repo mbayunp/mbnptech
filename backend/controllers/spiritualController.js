@@ -2,7 +2,7 @@
 const db = require('../config/db');
 const { logActivity } = require('./activityController');
 
-// 1. GET ALL SPIRITUAL DATA (Hari Ini)
+// 1. GET ALL SPIRITUAL DATA (Hari Ini + Riwayat 7 Hari)
 const getSpiritualData = async (req, res) => {
   const userId = req.user.id;
   try {
@@ -19,6 +19,20 @@ const getSpiritualData = async (req, res) => {
     // Ambil Refleksi hari ini
     const [reflection] = await dbPromise.query('SELECT * FROM spiritual_reflections WHERE user_id = ? AND log_date = CURRENT_DATE()', [userId]);
 
+    // ==========================================
+    // [BARU] AMBIL RIWAYAT 7 HARI TERAKHIR
+    // ==========================================
+    const [historyLogs] = await dbPromise.query(`
+      SELECT 
+        DATE_FORMAT(i.log_date, '%Y-%m-%d') as log_date,
+        i.subuh, i.dzuhur, i.ashar, i.maghrib, i.isya,
+        a.dzikir_pagi, a.dzikir_petang, a.istighfar, a.sholawat, a.sedekah
+      FROM ibadah_daily i
+      LEFT JOIN amalan_daily a ON i.user_id = a.user_id AND i.log_date = a.log_date
+      WHERE i.user_id = ? AND i.log_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 7 DAY)
+      ORDER BY i.log_date ASC
+    `, [userId]);
+
     res.status(200).json({
       success: true,
       data: {
@@ -26,20 +40,21 @@ const getSpiritualData = async (req, res) => {
         amalan: amalan[0] || {},
         quran: quran[0] || { surah: 'Al-Fatihah', ayat: 1, page: 1, juz: 1 },
         doa,
-        reflection: reflection[0] || { gratitude: '', mistake: '', improvement: '', mood: '' }
+        reflection: reflection[0] || { gratitude: '', mistake: '', improvement: '', mood: '' },
+        history: historyLogs // Data ini akan ditangkap oleh Frontend untuk kalender
       }
     });
   } catch (error) {
+    console.error("Spiritual Get Data Error:", error);
     res.status(500).json({ success: false, message: 'Gagal mengambil data spiritual' });
   }
 };
 
 // 2. TOGGLE IBADAH (Insert jika belum ada, Update jika ada)
 const toggleIbadah = async (req, res) => {
-  const { field } = req.body; // misal: 'subuh', 'puasa_senin'
+  const { field } = req.body; 
   const userId = req.user.id;
   try {
-    // Validasi field untuk mencegah SQL Injection
     const validFields = ['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya', 'dhuha', 'tahajud', 'puasa_senin', 'puasa_kamis'];
     if (!validFields.includes(field)) return res.status(400).json({ success: false });
 
@@ -115,4 +130,44 @@ const updateReflection = async (req, res) => {
   } catch (error) { res.status(500).json({ success: false }); }
 };
 
-module.exports = { getSpiritualData, toggleIbadah, toggleAmalan, updateQuran, addDoa, deleteDoa, updateReflection };
+// 6. UPDATE HISTORY (Edit data hari sebelumnya)
+const updateHistory = async (req, res) => {
+  const { log_date, ibadah, amalan } = req.body;
+  const userId = req.user.id;
+  
+  if (!log_date) return res.status(400).json({ success: false, message: 'Tanggal diperlukan' });
+
+  try {
+    const dbPromise = db.promise();
+    
+    // 1. Upsert (Update or Insert) Ibadah
+    await dbPromise.query(`
+      INSERT INTO ibadah_daily (user_id, log_date, subuh, dzuhur, ashar, maghrib, isya) 
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+      ON DUPLICATE KEY UPDATE subuh=?, dzuhur=?, ashar=?, maghrib=?, isya=?
+    `, [
+      userId, log_date, 
+      ibadah.subuh || false, ibadah.dzuhur || false, ibadah.ashar || false, ibadah.maghrib || false, ibadah.isya || false,
+      ibadah.subuh || false, ibadah.dzuhur || false, ibadah.ashar || false, ibadah.maghrib || false, ibadah.isya || false
+    ]);
+
+    // 2. Upsert Amalan
+    await dbPromise.query(`
+      INSERT INTO amalan_daily (user_id, log_date, dzikir_pagi, dzikir_petang, istighfar, sholawat, sedekah) 
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+      ON DUPLICATE KEY UPDATE dzikir_pagi=?, dzikir_petang=?, istighfar=?, sholawat=?, sedekah=?
+    `, [
+      userId, log_date, 
+      amalan.dzikir_pagi || false, amalan.dzikir_petang || false, amalan.istighfar || false, amalan.sholawat || false, amalan.sedekah || false,
+      amalan.dzikir_pagi || false, amalan.dzikir_petang || false, amalan.istighfar || false, amalan.sholawat || false, amalan.sedekah || false
+    ]);
+
+    await logActivity(userId, 'life_planning', 'update', 'Edit Riwayat Spiritual', `Memperbarui riwayat ibadah pada tanggal ${log_date}`);
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Gagal memperbarui riwayat' });
+  }
+};
+
+module.exports = { getSpiritualData, toggleIbadah, toggleAmalan, updateQuran, addDoa, deleteDoa, updateReflection, updateHistory };

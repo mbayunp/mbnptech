@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import { API_URL } from '../../config/api';
 import { 
   FaUser, FaLock, FaCog, FaBell, FaMosque, 
   FaWallet, FaDatabase, FaShieldAlt, FaSave, FaSignOutAlt, FaDownload, FaTrashAlt
@@ -35,7 +36,7 @@ const Settings = () => {
       const token = localStorage.getItem('token');
       if (!token) return navigate('/login');
 
-      const res = await fetch('http://localhost:5000/api/settings', {
+      const res = await fetch(`${API_URL}/api/settings`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const result = await res.json();
@@ -60,7 +61,7 @@ const Settings = () => {
   const handleUpdateProfile = async () => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('http://localhost:5000/api/settings/profile', {
+      const res = await fetch(`${API_URL}/api/settings/profile`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(profile)
@@ -72,7 +73,7 @@ const Settings = () => {
   const handleUpdateSystem = async () => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('http://localhost:5000/api/settings/system', {
+      const res = await fetch(`${API_URL}/api/settings/system`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(system)
@@ -84,7 +85,7 @@ const Settings = () => {
   const handleUpdateSpiritual = async () => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('http://localhost:5000/api/settings/spiritual', {
+      const res = await fetch(`${API_URL}/api/settings/spiritual`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(spiritual)
@@ -99,7 +100,7 @@ const Settings = () => {
     }
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('http://localhost:5000/api/settings/security/password', {
+      const res = await fetch(`${API_URL}/api/settings/security/password`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ oldPassword: passwords.oldPassword, newPassword: passwords.newPassword })
@@ -117,7 +118,7 @@ const Settings = () => {
   const handleExportData = async () => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('http://localhost:5000/api/settings/export', {
+      const res = await fetch(`${API_URL}/api/settings/export`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const result = await res.json();

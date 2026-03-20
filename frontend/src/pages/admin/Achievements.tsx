@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
+import { API_URL } from '../../config/api';
 import {
     FaTrophy, FaPlus, FaBriefcase, FaGraduationCap,
     FaLaptopCode, FaWallet, FaStar, FaListUl, FaThLarge,
@@ -34,7 +35,7 @@ const Achievements = () => {
             const token = localStorage.getItem('token');
             if (!token) return navigate('/login');
 
-            const res = await fetch('http://localhost:5000/api/life/achievements', {
+            const res = await fetch(`${API_URL}/api/life/achievements`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const result = await res.json();
@@ -92,7 +93,7 @@ const Achievements = () => {
         if (formValues) {
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch('http://localhost:5000/api/life/achievements', {
+                const res = await fetch(`${API_URL}/api/life/achievements`, {
                     method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify(formValues)
                 });
@@ -109,7 +110,7 @@ const Achievements = () => {
         if (confirm.isConfirmed) {
             try {
                 const token = localStorage.getItem('token');
-                const res = await fetch(`http://localhost:5000/api/life/achievements/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                const res = await fetch(`${API_URL}/api/life/achievements/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
                 if (res.ok) {
                     Swal.fire({ icon: 'success', title: 'Dihapus', toast: true, position: 'top-end', timer: 1000, showConfirmButton: false });
                     fetchAchievements();
