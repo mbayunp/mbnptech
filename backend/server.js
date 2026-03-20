@@ -18,6 +18,10 @@ const authRoutes = require('./routes/authRoutes');
 const todoRoutes = require('./routes/todoRoutes');
 const lifeRoutes = require('./routes/lifeRoutes');
 const activityRoutes = require('./routes/activityRoutes');
+const spiritualRoutes = require('./routes/spiritualRoutes');
+const inquiryRoutes = require('./routes/inquiryRoutes');
+const settingsRoutes = require('./routes/settingsRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes')
 
 // Gunakan Routes
 app.use('/api/auth', authRoutes);
@@ -27,6 +31,10 @@ app.use('/api/finances', financeRoutes);
 app.use('/api/todos', require('./routes/todoRoutes'));
 app.use('/api/life', require('./routes/lifeRoutes'));
 app.use('/api/activities', require('./routes/activityRoutes'));
+app.use('/api/spiritual', spiritualRoutes);
+app.use('/api/inquiries', require('./routes/inquiryRoutes'));
+app.use('/api/settings', settingsRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Route Dasar
 app.get('/', (req, res) => {

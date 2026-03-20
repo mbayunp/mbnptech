@@ -24,8 +24,10 @@ import Finance from './pages/admin/Finance';
 import Todo from './pages/admin/Todo';
 import LifePlan from './pages/admin/LifePlan';
 import Habits from './pages/admin/Habits';
+import Spiritual from './pages/admin/Spiritual';
 import Achievements from './pages/admin/Achievements';
-// import FinanceList from './pages/dashboard/finance/FinanceList';
+import Inquiry from './pages/admin/Inquiry';
+import Settings from './pages/admin/Settings';
 
 function App() {
   return (
@@ -55,6 +57,9 @@ function App() {
           <Route path="planing" element={<LifePlan />} />
           <Route path="habits" element={<Habits />} />
           <Route path="achievements" element={<Achievements />} />
+          <Route path="spiritual" element={<Spiritual />} />
+          <Route path="inquiry" element={<Inquiry />} />
+          <Route path="settings" element={<Settings />} />
 
           {/* Nanti route lain ditambahkan di sini, contoh: */}
           {/* <Route path="finance" element={<FinanceList />} /> */}

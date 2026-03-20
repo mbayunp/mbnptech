@@ -1,291 +1,195 @@
 // src/pages/admin/Dashboard.tsx
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
-  FaWallet, FaArrowDown, FaArrowUp, FaCreditCard, 
-  FaPlus, FaCheckCircle, FaRegCircle, FaBriefcase, 
-  FaCommentDots, FaClock, FaChartPie
+  FaWallet, FaArrowDown, FaCheckCircle, FaFire, 
+  FaCommentDots, FaClock, FaChartPie, FaMosque, FaTasks, 
+  FaChevronRight, FaRocket, FaTrophy, FaCreditCard 
 } from 'react-icons/fa';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
-// --- WIDGET COMPONENTS ---
-
-const DashboardOverview = () => {
-  const cards = [
-    { title: "Total Saldo", amount: "Rp 3.200.000", desc: "Saldo bulan ini", icon: <FaWallet />, color: "blue" },
-    { title: "Pengeluaran", amount: "Rp 1.200.000", desc: "Bulan ini", icon: <FaArrowDown />, color: "red" },
-    { title: "Pemasukan", amount: "Rp 2.400.000", desc: "Bulan ini", icon: <FaArrowUp />, color: "emerald" },
-    { title: "Sisa Hutang", amount: "Rp 1.400.000", desc: "Total hutang", icon: <FaCreditCard />, color: "orange" },
-  ];
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-      {cards.map((card, idx) => (
-        <div key={idx} className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow">
-          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shrink-0 bg-${card.color}-50 text-${card.color}-600`}>
-            {card.icon}
-          </div>
-          <div>
-            <p className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-1">{card.title}</p>
-            <h4 className="text-xl font-black text-slate-800">{card.amount}</h4>
-            <p className="text-xs text-slate-500 mt-1">{card.desc}</p>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-};
-
-const FinancialChart = () => {
-  const data = [
-    { name: 'Jan', Income: 4000, Expense: 2400 },
-    { name: 'Feb', Income: 3000, Expense: 1398 },
-    { name: 'Mar', Income: 2000, Expense: 9800 },
-    { name: 'Apr', Income: 2780, Expense: 3908 },
-    { name: 'May', Income: 1890, Expense: 4800 },
-    { name: 'Jun', Income: 2390, Expense: 3800 },
-  ];
-
-  return (
-    <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm col-span-1 lg:col-span-2">
-      <h3 className="text-lg font-black text-slate-800 mb-6 flex items-center justify-between">
-        Statistik Keuangan
-        <select className="text-sm font-normal text-slate-500 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1 outline-none">
-          <option>6 Bulan Terakhir</option>
-          <option>Tahun Ini</option>
-        </select>
-      </h3>
-      <div className="h-72 w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 5, right: 0, left: -20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
-            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748B', fontSize: 12}} dy={10} />
-            <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748B', fontSize: 12}} />
-            <Tooltip cursor={{fill: '#F1F5F9'}} contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}}/>
-            <Legend iconType="circle" wrapperStyle={{fontSize: '12px', paddingTop: '20px'}} />
-            <Bar dataKey="Income" fill="#10B981" radius={[4, 4, 0, 0]} maxBarSize={40} />
-            <Bar dataKey="Expense" fill="#EF4444" radius={[4, 4, 0, 0]} maxBarSize={40} />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
-  );
-};
-
-const DebtTracker = () => {
-  const percent = 28; // (400k / 1.4m) * 100
-
-  return (
-    <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col justify-between">
-      <div>
-        <h3 className="text-lg font-black text-slate-800 mb-6">Debt Tracker</h3>
-        <div className="space-y-4 mb-6">
-          <div className="flex justify-between items-center pb-4 border-b border-slate-100">
-            <span className="text-slate-500 font-medium text-sm">Total Hutang Awal</span>
-            <span className="font-bold text-slate-800">Rp 1.400.000</span>
-          </div>
-          <div className="flex justify-between items-center pb-4 border-b border-slate-100">
-            <span className="text-slate-500 font-medium text-sm">Sudah Dibayar</span>
-            <span className="font-bold text-emerald-500">Rp 400.000</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-slate-500 font-medium text-sm">Sisa Hutang</span>
-            <span className="font-black text-red-500 text-lg">Rp 1.000.000</span>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <div className="flex justify-between text-xs font-bold text-slate-500 mb-2">
-          <span>Progress Pelunasan</span>
-          <span>{percent}%</span>
-        </div>
-        <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
-          <div className="bg-orange-500 h-3 rounded-full transition-all duration-1000" style={{ width: `${percent}%` }}></div>
-        </div>
-        <button className="w-full mt-6 py-3 bg-slate-50 text-blue-600 font-bold text-sm rounded-xl hover:bg-blue-50 transition-colors border border-blue-100">
-          + Catat Pembayaran
-        </button>
-      </div>
-    </div>
-  );
-};
-
-const TodoListWidget = () => {
-  const todos = [
-    { text: "Belajar React 1 jam", done: false, priority: "high" },
-    { text: "Update Portfolio", done: false, priority: "medium" },
-    { text: "Menabung 100rb", done: false, priority: "low" },
-    { text: "Olahraga pagi", done: true, priority: "medium" },
-  ];
-
-  return (
-    <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-lg font-black text-slate-800">Target Hari Ini</h3>
-        <span className="text-xs font-bold bg-blue-100 text-blue-600 px-3 py-1 rounded-lg">1 / 4 Selesai</span>
-      </div>
-      
-      <div className="space-y-3 mb-6">
-        {todos.map((todo, idx) => (
-          <div key={idx} className={`flex items-center gap-3 p-3 rounded-xl border ${todo.done ? 'bg-slate-50 border-transparent' : 'border-slate-100 hover:border-blue-200'} transition-colors cursor-pointer`}>
-            {todo.done ? <FaCheckCircle className="text-emerald-500 text-lg shrink-0" /> : <FaRegCircle className="text-slate-300 text-lg shrink-0 hover:text-blue-400" />}
-            <span className={`flex-1 text-sm font-medium ${todo.done ? 'text-slate-400 line-through' : 'text-slate-700'}`}>{todo.text}</span>
-            {!todo.done && (
-              <span className={`w-2 h-2 rounded-full shrink-0 ${todo.priority === 'high' ? 'bg-red-500' : todo.priority === 'medium' ? 'bg-orange-400' : 'bg-blue-400'}`}></span>
-            )}
-          </div>
-        ))}
-      </div>
-      <button className="w-full py-3 bg-blue-600 text-white font-bold text-sm rounded-xl hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
-        <FaPlus /> Tambah Task
-      </button>
-    </div>
-  );
-};
-
-const ProjectsWidget = () => {
-  const projects = [
-    { name: "Portal Garut Satu Data", status: "Published", color: "emerald" },
-    { name: "UKBI Garut 2026", status: "Active", color: "blue" },
-    { name: "Picme Studio", status: "Published", color: "emerald" },
-    { name: "IMN Business Group", status: "Published", color: "emerald" },
-  ];
-
-  return (
-    <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
-      <h3 className="text-lg font-black text-slate-800 mb-6 flex items-center gap-2">
-        <FaBriefcase className="text-slate-400" /> Projects Overview
-      </h3>
-      <div className="space-y-4 flex-1">
-        {projects.map((proj, idx) => (
-          <div key={idx} className="flex justify-between items-center p-4 bg-slate-50 rounded-xl border border-slate-100">
-            <span className="text-sm font-bold text-slate-700">{proj.name}</span>
-            <span className={`text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md bg-${proj.color}-100 text-${proj.color}-600`}>
-              {proj.status}
-            </span>
-          </div>
-        ))}
-      </div>
-      <button className="w-full mt-6 py-3 bg-slate-50 text-slate-600 font-bold text-sm rounded-xl hover:bg-slate-100 transition-colors border border-slate-200">
-        Kelola Portfolio →
-      </button>
-    </div>
-  );
-};
-
-const InquiryWidget = () => (
-  <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-    <h3 className="text-lg font-black text-slate-800 mb-6 flex items-center gap-2">
-      <FaCommentDots className="text-slate-400" /> Pesan Masuk (Inquiry)
-    </h3>
-    <div className="space-y-4 mb-6">
-      {/* Sample Message */}
-      <div className="p-4 border border-slate-100 rounded-xl hover:shadow-md transition-shadow cursor-pointer relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-1 h-full bg-blue-500"></div>
-        <div className="flex justify-between items-start mb-2">
-          <h4 className="text-sm font-bold text-slate-800">Andi (andi@email.com)</h4>
-          <span className="text-xs font-medium text-slate-400">10 Menit lalu</span>
-        </div>
-        <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
-          Halo Mas Bayu, saya tertarik ingin membuat website company profile untuk bisnis konveksi saya. Kira-kira estimasinya berapa ya?
-        </p>
-      </div>
-      <div className="p-4 border border-slate-100 rounded-xl bg-slate-50 opacity-60">
-        <div className="flex justify-between items-start mb-2">
-          <h4 className="text-sm font-bold text-slate-800">Dinas XYZ</h4>
-          <span className="text-xs font-medium text-slate-400">Kemarin</span>
-        </div>
-        <p className="text-xs text-slate-500 line-clamp-1">Tanya terkait maintenance sistem...</p>
-      </div>
-    </div>
-    <button className="w-full py-2 text-blue-600 text-sm font-bold hover:underline">
-      Lihat Semua Pesan
-    </button>
-  </div>
-);
-
-const RecentActivity = () => (
-  <div className="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-    <h3 className="text-lg font-black text-slate-800 mb-6 flex items-center gap-2">
-      <FaClock className="text-slate-400" /> Aktivitas Terbaru
-    </h3>
-    <div className="relative border-l-2 border-slate-100 ml-3 space-y-6 pb-4">
-      
-      <div className="relative pl-6">
-        <div className="absolute -left-[9px] top-0.5 w-4 h-4 rounded-full bg-red-100 border-2 border-white flex items-center justify-center">
-          <div className="w-1.5 h-1.5 rounded-full bg-red-500"></div>
-        </div>
-        <p className="text-sm text-slate-700">Menambahkan pengeluaran <span className="font-bold">Rp 50.000</span> (Kopi)</p>
-        <p className="text-xs text-slate-400 mt-1">Hari ini, 08:30 WIB</p>
-      </div>
-
-      <div className="relative pl-6">
-        <div className="absolute -left-[9px] top-0.5 w-4 h-4 rounded-full bg-blue-100 border-2 border-white flex items-center justify-center">
-          <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
-        </div>
-        <p className="text-sm text-slate-700">Menambahkan task <span className="font-bold">"Belajar React"</span></p>
-        <p className="text-xs text-slate-400 mt-1">Kemarin, 20:15 WIB</p>
-      </div>
-
-      <div className="relative pl-6">
-        <div className="absolute -left-[9px] top-0.5 w-4 h-4 rounded-full bg-emerald-100 border-2 border-white flex items-center justify-center">
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
-        </div>
-        <p className="text-sm text-slate-700">Status Project <span className="font-bold">Picme Studio</span> diubah menjadi Published</p>
-        <p className="text-xs text-slate-400 mt-1">10 Maret 2026</p>
-      </div>
-
-    </div>
-  </div>
-);
-
-const QuickActions = () => (
-  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
-    <button className="p-4 bg-white border border-slate-200 border-dashed rounded-xl text-slate-500 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 transition-all flex flex-col items-center justify-center gap-2 font-bold text-sm">
-      <FaWallet className="text-xl" /> + Transaksi
-    </button>
-    <button className="p-4 bg-white border border-slate-200 border-dashed rounded-xl text-slate-500 hover:text-emerald-600 hover:border-emerald-300 hover:bg-emerald-50 transition-all flex flex-col items-center justify-center gap-2 font-bold text-sm">
-      <FaCheckCircle className="text-xl" /> + Todo Task
-    </button>
-    <button className="p-4 bg-white border border-slate-200 border-dashed rounded-xl text-slate-500 hover:text-indigo-600 hover:border-indigo-300 hover:bg-indigo-50 transition-all flex flex-col items-center justify-center gap-2 font-bold text-sm">
-      <FaBriefcase className="text-xl" /> + Project Baru
-    </button>
-    <button className="p-4 bg-slate-900 border border-slate-900 rounded-xl text-white hover:bg-slate-800 transition-all flex flex-col items-center justify-center gap-2 font-bold text-sm shadow-lg">
-      <FaChartPie className="text-xl" /> Laporan Full
-    </button>
-  </div>
-);
-
-// --- MAIN PAGE COMPONENT ---
-
 const Dashboard = () => {
+  const navigate = useNavigate();
+  const [data, setData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [userName, setUserName] = useState('User');
+
+  useEffect(() => {
+    const userStr = localStorage.getItem('user');
+    if (userStr) setUserName(JSON.parse(userStr).name.split(' ')[0]);
+
+    const fetchDashboard = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch('http://localhost:5000/api/dashboard/summary', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const result = await res.json();
+        if (result.success) setData(result.data);
+      } catch (err) { console.error(err); }
+      finally { setIsLoading(false); }
+    };
+    fetchDashboard();
+  }, []);
+
+  if (isLoading || !data) return <div className="flex h-96 items-center justify-center"><div className="animate-spin w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full"></div></div>;
+
+  // Fungsi Helper untuk format IDR agar konsisten menggunakan titik
+  const formatIDR = (val: any) => {
+    return Number(val).toLocaleString('id-ID');
+  };
+
+  const cards = [
+    { title: "Total Saldo", val: `Rp ${formatIDR(data.finance.balance)}`, icon: <FaWallet />, color: "blue" },
+    { title: "Pengeluaran", val: `Rp ${formatIDR(data.finance.expense)}`, icon: <FaArrowDown />, color: "red" },
+    { title: "Habits Hari Ini", val: data.productivity.habits_status, icon: <FaFire />, color: "orange" },
+    { title: "Pesan Baru", val: `${data.unread_inquiry} Leads`, icon: <FaCommentDots />, color: "indigo" },
+  ];
+
   return (
-    <div className="max-w-7xl mx-auto pb-12">
-      <div className="mb-8">
-        <h2 className="text-2xl font-black text-slate-800">Welcome back, Bayu! 👋</h2>
-        <p className="text-slate-500 mt-1">Berikut adalah ringkasan aktivitas dan finansial Anda hari ini.</p>
+    <div className="max-w-7xl mx-auto pb-12 selection:bg-blue-100">
+      
+      {/* 1️⃣ Greeting & Header */}
+      <div className="mb-8 flex justify-between items-end">
+        <div>
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight">Osu, {userName}! 👋</h2>
+          <p className="text-slate-500 font-medium mt-1">Ini adalah ringkasan progres hidup dan bisnis Anda.</p>
+        </div>
+        <div className="hidden md:block text-right">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Update Terakhir</p>
+          <p className="text-sm font-black text-slate-800">{new Date().toLocaleTimeString('id-ID', {hour: '2-digit', minute:'2-digit'})} WIB</p>
+        </div>
       </div>
 
-      <DashboardOverview />
+      {/* 2️⃣ Core Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {cards.map((card, idx) => (
+          <div key={idx} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-all">
+            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shrink-0 bg-${card.color}-50 text-${card.color}-600`}>{card.icon}</div>
+            <div>
+              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">{card.title}</p>
+              <h4 className="text-xl font-black text-slate-800">{card.val}</h4>
+            </div>
+          </div>
+        ))}
+      </div>
 
-      {/* Grid 1: Keuangan (Chart & Debt) */}
+      {/* 3️⃣ Life Priority Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+        <div onClick={() => navigate('/admin/planing')} className="lg:col-span-3 bg-gradient-to-r from-blue-600 to-indigo-700 p-6 md:p-8 rounded-[2.5rem] text-white flex flex-col md:flex-row justify-between items-center shadow-xl shadow-blue-500/20 cursor-pointer hover:scale-[1.01] transition-transform">
+          <div className="flex items-center gap-6 mb-4 md:mb-0">
+            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center text-3xl backdrop-blur-md border border-white/10">🚀</div>
+            <div>
+              <p className="text-xs font-bold text-blue-200 uppercase tracking-widest mb-1">Target Hidup Utama (Life Plan)</p>
+              <h3 className="text-xl md:text-2xl font-black">{data.life_goal.title}</h3>
+            </div>
+          </div>
+          <div className="w-full md:w-72">
+            <div className="flex justify-between text-xs font-bold mb-2 uppercase text-blue-100">
+              <span>Progress Capaian</span>
+              <span>{data.life_goal.progress}%</span>
+            </div>
+            <div className="w-full bg-black/20 rounded-full h-3 overflow-hidden border border-white/10">
+              <div className="bg-white h-full rounded-full transition-all duration-1000" style={{ width: `${data.life_goal.progress}%` }}></div>
+            </div>
+          </div>
+        </div>
+
+        <div onClick={() => navigate('/admin/achievements')} className="bg-white p-6 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col justify-center items-center text-center cursor-pointer hover:bg-slate-50 transition-colors">
+          <div className="w-12 h-12 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center text-2xl mb-3">🏆</div>
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Achievement Terakhir</p>
+          <h4 className="text-sm font-black text-slate-800 line-clamp-2 leading-tight">{data.latest_achievement}</h4>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <FinancialChart />
-        <DebtTracker />
+        {/* 4️⃣ Financial Chart */}
+        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm lg:col-span-2">
+          <div className="flex justify-between items-center mb-8">
+            <h3 className="text-lg font-black text-slate-800 flex items-center gap-2"><FaChartPie className="text-blue-500"/> Cashflow Analysis</h3>
+            <div className="flex items-center gap-4">
+               <div className="text-right">
+                  <p className="text-[10px] font-bold text-slate-400 uppercase">Sisa Hutang</p>
+                  <p className="text-sm font-black text-rose-500 flex items-center gap-1">
+                    <FaCreditCard size={10}/> Rp {formatIDR(data.finance.debt)}
+                  </p>
+               </div>
+            </div>
+          </div>
+          <div className="h-72 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data.chartData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#94A3B8', fontSize: 11, fontWeight: 'bold'}} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{fill: '#94A3B8', fontSize: 10}} />
+                <Tooltip 
+                  cursor={{fill: '#F8FAFC'}} 
+                  contentStyle={{borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)'}} 
+                  formatter={(value) => formatIDR(value)}
+                />
+                <Legend verticalAlign="top" align="right" iconType="circle" wrapperStyle={{paddingBottom: '20px', fontSize: '10px', fontWeight: 'bold'}} />
+                <Bar dataKey="Income" fill="#10B981" radius={[4, 4, 0, 0]} maxBarSize={30} />
+                <Bar dataKey="Expense" fill="#F43F5E" radius={[4, 4, 0, 0]} maxBarSize={30} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* 5️⃣ Today's Spiritual Widget */}
+        <div className="bg-slate-900 p-8 rounded-[2.5rem] shadow-xl text-white relative overflow-hidden flex flex-col justify-between">
+          <div className="absolute top-0 right-0 w-40 h-40 bg-emerald-500/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
+          <div>
+            <h3 className="text-lg font-black mb-6 flex items-center gap-2 text-emerald-400"><FaMosque /> Spiritual Today</h3>
+            <div className="space-y-4">
+              {['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya'].map((s) => (
+                <div key={s} className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/10">
+                  <span className="text-sm font-bold capitalize text-slate-300">{s}</span>
+                  {data.spiritual[s] ? <FaCheckCircle className="text-emerald-400" /> : <div className="w-4 h-4 rounded-full border-2 border-white/20"></div>}
+                </div>
+              ))}
+            </div>
+          </div>
+          <button onClick={() => navigate('/admin/spiritual')} className="mt-6 w-full py-4 bg-emerald-500 text-slate-900 font-black rounded-2xl text-xs hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/20">Update Progress</button>
+        </div>
       </div>
 
-      {/* Grid 2: Produktivitas & Portfolio */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <TodoListWidget />
-        <ProjectsWidget />
-      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* 6️⃣ Task & Productivity */}
+        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm flex flex-col justify-between">
+          <div>
+            <h3 className="text-lg font-black text-slate-800 mb-6 flex items-center gap-2"><FaTasks className="text-indigo-500"/> Tasks Pending</h3>
+            <div className="bg-indigo-50 p-8 rounded-[2.5rem] text-center border border-indigo-100">
+              <h4 className="text-5xl font-black text-indigo-600 mb-1">{data.productivity.pending_tasks}</h4>
+              <p className="text-xs font-bold text-indigo-400 uppercase tracking-widest">Tugas di Board</p>
+            </div>
+          </div>
+          <button onClick={() => navigate('/admin/todo')} className="mt-6 w-full py-4 bg-slate-900 text-white rounded-2xl font-bold text-xs flex items-center justify-center gap-2 hover:bg-slate-800 transition-all">
+            Kelola Pekerjaan <FaChevronRight size={10}/>
+          </button>
+        </div>
 
-      {/* Grid 3: Komunikasi & Log */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <InquiryWidget />
-        <RecentActivity />
+        {/* 7️⃣ Recent Activity Log */}
+        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm lg:col-span-2">
+          <h3 className="text-lg font-black text-slate-800 mb-6 flex items-center gap-2"><FaClock className="text-slate-400" /> Aktivitas Terbaru Sistem</h3>
+          <div className="space-y-5">
+            {data.recentLogs.map((log: any) => (
+              <div key={log.id} className="flex items-start gap-4 group cursor-pointer" onClick={() => navigate('/admin/activity')}>
+                <div className="w-11 h-11 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400 shrink-0 group-hover:bg-blue-50 group-hover:text-blue-600 transition-all group-hover:scale-110">
+                  <FaClock size={14}/>
+                </div>
+                <div className="flex-1 border-b border-slate-50 pb-3">
+                  <div className="flex justify-between items-start">
+                    <p className="text-sm font-bold text-slate-700 leading-snug">{log.title}</p>
+                    <span className="text-[10px] font-bold text-slate-300 uppercase tracking-tighter">{log.module}</span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 font-medium mt-0.5">{log.description} • {new Date(log.created_at).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'})}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <button onClick={() => navigate('/admin/activity')} className="mt-4 text-xs font-black text-blue-600 uppercase tracking-widest hover:underline">Lihat Semua History Log →</button>
+        </div>
       </div>
-
-      <QuickActions />
 
     </div>
   );

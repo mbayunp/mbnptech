@@ -8,7 +8,6 @@ import {
   FaEnvelope,
   FaMapMarkerAlt,
   FaUser,
-  FaPhoneAlt,
   FaChevronDown,
   FaArrowRight
 } from 'react-icons/fa';
@@ -16,42 +15,65 @@ import Swal from 'sweetalert2';
 
 const Contact = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index);
   };
 
-  const handleWhatsAppSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleWhatsAppSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    
     const form = e.currentTarget;
     const nama = (form.elements.namedItem('nama') as HTMLInputElement).value;
     const email = (form.elements.namedItem('email') as HTMLInputElement).value;
+    const phone = (form.elements.namedItem('phone') as HTMLInputElement).value;
     const layanan = (form.elements.namedItem('layanan') as HTMLSelectElement).value;
     const budget = (form.elements.namedItem('budget') as HTMLSelectElement).value;
     const pesan = (form.elements.namedItem('pesan') as HTMLTextAreaElement).value;
 
     const waText = `Halo MBNP Tech, saya ${nama} (${email}).%0A%0ASaya ingin konsultasi proyek:%0A- Jenis: ${layanan}%0A- Estimasi Budget: ${budget}%0A%0A*Deskripsi Kebutuhan:*%0A${pesan}`;
 
-    Swal.fire({
-      title: 'Kirim Pesan?',
-      text: "Anda akan diarahkan ke WhatsApp untuk melanjutkan konsultasi langsung.",
-      icon: 'question',
-      showCancelButton: true,
-      confirmButtonColor: '#2563EB',
-      cancelButtonColor: '#94a3b8',
-      confirmButtonText: 'Ya, Lanjutkan!',
-      cancelButtonText: 'Batal',
-      customClass: {
-        popup: 'rounded-[2rem]',
-        confirmButton: 'rounded-xl px-6 py-3 font-bold',
-        cancelButton: 'rounded-xl px-6 py-3 font-bold'
+    try {
+      // 1. POST Data ke Database via API
+      const res = await fetch('http://localhost:5000/api/inquiries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: nama, email, phone, service: layanan, budget, message: pesan })
+      });
+
+      if (res.ok) {
+        // 2. Jika sukses tersimpan, tampilkan konfirmasi ke WA
+        Swal.fire({
+          title: 'Pesan Terkirim ke Sistem!',
+          text: "Lanjutkan ke WhatsApp untuk mengobrol langsung dengan developer.",
+          icon: 'success',
+          showCancelButton: true,
+          confirmButtonColor: '#2563EB',
+          cancelButtonColor: '#94a3b8',
+          confirmButtonText: 'Ya, Buka WA!',
+          cancelButtonText: 'Tutup',
+          customClass: {
+            popup: 'rounded-[2rem]',
+            confirmButton: 'rounded-xl px-6 py-3 font-bold',
+            cancelButton: 'rounded-xl px-6 py-3 font-bold'
+          }
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.open(`https://wa.me/6289663933263?text=${waText}`, '_blank');
+          }
+          form.reset();
+        });
+      } else {
+        Swal.fire('Error', 'Gagal mengirim pesan ke sistem. Silakan coba lagi.', 'error');
       }
-    }).then((result) => {
-      if (result.isConfirmed) {
-        window.open(`https://wa.me/6289663933263?text=${waText}`, '_blank');
-        form.reset();
-      }
-    });
+    } catch (error) {
+      console.error(error);
+      Swal.fire('Error', 'Terjadi kesalahan koneksi.', 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const faqs = [
@@ -173,6 +195,10 @@ const Contact = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
                   <div>
+                    <label className="block text-xs md:text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide">Nomor WhatsApp</label>
+                    <input type="text" name="phone" required className="w-full px-5 py-3.5 md:py-4 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-600/10 focus:border-blue-500 outline-none bg-slate-50 font-medium transition-all" placeholder="08..." />
+                  </div>
+                  <div>
                     <label className="block text-xs md:text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide">Jenis Proyek</label>
                     <div className="relative">
                       <select name="layanan" required className="w-full px-5 py-3.5 md:py-4 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-600/10 focus:border-blue-500 outline-none bg-slate-50 font-medium transition-all appearance-none cursor-pointer">
@@ -185,7 +211,9 @@ const Contact = () => {
                       <FaChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs" />
                     </div>
                   </div>
-                  <div>
+                </div>
+
+                <div>
                     <label className="block text-xs md:text-sm font-bold text-slate-700 mb-2 uppercase tracking-wide">Estimasi Budget</label>
                     <div className="relative">
                       <select name="budget" className="w-full px-5 py-3.5 md:py-4 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-600/10 focus:border-blue-500 outline-none bg-slate-50 font-medium transition-all appearance-none cursor-pointer">
@@ -197,7 +225,6 @@ const Contact = () => {
                       </select>
                       <FaChevronDown className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs" />
                     </div>
-                  </div>
                 </div>
 
                 <div>
@@ -205,8 +232,8 @@ const Contact = () => {
                   <textarea name="pesan" required rows={4} className="w-full px-5 py-4 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-600/10 focus:border-blue-500 outline-none bg-slate-50 font-medium transition-all resize-none" placeholder="Ceritakan fitur utama atau masalah yang ingin diselesaikan..."></textarea>
                 </div>
 
-                <button type="submit" className="w-full py-4 md:py-5 bg-blue-600 text-white font-black rounded-2xl hover:bg-blue-700 hover:shadow-xl hover:shadow-blue-600/30 transition-all text-base md:text-lg flex items-center justify-center gap-2 group">
-                  Kirim via WhatsApp <FaWhatsapp className="text-xl group-hover:scale-110 transition-transform" />
+                <button type="submit" disabled={isSubmitting} className="w-full py-4 md:py-5 bg-blue-600 text-white font-black rounded-2xl hover:bg-blue-700 hover:shadow-xl hover:shadow-blue-600/30 transition-all text-base md:text-lg flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed">
+                  {isSubmitting ? 'Mengirim...' : <>Kirim via WhatsApp <FaWhatsapp className="text-xl group-hover:scale-110 transition-transform" /></>}
                 </button>
               </form>
             </div>
