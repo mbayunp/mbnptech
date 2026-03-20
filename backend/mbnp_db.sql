@@ -2,8 +2,8 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1:3307
--- Waktu pembuatan: 13 Mar 2026 pada 11.07
+-- Host: 127.0.0.1
+-- Waktu pembuatan: 20 Mar 2026 pada 05.47
 -- Versi server: 10.4.32-MariaDB
 -- Versi PHP: 8.2.12
 
@@ -109,7 +109,43 @@ INSERT INTO `activity_logs` (`id`, `user_id`, `module`, `action`, `title`, `desc
 (31, 2, 'achievements', 'create', 'Achievement Baru! 🏆', 'Menambahkan pencapaian: Magang BSI Bandung Buah Batu 2.', NULL, '2026-03-13 10:02:40'),
 (32, 2, 'achievements', 'create', 'Achievement Baru! 🏆', 'Menambahkan pencapaian: IT Technical Support PT IMN Business Group.', NULL, '2026-03-13 10:03:23'),
 (33, 2, 'achievements', 'create', 'Achievement Baru! 🏆', 'Menambahkan pencapaian: Programmer Diskominfo Garut.', NULL, '2026-03-13 10:04:28'),
-(34, 2, 'achievements', 'create', 'Achievement Baru! 🏆', 'Menambahkan pencapaian: Rilis Website Bidang Statistik.', NULL, '2026-03-13 10:05:48');
+(34, 2, 'achievements', 'create', 'Achievement Baru! 🏆', 'Menambahkan pencapaian: Rilis Website Bidang Statistik.', NULL, '2026-03-13 10:05:48'),
+(35, 2, 'system', 'login', 'Login Berhasil', 'User Muhammad Bayu Nurdiansyah Putra masuk ke dalam dashboard admin.', NULL, '2026-03-20 03:08:07'),
+(36, 2, 'life_planning', 'update', 'Ibadah Diupdate', 'Mengupdate status ibadah: subuh', NULL, '2026-03-20 03:41:56'),
+(37, 2, 'life_planning', 'update', 'Ibadah Diupdate', 'Mengupdate status ibadah: dzuhur', NULL, '2026-03-20 03:41:57'),
+(38, 2, 'life_planning', 'update', 'Ibadah Diupdate', 'Mengupdate status ibadah: ashar', NULL, '2026-03-20 03:41:58'),
+(39, 2, 'life_planning', 'update', 'Ibadah Diupdate', 'Mengupdate status ibadah: dhuha', NULL, '2026-03-20 03:41:59'),
+(40, 2, 'life_planning', 'update', 'Ibadah Diupdate', 'Mengupdate status ibadah: subuh', NULL, '2026-03-20 03:42:23'),
+(41, 2, 'system', 'delete', 'Lead Dihapus', 'Satu pesan inquiry telah dihapus dari sistem.', NULL, '2026-03-20 04:19:58'),
+(42, 2, 'system', 'delete', 'Lead Dihapus', 'Satu pesan inquiry telah dihapus dari sistem.', NULL, '2026-03-20 04:20:02'),
+(43, 2, 'system', 'delete', 'Lead Dihapus', 'Satu pesan inquiry telah dihapus dari sistem.', NULL, '2026-03-20 04:20:05'),
+(44, 2, 'system', 'delete', 'Lead Dihapus', 'Satu pesan inquiry telah dihapus dari sistem.', NULL, '2026-03-20 04:20:08'),
+(45, 2, 'system', 'update', 'Status Lead Diubah', 'Status inquiry dari Muhammad Bayu Nurdiansyah Putra diubah menjadi Contacted', NULL, '2026-03-20 04:22:38');
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `amalan_daily`
+--
+
+CREATE TABLE `amalan_daily` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `log_date` date NOT NULL,
+  `dzikir_pagi` tinyint(1) DEFAULT 0,
+  `dzikir_petang` tinyint(1) DEFAULT 0,
+  `istighfar` tinyint(1) DEFAULT 0,
+  `sholawat` tinyint(1) DEFAULT 0,
+  `sedekah` tinyint(1) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `amalan_daily`
+--
+
+INSERT INTO `amalan_daily` (`id`, `user_id`, `log_date`, `dzikir_pagi`, `dzikir_petang`, `istighfar`, `sholawat`, `sedekah`, `created_at`) VALUES
+(1, 2, '2026-03-20', 0, 0, 0, 0, 0, '2026-03-20 03:30:18');
 
 -- --------------------------------------------------------
 
@@ -149,6 +185,30 @@ CREATE TABLE `debt_payments` (
   `note` varchar(255) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `doa_pribadi`
+--
+
+CREATE TABLE `doa_pribadi` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `category` varchar(100) DEFAULT NULL,
+  `content` text NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `doa_pribadi`
+--
+
+INSERT INTO `doa_pribadi` (`id`, `user_id`, `title`, `category`, `content`, `created_at`) VALUES
+(1, 2, 'Doa Setelah Sholat', 'Harian', 'Allahumma antassalam waminkassalam tabarakta ya dzal jalali wal ikram.', '2026-03-20 03:30:18'),
+(2, 2, 'Doa Rezeki Lancar', 'Rezeki', 'Allahumma inni as aluka rizqan thayyiban wa ilman nafi\'an wa \'amalan mutaqabbalan.', '2026-03-20 03:30:18'),
+(3, 2, 'Doa Ketika Sedih', 'Emosional', 'Allahumma inni a’udzubika minal hammi wal hazan, wal ‘ajzi wal kasal...', '2026-03-20 03:30:18');
 
 -- --------------------------------------------------------
 
@@ -236,6 +296,61 @@ CREATE TABLE `habit_logs` (
 -- --------------------------------------------------------
 
 --
+-- Struktur dari tabel `ibadah_daily`
+--
+
+CREATE TABLE `ibadah_daily` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `log_date` date NOT NULL,
+  `subuh` tinyint(1) DEFAULT 0,
+  `dzuhur` tinyint(1) DEFAULT 0,
+  `ashar` tinyint(1) DEFAULT 0,
+  `maghrib` tinyint(1) DEFAULT 0,
+  `isya` tinyint(1) DEFAULT 0,
+  `dhuha` tinyint(1) DEFAULT 0,
+  `tahajud` tinyint(1) DEFAULT 0,
+  `puasa_senin` tinyint(1) DEFAULT 0,
+  `puasa_kamis` tinyint(1) DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `ibadah_daily`
+--
+
+INSERT INTO `ibadah_daily` (`id`, `user_id`, `log_date`, `subuh`, `dzuhur`, `ashar`, `maghrib`, `isya`, `dhuha`, `tahajud`, `puasa_senin`, `puasa_kamis`, `created_at`) VALUES
+(1, 2, '2026-03-20', 1, 0, 0, 0, 0, 0, 0, 0, 0, '2026-03-20 03:30:18');
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `inquiries`
+--
+
+CREATE TABLE `inquiries` (
+  `id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `phone` varchar(50) NOT NULL,
+  `service` varchar(100) NOT NULL,
+  `budget` varchar(100) DEFAULT NULL,
+  `message` text NOT NULL,
+  `status` enum('New','Contacted','In Progress','Closed') DEFAULT 'New',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `inquiries`
+--
+
+INSERT INTO `inquiries` (`id`, `name`, `email`, `phone`, `service`, `budget`, `message`, `status`, `created_at`) VALUES
+(5, 'Muhammad Bayu Nurdiansyah Putra', 'muhammadbayunp@gmail.com', '089663933263', 'Website Company Profile', '< 5 juta', 'web ', 'Contacted', '2026-03-20 04:19:42'),
+(6, 'z', 'muhammadbayunp@gmail.com', '089663933263', 'Website Company Profile', '< 5 juta', '12345', 'New', '2026-03-20 04:34:26');
+
+-- --------------------------------------------------------
+
+--
 -- Struktur dari tabel `life_plans`
 --
 
@@ -299,6 +414,98 @@ INSERT INTO `pomodoro_sessions` (`id`, `user_id`, `task_id`, `duration`, `create
 -- --------------------------------------------------------
 
 --
+-- Struktur dari tabel `quran_last_read`
+--
+
+CREATE TABLE `quran_last_read` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `surah` varchar(100) NOT NULL,
+  `ayat` int(11) NOT NULL,
+  `page` int(11) NOT NULL,
+  `juz` int(11) NOT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `quran_last_read`
+--
+
+INSERT INTO `quran_last_read` (`id`, `user_id`, `surah`, `ayat`, `page`, `juz`, `updated_at`) VALUES
+(1, 2, 'Al-Baqarah', 120, 18, 2, '2026-03-20 03:30:18');
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `spiritual_reflections`
+--
+
+CREATE TABLE `spiritual_reflections` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `log_date` date NOT NULL,
+  `gratitude` text DEFAULT NULL,
+  `mistake` text DEFAULT NULL,
+  `improvement` text DEFAULT NULL,
+  `mood` varchar(50) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `spiritual_reflections`
+--
+
+INSERT INTO `spiritual_reflections` (`id`, `user_id`, `log_date`, `gratitude`, `mistake`, `improvement`, `mood`, `created_at`) VALUES
+(1, 2, '2026-03-20', '', NULL, NULL, 'bersyukur', '2026-03-20 03:30:18');
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `spiritual_settings`
+--
+
+CREATE TABLE `spiritual_settings` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `quran_target_page` int(11) DEFAULT 1,
+  `puasa_senin_kamis` tinyint(1) DEFAULT 1,
+  `doa_after_sholat` tinyint(1) DEFAULT 1,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `spiritual_settings`
+--
+
+INSERT INTO `spiritual_settings` (`id`, `user_id`, `quran_target_page`, `puasa_senin_kamis`, `doa_after_sholat`, `updated_at`) VALUES
+(1, 2, 1, 1, 1, '2026-03-20 04:27:26');
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `system_settings`
+--
+
+CREATE TABLE `system_settings` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `theme` varchar(20) DEFAULT 'light',
+  `language` varchar(20) DEFAULT 'id',
+  `time_format` varchar(10) DEFAULT '24h',
+  `default_page` varchar(50) DEFAULT 'dashboard',
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `system_settings`
+--
+
+INSERT INTO `system_settings` (`id`, `user_id`, `theme`, `language`, `time_format`, `default_page`, `updated_at`) VALUES
+(1, 2, 'light', 'id', '24h', 'dashboard', '2026-03-20 04:27:26');
+
+-- --------------------------------------------------------
+
+--
 -- Struktur dari tabel `tasks`
 --
 
@@ -352,6 +559,10 @@ CREATE TABLE `users` (
   `id` int(11) NOT NULL,
   `name` varchar(100) NOT NULL,
   `email` varchar(100) NOT NULL,
+  `phone` varchar(50) DEFAULT NULL,
+  `location` varchar(100) DEFAULT NULL,
+  `bio` text DEFAULT NULL,
+  `photo` varchar(255) DEFAULT NULL,
   `password` varchar(255) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -360,8 +571,8 @@ CREATE TABLE `users` (
 -- Dumping data untuk tabel `users`
 --
 
-INSERT INTO `users` (`id`, `name`, `email`, `password`, `created_at`) VALUES
-(2, 'Muhammad Bayu Nurdiansyah Putra', 'muhammadbayunp@gmail.com', '$2b$10$PcKOb7sTfHFChCxb5x2R2.NaOD90my5nLzKKuzy/nUe2RDadTpjDi', '2026-03-12 10:05:29');
+INSERT INTO `users` (`id`, `name`, `email`, `phone`, `location`, `bio`, `photo`, `password`, `created_at`) VALUES
+(2, 'Muhammad Bayu Nurdiansyah Putra', 'muhammadbayunp@gmail.com', '089663933263', 'Bandung, Cianjur, Garut', 'Full Stack Engineer | React, Next.js, MySQL', NULL, '$2b$10$PcKOb7sTfHFChCxb5x2R2.NaOD90my5nLzKKuzy/nUe2RDadTpjDi', '2026-03-12 10:05:29');
 
 --
 -- Indexes for dumped tables
@@ -382,6 +593,13 @@ ALTER TABLE `activity_logs`
   ADD KEY `user_id` (`user_id`);
 
 --
+-- Indeks untuk tabel `amalan_daily`
+--
+ALTER TABLE `amalan_daily`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_amalan_date` (`user_id`,`log_date`);
+
+--
 -- Indeks untuk tabel `debts`
 --
 ALTER TABLE `debts`
@@ -394,6 +612,13 @@ ALTER TABLE `debts`
 ALTER TABLE `debt_payments`
   ADD PRIMARY KEY (`id`),
   ADD KEY `debt_id` (`debt_id`);
+
+--
+-- Indeks untuk tabel `doa_pribadi`
+--
+ALTER TABLE `doa_pribadi`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `user_id` (`user_id`);
 
 --
 -- Indeks untuk tabel `finances`
@@ -425,6 +650,19 @@ ALTER TABLE `habit_logs`
   ADD KEY `user_id` (`user_id`);
 
 --
+-- Indeks untuk tabel `ibadah_daily`
+--
+ALTER TABLE `ibadah_daily`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_ibadah_date` (`user_id`,`log_date`);
+
+--
+-- Indeks untuk tabel `inquiries`
+--
+ALTER TABLE `inquiries`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indeks untuk tabel `life_plans`
 --
 ALTER TABLE `life_plans`
@@ -438,6 +676,34 @@ ALTER TABLE `pomodoro_sessions`
   ADD PRIMARY KEY (`id`),
   ADD KEY `user_id` (`user_id`),
   ADD KEY `task_id` (`task_id`);
+
+--
+-- Indeks untuk tabel `quran_last_read`
+--
+ALTER TABLE `quran_last_read`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_quran_user` (`user_id`);
+
+--
+-- Indeks untuk tabel `spiritual_reflections`
+--
+ALTER TABLE `spiritual_reflections`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_reflection_date` (`user_id`,`log_date`);
+
+--
+-- Indeks untuk tabel `spiritual_settings`
+--
+ALTER TABLE `spiritual_settings`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_user_spiritual` (`user_id`);
+
+--
+-- Indeks untuk tabel `system_settings`
+--
+ALTER TABLE `system_settings`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `unique_user_setting` (`user_id`);
 
 --
 -- Indeks untuk tabel `tasks`
@@ -474,7 +740,13 @@ ALTER TABLE `achievements`
 -- AUTO_INCREMENT untuk tabel `activity_logs`
 --
 ALTER TABLE `activity_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=35;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
+
+--
+-- AUTO_INCREMENT untuk tabel `amalan_daily`
+--
+ALTER TABLE `amalan_daily`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT untuk tabel `debts`
@@ -487,6 +759,12 @@ ALTER TABLE `debts`
 --
 ALTER TABLE `debt_payments`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT untuk tabel `doa_pribadi`
+--
+ALTER TABLE `doa_pribadi`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT untuk tabel `finances`
@@ -513,6 +791,18 @@ ALTER TABLE `habit_logs`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT untuk tabel `ibadah_daily`
+--
+ALTER TABLE `ibadah_daily`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT untuk tabel `inquiries`
+--
+ALTER TABLE `inquiries`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
 -- AUTO_INCREMENT untuk tabel `life_plans`
 --
 ALTER TABLE `life_plans`
@@ -523,6 +813,30 @@ ALTER TABLE `life_plans`
 --
 ALTER TABLE `pomodoro_sessions`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+
+--
+-- AUTO_INCREMENT untuk tabel `quran_last_read`
+--
+ALTER TABLE `quran_last_read`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT untuk tabel `spiritual_reflections`
+--
+ALTER TABLE `spiritual_reflections`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+
+--
+-- AUTO_INCREMENT untuk tabel `spiritual_settings`
+--
+ALTER TABLE `spiritual_settings`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT untuk tabel `system_settings`
+--
+ALTER TABLE `system_settings`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT untuk tabel `tasks`
@@ -559,6 +873,12 @@ ALTER TABLE `activity_logs`
   ADD CONSTRAINT `activity_logs_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
+-- Ketidakleluasaan untuk tabel `amalan_daily`
+--
+ALTER TABLE `amalan_daily`
+  ADD CONSTRAINT `amalan_daily_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
 -- Ketidakleluasaan untuk tabel `debts`
 --
 ALTER TABLE `debts`
@@ -569,6 +889,12 @@ ALTER TABLE `debts`
 --
 ALTER TABLE `debt_payments`
   ADD CONSTRAINT `debt_payments_ibfk_1` FOREIGN KEY (`debt_id`) REFERENCES `debts` (`id`) ON DELETE CASCADE;
+
+--
+-- Ketidakleluasaan untuk tabel `doa_pribadi`
+--
+ALTER TABLE `doa_pribadi`
+  ADD CONSTRAINT `doa_pribadi_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Ketidakleluasaan untuk tabel `finances`
@@ -596,6 +922,12 @@ ALTER TABLE `habit_logs`
   ADD CONSTRAINT `habit_logs_ibfk_2` FOREIGN KEY (`habit_id`) REFERENCES `habits` (`id`) ON DELETE CASCADE;
 
 --
+-- Ketidakleluasaan untuk tabel `ibadah_daily`
+--
+ALTER TABLE `ibadah_daily`
+  ADD CONSTRAINT `ibadah_daily_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
 -- Ketidakleluasaan untuk tabel `life_plans`
 --
 ALTER TABLE `life_plans`
@@ -607,6 +939,30 @@ ALTER TABLE `life_plans`
 ALTER TABLE `pomodoro_sessions`
   ADD CONSTRAINT `pomodoro_sessions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   ADD CONSTRAINT `pomodoro_sessions_ibfk_2` FOREIGN KEY (`task_id`) REFERENCES `tasks` (`id`) ON DELETE SET NULL;
+
+--
+-- Ketidakleluasaan untuk tabel `quran_last_read`
+--
+ALTER TABLE `quran_last_read`
+  ADD CONSTRAINT `quran_last_read_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Ketidakleluasaan untuk tabel `spiritual_reflections`
+--
+ALTER TABLE `spiritual_reflections`
+  ADD CONSTRAINT `spiritual_reflections_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Ketidakleluasaan untuk tabel `spiritual_settings`
+--
+ALTER TABLE `spiritual_settings`
+  ADD CONSTRAINT `spiritual_settings_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+
+--
+-- Ketidakleluasaan untuk tabel `system_settings`
+--
+ALTER TABLE `system_settings`
+  ADD CONSTRAINT `system_settings_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Ketidakleluasaan untuk tabel `tasks`
