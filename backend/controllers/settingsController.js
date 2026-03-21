@@ -2,6 +2,8 @@
 const db = require('../config/db');
 const bcrypt = require('bcryptjs');
 const { logActivity } = require('./activityController');
+const fs = require('fs');
+const path = require('path');
 
 // 1. GET ALL SETTINGS (Profile + System + Spiritual)
 const getAllSettings = async (req, res) => {
@@ -9,9 +11,9 @@ const getAllSettings = async (req, res) => {
   try {
     const dbPromise = db.promise();
     
-    // Ambil data User & System & Spiritual dalam satu waktu
+    // MENGGUNAKAN KOLOM "photo" (Di-alias menjadi profile_picture untuk frontend)
     const [user] = await dbPromise.query(
-      'SELECT name, email, phone, location, bio, photo FROM users WHERE id = ?', [userId]
+      'SELECT name, email, phone, location, bio, photo AS profile_picture FROM users WHERE id = ?', [userId]
     );
     const [system] = await dbPromise.query(
       'SELECT theme, language, time_format, default_page FROM system_settings WHERE user_id = ?', [userId]
@@ -29,23 +31,54 @@ const getAllSettings = async (req, res) => {
       }
     });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ success: false, message: 'Gagal memuat pengaturan' });
   }
 };
 
-// 2. UPDATE PROFILE
+// 2. UPDATE PROFILE (DENGAN DUKUNGAN UPLOAD FOTO)
 const updateProfile = async (req, res) => {
   const { name, phone, location, bio } = req.body;
   const userId = req.user.id;
+  
   try {
-    await db.promise().query(
-      'UPDATE users SET name = ?, phone = ?, location = ?, bio = ? WHERE id = ?',
-      [name, phone, location, bio, userId]
-    );
+    const dbPromise = db.promise();
+    let query = 'UPDATE users SET name = ?, phone = ?, location = ?, bio = ?';
+    let params = [name, phone, location, bio];
+    let newPhotoUrl = null;
+
+    // Jika ada file gambar yang diunggah via multer
+    if (req.file) {
+      newPhotoUrl = `/uploads/profiles/${req.file.filename}`;
+      
+      // Hapus foto lama agar server tidak penuh (Mengambil dari kolom "photo")
+      const [oldUser] = await dbPromise.query('SELECT photo FROM users WHERE id = ?', [userId]);
+      if (oldUser[0] && oldUser[0].photo) {
+        const oldPath = path.join(__dirname, '..', oldUser[0].photo);
+        if (fs.existsSync(oldPath)) {
+          fs.unlinkSync(oldPath);
+        }
+      }
+
+      // Menyimpan ke kolom "photo" di database
+      query += ', photo = ?';
+      params.push(newPhotoUrl);
+    }
+
+    query += ' WHERE id = ?';
+    params.push(userId);
+
+    await dbPromise.query(query, params);
     
     await logActivity(userId, 'system', 'update', 'Profil Diperbarui', 'Melakukan perubahan pada informasi profil diri.');
-    res.status(200).json({ success: true, message: 'Profil berhasil diperbarui' });
+    
+    res.status(200).json({ 
+      success: true, 
+      message: 'Profil berhasil diperbarui',
+      profile_picture: newPhotoUrl // Kirim balik URL foto baru ke frontend
+    });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ success: false, message: 'Gagal update profil' });
   }
 };
@@ -125,6 +158,7 @@ const exportUserData = async (req, res) => {
 
     res.status(200).json({ success: true, data: backupData });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ success: false, message: 'Gagal export data' });
   }
 };

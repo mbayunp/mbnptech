@@ -2,6 +2,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const path = require('path');
 
 // Load environment variables
 dotenv.config();
@@ -21,7 +22,7 @@ const activityRoutes = require('./routes/activityRoutes');
 const spiritualRoutes = require('./routes/spiritualRoutes');
 const inquiryRoutes = require('./routes/inquiryRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
-const dashboardRoutes = require('./routes/dashboardRoutes')
+const dashboardRoutes = require('./routes/dashboardRoutes');
 
 // Gunakan Routes
 app.use('/api/auth', authRoutes);
@@ -34,7 +35,9 @@ app.use('/api/activities', require('./routes/activityRoutes'));
 app.use('/api/spiritual', spiritualRoutes);
 app.use('/api/inquiries', require('./routes/inquiryRoutes'));
 app.use('/api/settings', settingsRoutes);
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/dashboard', dashboardRoutes);
+
 
 // Route Dasar
 app.get('/', (req, res) => {

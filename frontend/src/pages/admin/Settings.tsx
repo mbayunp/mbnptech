@@ -1,11 +1,11 @@
 // src/pages/admin/Settings.tsx
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { API_URL } from '../../config/api';
 import { 
   FaUser, FaLock, FaCog, FaBell, FaMosque, 
-  FaWallet, FaDatabase, FaShieldAlt, FaSave, FaSignOutAlt, FaDownload, FaTrashAlt
+  FaWallet, FaDatabase, FaShieldAlt, FaSave, FaSignOutAlt, FaDownload, FaTrashAlt, FaCamera
 } from 'react-icons/fa';
 
 const Settings = () => {
@@ -13,9 +13,17 @@ const Settings = () => {
   const [activeTab, setActiveTab] = useState('profile');
   const [isLoading, setIsLoading] = useState(true);
 
+  // Reference untuk trigger input file tersembunyi
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // State untuk menyimpan file gambar yang dipilih (belum disimpan ke server)
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  // State untuk preview gambar (URL lokal atau URL dari server)
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+
   // States sesuai struktur Backend
   const [profile, setProfile] = useState({
-    name: '', email: '', phone: '', location: '', bio: ''
+    name: '', email: '', phone: '', location: '', bio: '', profile_picture: ''
   });
 
   const [system, setSystem] = useState({
@@ -45,6 +53,12 @@ const Settings = () => {
         setProfile(result.data.profile);
         setSystem(result.data.system);
         setSpiritual(result.data.spiritual);
+        
+        // Set preview image jika user sudah punya foto profil di database
+        if (result.data.profile.profile_picture) {
+          // Asumsi backend mengembalikan path relatif atau URL penuh
+          setPreviewImage(result.data.profile.profile_picture.startsWith('http') ? result.data.profile.profile_picture : `${API_URL}${result.data.profile.profile_picture}`);
+        }
       }
     } catch (err) {
       console.error("Gagal mengambil data settings:", err);
@@ -57,17 +71,68 @@ const Settings = () => {
     fetchSettings();
   }, []);
 
+  // --- HANDLER UNTUK FILE GAMBAR ---
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      
+      // Validasi ukuran file (Misal max 2MB)
+      if (file.size > 2 * 1024 * 1024) {
+        return Swal.fire('Ukuran Terlalu Besar', 'Pilih foto dengan ukuran maksimal 2MB', 'warning');
+      }
+
+      setSelectedImage(file);
+      // Membuat URL lokal sementara untuk preview
+      setPreviewImage(URL.createObjectURL(file));
+    }
+  };
+
+  const triggerFileInput = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
   // --- 2. HANDLERS UNTUK UPDATE ---
   const handleUpdateProfile = async () => {
     const token = localStorage.getItem('token');
     try {
+      // Menggunakan FormData karena kita berpotensi mengirim file gambar
+      const formData = new FormData();
+      formData.append('name', profile.name);
+      formData.append('phone', profile.phone || '');
+      formData.append('location', profile.location || '');
+      formData.append('bio', profile.bio || '');
+      
+      if (selectedImage) {
+        formData.append('profile_picture', selectedImage);
+      }
+
       const res = await fetch(`${API_URL}/api/settings/profile`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify(profile)
+        headers: { 'Authorization': `Bearer ${token}` }, // Hapus Content-Type agar browser mengatur boundary multipart otomatis
+        body: formData
       });
-      if (res.ok) showSuccessToast('Profil berhasil diperbarui');
-    } catch (err) { showErrorAlert(); }
+      
+      const result = await res.json();
+
+      if (res.ok) {
+        showSuccessToast('Profil berhasil diperbarui');
+        // Jika backend mengembalikan URL foto yang baru, update preview-nya
+        if (result.profile_picture) {
+             setPreviewImage(result.profile_picture.startsWith('http') ? result.profile_picture : `${API_URL}${result.profile_picture}`);
+             
+             // Update juga data user di localStorage agar avatar di navbar (jika ada) ikut berubah
+             const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+             localStorage.setItem('user', JSON.stringify({...storedUser, profile_picture: result.profile_picture}));
+        }
+        setSelectedImage(null); // Reset gambar terpilih setelah sukses
+      } else {
+        throw new Error(result.message);
+      }
+    } catch (err: any) { 
+      Swal.fire('Gagal', err.message || 'Terjadi kesalahan pada server', 'error'); 
+    }
   };
 
   const handleUpdateSystem = async () => {
@@ -95,9 +160,16 @@ const Settings = () => {
   };
 
   const handleUpdatePassword = async () => {
-    if (passwords.newPassword !== passwords.confirmPassword) {
-      return Swal.fire('Error', 'Konfirmasi password tidak cocok', 'error');
+    if (!passwords.oldPassword || !passwords.newPassword) {
+      return Swal.fire('Perhatian', 'Harap isi password lama dan password baru', 'warning');
     }
+    if (passwords.newPassword !== passwords.confirmPassword) {
+      return Swal.fire('Error', 'Konfirmasi password tidak cocok dengan password baru', 'error');
+    }
+    if (passwords.newPassword.length < 6) {
+      return Swal.fire('Error', 'Password baru minimal harus 6 karakter', 'error');
+    }
+
     const token = localStorage.getItem('token');
     try {
       const res = await fetch(`${API_URL}/api/settings/security/password`, {
@@ -106,11 +178,12 @@ const Settings = () => {
         body: JSON.stringify({ oldPassword: passwords.oldPassword, newPassword: passwords.newPassword })
       });
       const data = await res.json();
-      if (res.ok) {
+      
+      if (res.ok && data.success) {
         showSuccessToast('Password berhasil diganti');
         setPasswords({ oldPassword: '', newPassword: '', confirmPassword: '' });
       } else {
-        Swal.fire('Gagal', data.message, 'error');
+        Swal.fire('Gagal', data.message || 'Password lama salah atau terjadi kesalahan.', 'error');
       }
     } catch (err) { showErrorAlert(); }
   };
@@ -139,7 +212,7 @@ const Settings = () => {
   const showSuccessToast = (msg: string) => {
     Swal.fire({ icon: 'success', title: msg, toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
   };
-  const showErrorAlert = () => Swal.fire('Error', 'Terjadi kesalahan pada server', 'error');
+  const showErrorAlert = () => Swal.fire('Error', 'Terjadi kesalahan saat menghubungi server', 'error');
 
   const tabs = [
     { id: 'profile', name: 'Profile Settings', icon: <FaUser /> },
@@ -189,38 +262,63 @@ const Settings = () => {
               <h3 className="text-xl font-black text-slate-800 mb-6 border-b border-slate-100 pb-4">Profile Settings</h3>
               
               <div className="flex flex-col sm:flex-row gap-8 mb-8">
+                
+                {/* Avatar & Upload Section */}
                 <div className="flex flex-col items-center gap-4">
-                  <div className="w-32 h-32 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-4xl font-black border-4 border-white shadow-lg">
-                    {profile.name?.charAt(0)}
+                  <div className="relative w-32 h-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-blue-50 flex items-center justify-center group">
+                    {previewImage ? (
+                      <img src={previewImage} alt="Profile Preview" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-4xl font-black text-blue-600">{profile.name?.charAt(0)?.toUpperCase()}</span>
+                    )}
+                    
+                    {/* Hover Overlay untuk Ubah Foto */}
+                    <div onClick={triggerFileInput} className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                      <FaCamera className="text-white text-2xl" />
+                    </div>
                   </div>
-                  <button className="text-xs font-bold text-blue-600 bg-blue-50 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors">Ubah Foto</button>
+                  
+                  {/* Input File Tersembunyi */}
+                  <input 
+                    type="file" 
+                    accept="image/png, image/jpeg, image/jpg, image/webp" 
+                    ref={fileInputRef} 
+                    onChange={handleImageChange} 
+                    className="hidden" 
+                  />
+                  
+                  <button onClick={triggerFileInput} className="text-xs font-bold text-blue-600 bg-blue-50 px-4 py-2 rounded-lg hover:bg-blue-100 transition-colors flex items-center gap-2">
+                    <FaCamera /> Ubah Foto
+                  </button>
+                  {selectedImage && <p className="text-[10px] text-emerald-600 font-bold">✓ Foto siap disimpan</p>}
                 </div>
                 
+                {/* Form Input Data Profile */}
                 <div className="flex-1 space-y-5">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Nama Lengkap</label>
-                      <input type="text" value={profile.name || ''} onChange={e => setProfile({...profile, name: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 outline-none focus:border-blue-500 transition-all" />
+                      <input type="text" value={profile.name || ''} onChange={e => setProfile({...profile, name: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 outline-none focus:border-blue-500 transition-all focus:bg-white" />
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Nomor WhatsApp</label>
-                      <input type="text" value={profile.phone || ''} onChange={e => setProfile({...profile, phone: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 outline-none focus:border-blue-500 transition-all" />
+                      <input type="text" value={profile.phone || ''} onChange={e => setProfile({...profile, phone: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 outline-none focus:border-blue-500 transition-all focus:bg-white" />
                     </div>
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Lokasi / Domisili</label>
-                    <input type="text" value={profile.location || ''} onChange={e => setProfile({...profile, location: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 outline-none focus:border-blue-500 transition-all" />
+                    <input type="text" value={profile.location || ''} onChange={e => setProfile({...profile, location: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 outline-none focus:border-blue-500 transition-all focus:bg-white" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Bio Singkat</label>
-                    <textarea value={profile.bio || ''} onChange={e => setProfile({...profile, bio: e.target.value})} rows={3} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 outline-none focus:border-blue-500 transition-all resize-none"></textarea>
+                    <textarea value={profile.bio || ''} onChange={e => setProfile({...profile, bio: e.target.value})} rows={3} placeholder="Ceritakan sedikit tentang Anda..." className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 outline-none focus:border-blue-500 transition-all focus:bg-white resize-none"></textarea>
                   </div>
                 </div>
               </div>
               
               <div className="flex justify-end">
-                <button onClick={handleUpdateProfile} className="px-8 py-3.5 bg-blue-600 text-white rounded-xl font-bold flex items-center gap-2 hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/30">
-                  <FaSave /> Simpan Profil
+                <button onClick={handleUpdateProfile} className="px-8 py-3.5 bg-blue-600 text-white rounded-xl font-bold flex items-center gap-2 hover:bg-blue-700 transition-all shadow-lg shadow-blue-500/30 hover:-translate-y-0.5">
+                  <FaSave /> Simpan Perubahan Profil
                 </button>
               </div>
             </div>
@@ -238,27 +336,28 @@ const Settings = () => {
                   <p className="text-[10px] text-slate-400 mt-2 font-medium">*Email tidak dapat diubah karena merupakan identitas utama akun.</p>
                 </div>
                 
-                <div className="space-y-4">
+                <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 space-y-4">
+                  <h4 className="text-sm font-black text-slate-800 mb-4 flex items-center gap-2"><FaLock className="text-slate-400"/> Ubah Password Akses</h4>
                   <div>
                     <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Password Lama</label>
-                    <input type="password" value={passwords.oldPassword} onChange={e => setPasswords({...passwords, oldPassword: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 outline-none focus:border-blue-500 transition-all" />
+                    <input type="password" value={passwords.oldPassword} onChange={e => setPasswords({...passwords, oldPassword: e.target.value})} placeholder="Masukkan password saat ini" className="w-full p-4 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-800 outline-none focus:border-blue-500 transition-all" />
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Password Baru</label>
-                      <input type="password" value={passwords.newPassword} onChange={e => setPasswords({...passwords, newPassword: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 outline-none focus:border-blue-500 transition-all" />
+                      <input type="password" value={passwords.newPassword} onChange={e => setPasswords({...passwords, newPassword: e.target.value})} placeholder="Minimal 6 karakter" className="w-full p-4 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-800 outline-none focus:border-blue-500 transition-all" />
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Konfirmasi Password Baru</label>
-                      <input type="password" value={passwords.confirmPassword} onChange={e => setPasswords({...passwords, confirmPassword: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 outline-none focus:border-blue-500 transition-all" />
+                      <input type="password" value={passwords.confirmPassword} onChange={e => setPasswords({...passwords, confirmPassword: e.target.value})} placeholder="Ketik ulang password baru" className="w-full p-4 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-800 outline-none focus:border-blue-500 transition-all" />
                     </div>
                   </div>
                 </div>
               </div>
 
               <div className="flex justify-end">
-                <button onClick={handleUpdatePassword} className="px-8 py-3.5 bg-slate-900 text-white rounded-xl font-bold flex items-center gap-2 hover:bg-slate-800 transition-all shadow-lg">
-                  <FaShieldAlt /> Ganti Password
+                <button onClick={handleUpdatePassword} className="px-8 py-3.5 bg-slate-900 text-white rounded-xl font-bold flex items-center gap-2 hover:bg-slate-800 transition-all shadow-lg hover:-translate-y-0.5">
+                  <FaShieldAlt /> Perbarui Password
                 </button>
               </div>
             </div>
@@ -280,7 +379,7 @@ const Settings = () => {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Bahasa</label>
-                  <select value={system.language} onChange={e => setSystem({...system, language: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 outline-none focus:border-blue-500">
+                  <select value={system.language} onChange={e => setSystem({...system, language: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 outline-none focus:border-blue-500 cursor-pointer">
                     <option value="id">Bahasa Indonesia</option>
                     <option value="en">English (US)</option>
                   </select>
@@ -296,7 +395,7 @@ const Settings = () => {
 
                 <div>
                   <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Default Page (Saat Login)</label>
-                  <select value={system.default_page} onChange={e => setSystem({...system, default_page: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 outline-none focus:border-blue-500">
+                  <select value={system.default_page} onChange={e => setSystem({...system, default_page: e.target.value})} className="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl text-sm font-bold text-slate-800 outline-none focus:border-blue-500 cursor-pointer">
                     <option value="dashboard">Dashboard Utama</option>
                     <option value="todo">To Do List</option>
                     <option value="finance">Finance Dashboard</option>
@@ -306,7 +405,7 @@ const Settings = () => {
               </div>
 
               <div className="flex justify-end">
-                <button onClick={handleUpdateSystem} className="px-8 py-3.5 bg-blue-600 text-white rounded-xl font-bold flex items-center gap-2 hover:bg-blue-700 transition-all shadow-lg">
+                <button onClick={handleUpdateSystem} className="px-8 py-3.5 bg-blue-600 text-white rounded-xl font-bold flex items-center gap-2 hover:bg-blue-700 transition-all shadow-lg hover:-translate-y-0.5">
                   <FaSave /> Simpan Preferensi
                 </button>
               </div>
@@ -357,8 +456,8 @@ const Settings = () => {
               </div>
 
               <div className="flex justify-end">
-                <button onClick={handleUpdateSpiritual} className="px-8 py-3.5 bg-emerald-500 text-white rounded-xl font-bold flex items-center gap-2 hover:bg-emerald-600 transition-all shadow-lg">
-                  <FaSave /> Simpan Target
+                <button onClick={handleUpdateSpiritual} className="px-8 py-3.5 bg-emerald-500 text-white rounded-xl font-bold flex items-center gap-2 hover:bg-emerald-600 transition-all shadow-lg hover:-translate-y-0.5">
+                  <FaSave /> Simpan Pengaturan
                 </button>
               </div>
             </div>

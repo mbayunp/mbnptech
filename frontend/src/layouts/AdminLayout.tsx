@@ -2,22 +2,45 @@
 import { useState, useEffect, useRef } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
-import { API_URL } from '../config/api';
+import { API_URL } from '../config/api'; 
 import {
   FaThLarge, FaWallet, FaTasks, FaFolderOpen, FaEnvelope, 
   FaCog, FaSignOutAlt, FaBars, FaBell, FaSearch, FaGlobe, 
-  FaListUl, FaMedal, FaHistory, FaMosque, FaUserCircle
+  FaListUl, FaMedal, FaHistory, FaMosque
 } from 'react-icons/fa';
 
 const AdminLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
-  const [userData, setUserData] = useState({ name: 'Admin', initial: 'A' });
+  const [userData, setUserData] = useState({ name: 'Admin', initial: 'A', profile_picture: '' });
   const [newInquiries, setNewInquiries] = useState<any[]>([]);
   const navigate = useNavigate();
   const notifRef = useRef<HTMLDivElement>(null);
 
-  // --- 1. PROTEKSI & DATA USER ---
+  // --- 1. FETCH DATA USER LANGSUNG DARI DATABASE ---
+  const fetchUserData = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const res = await fetch(`${API_URL}/api/settings`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const result = await res.json();
+      
+      if (result.success && result.data.profile) {
+        const profile = result.data.profile;
+        setUserData({
+          name: profile.name || 'Admin',
+          initial: profile.name ? profile.name.charAt(0).toUpperCase() : 'A',
+          profile_picture: profile.profile_picture || ''
+        });
+      }
+    } catch (err) {
+      console.error("Gagal mengambil data user dari DB:", err);
+    }
+  };
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -25,26 +48,22 @@ const AdminLayout = () => {
       return;
     }
 
-    const userStr = localStorage.getItem('user');
-    if (userStr) {
-      const user = JSON.parse(userStr);
-      setUserData({
-        name: user.name,
-        initial: user.name.charAt(0).toUpperCase()
-      });
-    }
-
-    // Fetch Inquiries untuk Notifikasi
+    // Panggil DB saat layout pertama kali dimuat
+    fetchUserData();
     fetchNotifications();
 
-    // Close dropdown saat klik di luar
     const handleClickOutside = (event: MouseEvent) => {
       if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
         setIsNotifOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    window.addEventListener('user-profile-updated', fetchUserData);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('user-profile-updated', fetchUserData);
+    };
   }, [navigate]);
 
   const fetchNotifications = async () => {
@@ -55,7 +74,6 @@ const AdminLayout = () => {
       });
       const result = await res.json();
       if (result.success) {
-        // Hanya ambil yang statusnya 'New'
         const filtered = result.data.filter((i: any) => i.status === 'New');
         setNewInquiries(filtered);
       }
@@ -225,13 +243,31 @@ const AdminLayout = () => {
               )}
             </div>
 
+            {/* --- USER PROFILE SECTION --- */}
             <div className="flex items-center gap-3 pl-4 md:pl-6 border-l border-slate-200">
               <div className="text-right hidden md:block">
                 <p className="text-sm font-black text-slate-800 leading-tight">{userData.name}</p>
                 <p className="text-[10px] font-bold text-blue-500 uppercase tracking-widest">Super Admin</p>
               </div>
-              <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-black text-lg border-2 border-white shadow-md cursor-pointer hover:scale-105 transition-transform" onClick={() => navigate('/admin/settings')}>
-                {userData.initial}
+              
+              <div 
+                className="w-11 h-11 rounded-full flex items-center justify-center font-black text-lg border-2 border-white shadow-md cursor-pointer hover:scale-105 transition-transform overflow-hidden bg-gradient-to-tr from-blue-600 to-indigo-600 text-white shrink-0" 
+                onClick={() => navigate('/admin/settings')}
+              >
+                {/* Menampilkan Gambar Langsung Dari DB */}
+                {userData.profile_picture ? (
+                  <img 
+                    src={userData.profile_picture.startsWith('http') ? userData.profile_picture : `${API_URL}${userData.profile_picture}`} 
+                    alt="Profile" 
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).style.display = 'none';
+                      (e.target as HTMLImageElement).parentElement!.innerText = userData.initial;
+                    }}
+                  />
+                ) : (
+                  <span>{userData.initial}</span>
+                )}
               </div>
             </div>
 
