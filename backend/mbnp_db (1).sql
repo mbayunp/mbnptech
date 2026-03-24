@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 20 Mar 2026 pada 05.47
+-- Waktu pembuatan: 24 Mar 2026 pada 05.26
 -- Versi server: 10.4.32-MariaDB
 -- Versi PHP: 8.2.12
 
@@ -120,7 +120,53 @@ INSERT INTO `activity_logs` (`id`, `user_id`, `module`, `action`, `title`, `desc
 (42, 2, 'system', 'delete', 'Lead Dihapus', 'Satu pesan inquiry telah dihapus dari sistem.', NULL, '2026-03-20 04:20:02'),
 (43, 2, 'system', 'delete', 'Lead Dihapus', 'Satu pesan inquiry telah dihapus dari sistem.', NULL, '2026-03-20 04:20:05'),
 (44, 2, 'system', 'delete', 'Lead Dihapus', 'Satu pesan inquiry telah dihapus dari sistem.', NULL, '2026-03-20 04:20:08'),
-(45, 2, 'system', 'update', 'Status Lead Diubah', 'Status inquiry dari Muhammad Bayu Nurdiansyah Putra diubah menjadi Contacted', NULL, '2026-03-20 04:22:38');
+(45, 2, 'system', 'update', 'Status Lead Diubah', 'Status inquiry dari Muhammad Bayu Nurdiansyah Putra diubah menjadi Contacted', NULL, '2026-03-20 04:22:38'),
+(46, 2, 'finance', 'create', 'Pengeluaran Baru', 'Pengeluaran sebesar Rp200000 dicatat.', '{\"category\":\"Lebaran\",\"amount\":200000,\"description\":\"\"}', '2026-03-20 04:48:38'),
+(47, 2, 'finance', 'update', 'Transaksi Diedit', 'Perubahan data transaksi pada kategori CASH.', NULL, '2026-03-20 04:49:09'),
+(48, 2, 'system', 'delete', 'Lead Dihapus', 'Satu pesan inquiry telah dihapus dari sistem.', NULL, '2026-03-20 04:49:27'),
+(49, 2, 'life_planning', 'update', 'Ibadah Diupdate', 'Mengupdate status ibadah: dzuhur', NULL, '2026-03-20 09:27:59'),
+(50, 2, 'life_planning', 'update', 'Ibadah Diupdate', 'Mengupdate status ibadah: ashar', NULL, '2026-03-20 09:28:17'),
+(51, 2, 'life_planning', 'update', 'Ibadah Diupdate', 'Mengupdate status ibadah: puasa_senin', NULL, '2026-03-20 09:28:27'),
+(52, 2, 'life_planning', 'update', 'Ibadah Diupdate', 'Mengupdate status ibadah: ashar', NULL, '2026-03-20 09:33:08'),
+(53, 2, 'habits', 'complete', 'Habit Selesai ✔️', 'Menyelesaikan habit: Coding / Mengerjakan Projek.', NULL, '2026-03-20 09:38:20'),
+(54, 2, 'habits', 'complete', 'Habit Selesai ✔️', 'Menyelesaikan habit: Latihan Bahasa Jepang (Zoom).', NULL, '2026-03-20 09:38:28'),
+(55, 2, 'todo', 'create', 'Task Baru Dibuat', 'Menambahkan task: Menyelesaikan lms jepang', '{\"priority\":\"High\",\"category\":\"Belajar\"}', '2026-03-20 16:40:33'),
+(56, 2, 'todo', 'update', 'Status Task Diperbarui', 'Task dipindah menjadi status: dikerjakan.', NULL, '2026-03-20 16:40:38'),
+(57, 2, 'todo', 'complete', 'Status Task Diperbarui', 'Task dipindah menjadi status: diselesaikan.', NULL, '2026-03-20 16:40:46'),
+(58, 2, 'todo', 'complete', 'Status Task Diperbarui', 'Task dipindah menjadi status: diselesaikan.', NULL, '2026-03-20 16:40:47'),
+(59, 2, 'todo', 'update', 'Status Task Diperbarui', 'Task dipindah menjadi status: dikerjakan.', NULL, '2026-03-20 16:40:52'),
+(60, 2, 'todo', 'update', 'Status Task Diperbarui', 'Task dipindah menjadi status: dikembalikan ke To Do.', NULL, '2026-03-20 16:41:04'),
+(61, 2, 'todo', 'update', 'Status Task Diperbarui', 'Task dipindah menjadi status: dikerjakan.', NULL, '2026-03-20 16:41:07'),
+(62, 2, 'todo', 'complete', 'Pomodoro Selesai 🍅', 'Menyelesaikan sesi fokus selama 25 menit.', NULL, '2026-03-20 16:41:14'),
+(63, 2, 'habits', 'complete', 'Habit Selesai ✔️', 'Menyelesaikan habit: Lari.', NULL, '2026-03-20 16:43:36'),
+(64, 2, 'life_planning', 'update', 'Ibadah Diupdate', 'Mengupdate status ibadah: ashar', NULL, '2026-03-20 16:44:26'),
+(65, 2, 'life_planning', 'update', 'Ibadah Diupdate', 'Mengupdate status ibadah: maghrib', NULL, '2026-03-20 16:44:28'),
+(66, 2, 'life_planning', 'update', 'Ibadah Diupdate', 'Mengupdate status ibadah: isya', NULL, '2026-03-20 16:44:30'),
+(67, 2, 'finance', 'create', 'Hutang Baru Dicatat', 'Hutang: Gearset', '{\"amount\":250000}', '2026-03-20 17:16:51'),
+(68, 2, 'finance', 'create', 'Hutang Baru Dicatat', 'Hutang: Dias', '{\"amount\":200000}', '2026-03-20 17:17:26'),
+(69, 2, 'finance', 'complete', 'Cicilan Dibayar', 'Melakukan pembayaran cicilan sebesar Rp50000.', '{\"amount\":50000}', '2026-03-20 17:22:40'),
+(70, 2, 'finance', 'create', 'Pengeluaran Baru', 'Pengeluaran sebesar Rp300000 dicatat.', '{\"category\":\"Sedekah\",\"amount\":300000,\"description\":\"THR\"}', '2026-03-20 17:23:24'),
+(71, 2, 'finance', 'create', 'Pengeluaran Baru', 'Pengeluaran sebesar Rp100000 dicatat.', '{\"category\":\"Motor\",\"amount\":100000,\"description\":\"Service laher dan bensin\"}', '2026-03-20 17:23:53'),
+(72, 2, 'finance', 'create', 'Pengeluaran Baru', 'Pengeluaran sebesar Rp5000 dicatat.', '{\"category\":\"Memberi\",\"amount\":5000,\"description\":\"\"}', '2026-03-20 17:35:46'),
+(73, 2, 'finance', 'create', 'Pemasukan Baru', 'Pemasukan sebesar Rp200000 dicatat.', '{\"category\":\"Pinjaman\",\"amount\":200000,\"description\":\"Bapa\"}', '2026-03-20 17:37:56'),
+(74, 2, 'finance', 'create', 'Pengeluaran Baru', 'Pengeluaran sebesar Rp200000 dicatat.', '{\"category\":\"Memberi\",\"amount\":200000,\"description\":\"Bapa\"}', '2026-03-20 17:38:10'),
+(75, 2, 'finance', 'update', 'Transaksi Diedit', 'Perubahan data transaksi pada kategori Pinjaman.', NULL, '2026-03-20 17:38:32'),
+(76, 2, 'life_planning', 'update', 'Ibadah Diupdate', 'Mengupdate status ibadah: subuh', NULL, '2026-03-20 18:09:48'),
+(77, 2, 'life_planning', 'update', 'Ibadah Diupdate', 'Mengupdate status ibadah: subuh', NULL, '2026-03-20 18:09:51'),
+(78, 2, 'life_planning', 'update', 'Ibadah Diupdate', 'Mengupdate status ibadah: tahajud', NULL, '2026-03-20 18:09:52'),
+(79, 2, 'system', 'login', 'Login Berhasil', 'User Muhammad Bayu Nurdiansyah Putra masuk ke dalam dashboard admin.', NULL, '2026-03-21 10:37:00'),
+(80, 2, 'life_planning', 'update', 'Ibadah Diupdate', 'Mengupdate status ibadah: subuh', NULL, '2026-03-21 10:37:21'),
+(81, 2, 'life_planning', 'update', 'Ibadah Diupdate', 'Mengupdate status ibadah: dzuhur', NULL, '2026-03-21 10:37:21'),
+(82, 2, 'life_planning', 'update', 'Ibadah Diupdate', 'Mengupdate status ibadah: ashar', NULL, '2026-03-21 10:37:23'),
+(83, 2, 'life_planning', 'update', 'Ibadah Diupdate', 'Mengupdate status ibadah: maghrib', NULL, '2026-03-21 10:37:24'),
+(84, 2, 'life_planning', 'update', 'Ibadah Diupdate', 'Mengupdate status ibadah: isya', NULL, '2026-03-21 10:37:24'),
+(85, 2, 'system', 'update', 'Profil Diperbarui', 'Melakukan perubahan pada informasi profil diri.', NULL, '2026-03-21 10:51:06'),
+(86, 2, 'todo', 'complete', 'Pomodoro Selesai 🍅', 'Menyelesaikan sesi fokus selama 25 menit.', NULL, '2026-03-21 11:01:35'),
+(87, 2, 'system', 'login', 'Login Berhasil', 'User Muhammad Bayu Nurdiansyah Putra masuk ke dalam dashboard admin.', NULL, '2026-03-21 11:02:07'),
+(88, 2, 'habits', 'complete', 'Habit Selesai ✔️', 'Menyelesaikan habit: Coding / Mengerjakan Projek.', NULL, '2026-03-21 11:02:32'),
+(89, 2, 'life_planning', 'update', 'Life Plan Diperbarui', 'Target: Upgrade Motor CBR diupdate.', NULL, '2026-03-21 11:09:09'),
+(90, 2, 'life_planning', 'update', 'Visi & Misi Diperbarui', 'Pembaruan arah kompas dan masterplan hidup utama.', NULL, '2026-03-21 11:13:50'),
+(91, 2, 'life_planning', 'create', 'Life Plan Baru', 'Menambahkan target baru: Laptop Baru.', NULL, '2026-03-21 11:21:47');
 
 -- --------------------------------------------------------
 
@@ -168,8 +214,10 @@ CREATE TABLE `debts` (
 --
 
 INSERT INTO `debts` (`id`, `user_id`, `name`, `total_amount`, `remaining_amount`, `created_at`, `due_date`) VALUES
-(5, 2, 'Cicilan Gopay', 900000.00, 900000.00, '2026-03-13 00:28:28', '2026-04-02'),
-(6, 2, 'Shopee', 1200000.00, 1200000.00, '2026-03-13 00:28:45', '2026-05-04');
+(5, 2, 'Cicilan Gopay', 900000.00, 850000.00, '2026-03-13 00:28:28', '2026-04-02'),
+(6, 2, 'Shopee', 1200000.00, 1200000.00, '2026-03-13 00:28:45', '2026-05-04'),
+(7, 2, 'Gearset', 250000.00, 250000.00, '2026-03-20 17:16:51', '2026-04-02'),
+(8, 2, 'Dias', 200000.00, 200000.00, '2026-03-20 17:17:26', '2026-04-02');
 
 -- --------------------------------------------------------
 
@@ -236,7 +284,13 @@ INSERT INTO `finances` (`id`, `user_id`, `date`, `category`, `description`, `amo
 (17, 2, '2026-03-13', 'Saldo Dana', '', 100000.00, 'income', '2026-03-13 00:29:53'),
 (18, 2, '2026-03-11', 'Cash', 'THR Bidang', 500000.00, 'income', '2026-03-13 04:42:19'),
 (19, 2, '2026-03-13', 'Saldo Dana', 'Wifi Mamah', 50000.00, 'expense', '2026-03-13 07:22:53'),
-(21, 2, '2026-03-13', 'CASH', 'Buka Puasa', 10000.00, 'expense', '2026-03-13 07:44:50');
+(21, 2, '2026-03-13', 'CASH', 'Buka Puasa', 10000.00, 'expense', '2026-03-13 07:44:50'),
+(22, 2, '2026-03-19', 'CASH', 'Lebaran', 200000.00, 'expense', '2026-03-20 04:48:38'),
+(23, 2, '2026-03-21', 'Sedekah', 'THR', 300000.00, 'expense', '2026-03-20 17:23:24'),
+(24, 2, '2026-03-21', 'Motor', 'Service laher dan bensin', 100000.00, 'expense', '2026-03-20 17:23:53'),
+(25, 2, '2026-03-20', 'Memberi', '', 5000.00, 'expense', '2026-03-20 17:35:46'),
+(26, 2, '2026-03-20', 'Pinjaman', 'Dias', 200000.00, 'income', '2026-03-20 17:37:56'),
+(27, 2, '2026-03-21', 'Memberi', 'Bapa', 200000.00, 'expense', '2026-03-20 17:38:10');
 
 -- --------------------------------------------------------
 
@@ -293,6 +347,16 @@ CREATE TABLE `habit_logs` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data untuk tabel `habit_logs`
+--
+
+INSERT INTO `habit_logs` (`id`, `user_id`, `habit_id`, `log_date`, `created_at`) VALUES
+(1, 2, 3, '2026-03-20', '2026-03-20 09:38:20'),
+(2, 2, 1, '2026-03-20', '2026-03-20 09:38:28'),
+(3, 2, 4, '2026-03-20', '2026-03-20 16:43:36'),
+(4, 2, 3, '2026-03-21', '2026-03-21 11:02:32');
+
 -- --------------------------------------------------------
 
 --
@@ -320,7 +384,8 @@ CREATE TABLE `ibadah_daily` (
 --
 
 INSERT INTO `ibadah_daily` (`id`, `user_id`, `log_date`, `subuh`, `dzuhur`, `ashar`, `maghrib`, `isya`, `dhuha`, `tahajud`, `puasa_senin`, `puasa_kamis`, `created_at`) VALUES
-(1, 2, '2026-03-20', 1, 0, 0, 0, 0, 0, 0, 0, 0, '2026-03-20 03:30:18');
+(1, 2, '2026-03-20', 1, 1, 1, 1, 1, 0, 0, 1, 0, '2026-03-20 03:30:18'),
+(14, 2, '2026-03-21', 1, 1, 1, 1, 1, 0, 1, 0, 0, '2026-03-20 18:09:48');
 
 -- --------------------------------------------------------
 
@@ -345,8 +410,7 @@ CREATE TABLE `inquiries` (
 --
 
 INSERT INTO `inquiries` (`id`, `name`, `email`, `phone`, `service`, `budget`, `message`, `status`, `created_at`) VALUES
-(5, 'Muhammad Bayu Nurdiansyah Putra', 'muhammadbayunp@gmail.com', '089663933263', 'Website Company Profile', '< 5 juta', 'web ', 'Contacted', '2026-03-20 04:19:42'),
-(6, 'z', 'muhammadbayunp@gmail.com', '089663933263', 'Website Company Profile', '< 5 juta', '12345', 'New', '2026-03-20 04:34:26');
+(5, 'Muhammad Bayu Nurdiansyah Putra', 'muhammadbayunp@gmail.com', '089663933263', 'Website Company Profile', '< 5 juta', 'web ', 'Contacted', '2026-03-20 04:19:42');
 
 -- --------------------------------------------------------
 
@@ -379,10 +443,31 @@ INSERT INTO `life_plans` (`id`, `user_id`, `category`, `title`, `description`, `
 (6, 2, 'career', 'Pranata Komputer (CPNS)', 'Target pengabdian negara', 30, 2026, 'upcoming', '2026-03-13 06:58:25'),
 (7, 2, 'education', 'S2 Teknik Informatika di Jepang (MEXT)', 'Persiapan bahasa dan dokumen', 30, 2028, 'upcoming', '2026-03-13 06:58:25'),
 (8, 2, 'finance', 'Dana Darurat (Emergency Fund)', 'Rp 50.000.000', 0, 2026, 'current', '2026-03-13 06:58:25'),
-(9, 2, 'finance', 'Upgrade Motor CBR', 'Rp 8.000.000 All In', 20, 2026, 'current', '2026-03-13 06:58:25'),
+(9, 2, 'finance', 'Upgrade Motor CBR', 'Rp 8.000.000 All In', 40, 2026, 'current', '2026-03-13 06:58:25'),
 (10, 2, 'timeline', 'Menikah', NULL, 0, 2028, 'upcoming', '2026-03-13 07:16:22'),
 (11, 2, 'relationship', 'Tunangan', '', 20, 2027, 'current', '2026-03-13 07:21:06'),
-(12, 2, 'finance', 'Umroh', 'Rp. 30.000.000', 0, 2027, 'upcoming', '2026-03-13 09:47:12');
+(12, 2, 'finance', 'Umroh', 'Rp. 30.000.000', 0, 2027, 'upcoming', '2026-03-13 09:47:12'),
+(13, 2, 'finance', 'Laptop Baru', '8-10 JT', 0, 2026, 'upcoming', '2026-03-21 11:21:47');
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `life_vision`
+--
+
+CREATE TABLE `life_vision` (
+  `user_id` int(11) NOT NULL,
+  `statement` text NOT NULL,
+  `values_list` text NOT NULL,
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `life_vision`
+--
+
+INSERT INTO `life_vision` (`user_id`, `statement`, `values_list`, `updated_at`) VALUES
+(2, 'Menjadi pribadi yang unggul di bidang teknologi, berintegritas, dan bermanfaat bagi masyarakat melalui pengembangan sistem digital, pendidikan, serta kontribusi nyata dalam kemajuan teknologi dan data di Indonesia', '[\"Mengembangkan Keahlian Teknologi Secara Berkelanjutan\",\"Membangun Karir Profesional yang Stabil dan Berdampak\",\"Melanjutkan Pendidikan untuk Memperluas Wawasan\",\"Membangun Stabilitas Keuangan dan Kemandirian\"]', '2026-03-21 11:13:50');
 
 -- --------------------------------------------------------
 
@@ -409,7 +494,9 @@ INSERT INTO `pomodoro_sessions` (`id`, `user_id`, `task_id`, `duration`, `create
 (4, 2, 5, 1500, '2026-03-13 09:18:13'),
 (5, 2, 5, 1500, '2026-03-13 09:28:57'),
 (6, 2, 5, 1500, '2026-03-13 09:33:09'),
-(7, 2, 5, 1500, '2026-03-13 09:37:46');
+(7, 2, 5, 1500, '2026-03-13 09:37:46'),
+(8, 2, 6, 1500, '2026-03-20 16:41:14'),
+(9, 2, 6, 1500, '2026-03-21 11:01:35');
 
 -- --------------------------------------------------------
 
@@ -529,9 +616,10 @@ CREATE TABLE `tasks` (
 
 INSERT INTO `tasks` (`id`, `user_id`, `title`, `category`, `priority`, `status`, `target_pomo`, `completed_pomo`, `deadline`, `created_at`, `updated_at`) VALUES
 (2, 2, 'Halaman Pemeriksaan Backend', 'Kerja', 'Medium', 'done', 3, 2, '2026-03-13', '2026-03-13 01:08:52', '2026-03-13 06:47:10'),
-(3, 2, 'Website MBNP Project', 'Pribadi', 'Medium', 'in_progress', 4, 1, '2026-03-13', '2026-03-13 07:38:17', '2026-03-13 08:52:24'),
-(4, 2, 'Website Picme Update Styling', 'Kerja', 'Medium', 'todo', 2, 0, '2026-03-13', '2026-03-13 07:48:08', '2026-03-13 07:48:08'),
-(5, 2, 'Zoom Bahasa Jepang Jam 3-5', 'Belajar', 'High', 'done', 3, 4, '2026-03-13', '2026-03-13 07:48:49', '2026-03-13 09:37:46');
+(3, 2, 'Website MBNP Project', 'Pribadi', 'Medium', 'done', 4, 1, '2026-03-13', '2026-03-13 07:38:17', '2026-03-20 16:40:46'),
+(4, 2, 'Website Picme Update Styling', 'Kerja', 'Medium', 'done', 2, 0, '2026-03-13', '2026-03-13 07:48:08', '2026-03-20 16:40:47'),
+(5, 2, 'Zoom Bahasa Jepang Jam 3-5', 'Belajar', 'High', 'done', 3, 4, '2026-03-13', '2026-03-13 07:48:49', '2026-03-13 09:37:46'),
+(6, 2, 'Menyelesaikan lms jepang', 'Belajar', 'High', 'in_progress', 4, 2, '2026-03-21', '2026-03-20 16:40:33', '2026-03-21 11:01:35');
 
 -- --------------------------------------------------------
 
@@ -572,7 +660,7 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `name`, `email`, `phone`, `location`, `bio`, `photo`, `password`, `created_at`) VALUES
-(2, 'Muhammad Bayu Nurdiansyah Putra', 'muhammadbayunp@gmail.com', '089663933263', 'Bandung, Cianjur, Garut', 'Full Stack Engineer | React, Next.js, MySQL', NULL, '$2b$10$PcKOb7sTfHFChCxb5x2R2.NaOD90my5nLzKKuzy/nUe2RDadTpjDi', '2026-03-12 10:05:29');
+(2, 'Muhammad Bayu Nurdiansyah Putra', 'muhammadbayunp@gmail.com', '089663933263', 'Garut', 'MBNP\r\n', '/uploads/profiles/profil-2-1774090265993-597661830.jpeg', '$2b$10$PcKOb7sTfHFChCxb5x2R2.NaOD90my5nLzKKuzy/nUe2RDadTpjDi', '2026-03-12 10:05:29');
 
 --
 -- Indexes for dumped tables
@@ -670,6 +758,12 @@ ALTER TABLE `life_plans`
   ADD KEY `user_id` (`user_id`);
 
 --
+-- Indeks untuk tabel `life_vision`
+--
+ALTER TABLE `life_vision`
+  ADD PRIMARY KEY (`user_id`);
+
+--
 -- Indeks untuk tabel `pomodoro_sessions`
 --
 ALTER TABLE `pomodoro_sessions`
@@ -740,19 +834,19 @@ ALTER TABLE `achievements`
 -- AUTO_INCREMENT untuk tabel `activity_logs`
 --
 ALTER TABLE `activity_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=92;
 
 --
 -- AUTO_INCREMENT untuk tabel `amalan_daily`
 --
 ALTER TABLE `amalan_daily`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT untuk tabel `debts`
 --
 ALTER TABLE `debts`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT untuk tabel `debt_payments`
@@ -770,7 +864,7 @@ ALTER TABLE `doa_pribadi`
 -- AUTO_INCREMENT untuk tabel `finances`
 --
 ALTER TABLE `finances`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT untuk tabel `goals`
@@ -788,13 +882,13 @@ ALTER TABLE `habits`
 -- AUTO_INCREMENT untuk tabel `habit_logs`
 --
 ALTER TABLE `habit_logs`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT untuk tabel `ibadah_daily`
 --
 ALTER TABLE `ibadah_daily`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT untuk tabel `inquiries`
@@ -806,13 +900,13 @@ ALTER TABLE `inquiries`
 -- AUTO_INCREMENT untuk tabel `life_plans`
 --
 ALTER TABLE `life_plans`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT untuk tabel `pomodoro_sessions`
 --
 ALTER TABLE `pomodoro_sessions`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT untuk tabel `quran_last_read`
@@ -842,7 +936,7 @@ ALTER TABLE `system_settings`
 -- AUTO_INCREMENT untuk tabel `tasks`
 --
 ALTER TABLE `tasks`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT untuk tabel `todos`
