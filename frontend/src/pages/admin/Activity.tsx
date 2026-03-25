@@ -69,6 +69,7 @@ const Activity = () => {
 
   useEffect(() => {
     fetchActivities();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filterModule, filterAction, filterDate]);
 
   const handleClearLogs = async () => {
@@ -86,6 +87,41 @@ const Activity = () => {
     }
   };
 
+  // ========================================================
+  // FUNGSI BARU: MENGHAPUS LOG SECARA SPESIFIK (SATU PER SATU)
+  // ========================================================
+  const handleDeleteSingleLog = async (e: React.MouseEvent, id: number) => {
+    e.stopPropagation(); // Mencegah modal detail terbuka saat kita nge-klik icon hapus
+    
+    const result = await Swal.fire({
+      title: 'Hapus Log Ini?',
+      text: "Catatan ini akan dihilangkan dari riwayat.",
+      icon: 'warning', 
+      showCancelButton: true, 
+      confirmButtonColor: '#ef4444',
+      confirmButtonText: 'Ya, Hapus'
+    });
+
+    if (result.isConfirmed) {
+      const token = localStorage.getItem('token');
+      try {
+        const res = await fetch(`${API_URL}/api/activities/${id}`, { 
+          method: 'DELETE', 
+          headers: { 'Authorization': `Bearer ${token}` } 
+        });
+        
+        if (res.ok) {
+          Swal.fire({ icon: 'success', title: 'Log dihapus', toast: true, position: 'top-end', timer: 1500, showConfirmButton: false });
+          fetchActivities(); // Refresh data
+        } else {
+          Swal.fire('Gagal', 'Terjadi kesalahan di server', 'error');
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  };
+
   const showDetailModal = (log: ActivityLog) => {
     const config = getModuleConfig(log.module);
     
@@ -93,19 +129,19 @@ const Activity = () => {
     if (log.data) {
       try {
         const parsed = JSON.parse(log.data);
-        dataHtml = `<div class="text-left bg-slate-50 p-4 rounded-xl mt-4 text-xs font-mono overflow-x-auto border border-slate-200"><pre>${JSON.stringify(parsed, null, 2)}</pre></div>`;
+        dataHtml = `<div class="overflow-x-auto font-mono text-xs text-left border p-4 mt-4 bg-slate-50 rounded-xl border-slate-200"><pre>${JSON.stringify(parsed, null, 2)}</pre></div>`;
       } catch (e) { dataHtml = ''; }
     }
 
     Swal.fire({
       html: `
-        <div class="flex flex-col items-center text-center font-sans">
+        <div class="flex flex-col items-center font-sans text-center">
           <div class="w-16 h-16 bg-${config.color}-50 text-${config.color}-500 rounded-2xl flex items-center justify-center text-3xl mb-4 border border-${config.color}-100">
             ${config.iconHtml}
           </div>
           <span class="px-3 py-1 bg-slate-100 text-slate-600 text-[10px] font-black uppercase rounded-full tracking-widest mb-3 border border-slate-200">${log.module.replace('_', ' ')} • ${log.action}</span>
-          <h3 class="text-xl font-black text-slate-900 mb-2">${log.title}</h3>
-          <p class="text-sm text-slate-500 font-medium leading-relaxed">${log.description}</p>
+          <h3 class="mb-2 text-xl font-black text-slate-900">${log.title}</h3>
+          <p class="text-sm font-medium leading-relaxed text-slate-500">${log.description}</p>
           <div class="text-[10px] font-bold text-slate-400 mt-4 flex items-center gap-1 uppercase tracking-tighter">
             <i class="fa fa-clock"></i> ${new Date(log.created_at).toLocaleString('id-ID')}
           </div>
@@ -127,8 +163,8 @@ const Activity = () => {
       case 'life_planning': return { icon: <FaCompass />, iconHtml: '🧭', color: 'indigo' };
       case 'habits': return { icon: <FaListUl />, iconHtml: '🔥', color: 'orange' };
       case 'achievements': return { icon: <FaTrophy />, iconHtml: '🏆', color: 'fuchsia' };
-      case 'spiritual': return { icon: <FaMosque />, iconHtml: '🕌', color: 'teal' }; // Modul Baru
-      case 'inquiry': return { icon: <FaEnvelope />, iconHtml: '📩', color: 'rose' }; // Modul Baru
+      case 'spiritual': return { icon: <FaMosque />, iconHtml: '🕌', color: 'teal' };
+      case 'inquiry': return { icon: <FaEnvelope />, iconHtml: '📩', color: 'rose' };
       case 'system': return { icon: <FaCog />, iconHtml: '⚙️', color: 'slate' };
       default: return { icon: <FaHistory />, iconHtml: '📌', color: 'slate' };
     }
@@ -157,21 +193,21 @@ const Activity = () => {
     <div className="max-w-7xl mx-auto font-sans bg-[#F8FAFC] pb-20">
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div className="flex flex-col justify-between gap-4 mb-8 md:flex-row md:items-center">
         <div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+          <h2 className="flex items-center gap-3 text-2xl font-black tracking-tight text-slate-900">
             <FaHistory className="text-blue-600" /> Activity Center
           </h2>
-          <p className="text-slate-500 mt-1 text-sm font-medium">Audit sistem dan riwayat jejak digital Anda.</p>
+          <p className="mt-1 text-sm font-medium text-slate-500">Audit sistem dan riwayat jejak digital Anda.</p>
         </div>
         <div className="flex gap-2">
-          <button className="px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold text-xs hover:bg-slate-50 transition-all flex items-center gap-2 shadow-sm"><FaFilter /> Export Data</button>
-          <button onClick={handleClearLogs} className="px-4 py-2 bg-red-50 text-red-600 rounded-xl font-bold text-xs hover:bg-red-100 transition-all flex items-center gap-2"><FaTrash /> Clear History</button>
+          <button className="flex items-center gap-2 px-4 py-2 text-xs font-bold transition-all bg-white border shadow-sm border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50"><FaFilter /> Export Data</button>
+          <button onClick={handleClearLogs} className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-red-600 transition-all bg-red-50 rounded-xl hover:bg-red-100"><FaTrash /> Clear History</button>
         </div>
       </div>
 
       {/* 1️⃣ Summary Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+      <div className="grid grid-cols-1 gap-4 mb-8 sm:grid-cols-2 lg:grid-cols-4 md:gap-6">
         {[
           { title: "Total Logs", val: stats.total, icon: <FaChartBar />, color: "blue" },
           { title: "Today", val: stats.today, icon: <FaCalendarDay />, color: "emerald" },
@@ -188,10 +224,10 @@ const Activity = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
 
         {/* Kolom Kiri: Timeline */}
-        <div className="lg:col-span-2 flex flex-col gap-6">
+        <div className="flex flex-col gap-6 lg:col-span-2">
 
           {/* 2️⃣ Filter Bar */}
           <div className="bg-white p-4 rounded-[1.5rem] shadow-sm border border-slate-100 flex flex-wrap gap-3">
@@ -226,18 +262,18 @@ const Activity = () => {
           {/* 3️⃣ Activity Timeline */}
           <div className="bg-white p-6 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100 min-h-[500px]">
             {isLoading ? (
-              <div className="flex justify-center items-center h-40"><div className="animate-spin w-8 h-8 border-4 border-blue-200 border-t-blue-600 rounded-full"></div></div>
+              <div className="flex items-center justify-center h-40"><div className="w-8 h-8 border-4 border-blue-200 rounded-full animate-spin border-t-blue-600"></div></div>
             ) : Object.keys(groupedLogs).length === 0 ? (
-              <div className="text-center text-slate-400 py-24">
-                <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-200 text-2xl"><FaHistory /></div>
-                <p className="font-bold text-sm">Tidak ada aktivitas ditemukan.</p>
+              <div className="py-24 text-center text-slate-400">
+                <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 text-2xl rounded-full bg-slate-50 text-slate-200"><FaHistory /></div>
+                <p className="text-sm font-bold">Tidak ada aktivitas ditemukan.</p>
               </div>
             ) : (
               <div className="space-y-10">
                 {Object.keys(groupedLogs).map((date) => (
                   <div key={date}>
                     <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-6 bg-slate-50 inline-block px-3 py-1.5 rounded-lg border border-slate-100">{date}</h4>
-                    <div className="relative border-l-2 border-slate-100 ml-4 space-y-6 pb-2">
+                    <div className="relative pb-2 ml-4 space-y-6 border-l-2 border-slate-100">
 
                       {groupedLogs[date].map((log) => {
                         const config = getModuleConfig(log.module);
@@ -254,15 +290,26 @@ const Activity = () => {
                             <div className="bg-slate-50 border border-slate-100 p-5 rounded-[1.5rem] group-hover:shadow-lg group-hover:bg-white group-hover:border-blue-100 transition-all duration-300 relative overflow-hidden">
                               <div className={`absolute left-0 top-0 h-full w-1 bg-${config.color}-500 opacity-0 group-hover:opacity-100 transition-opacity`}></div>
                               
-                              <div className="flex justify-between items-start mb-2">
-                                <h5 className="font-bold text-slate-800 text-sm md:text-base group-hover:text-blue-600 transition-colors">{log.title}</h5>
-                                <span className="text-[10px] font-black text-slate-300 group-hover:text-slate-500 shrink-0 mt-1 uppercase tracking-tighter">{timeString}</span>
+                              <div className="flex items-start justify-between mb-2">
+                                <h5 className="text-sm font-bold transition-colors text-slate-800 md:text-base group-hover:text-blue-600">{log.title}</h5>
+                                
+                                {/* Waktu dan Tombol Hapus (Dipisahkan agar rapi) */}
+                                <div className="flex items-center gap-3">
+                                  <span className="text-[10px] font-black text-slate-300 group-hover:text-slate-500 shrink-0 mt-1 uppercase tracking-tighter">{timeString}</span>
+                                  <button 
+                                    onClick={(e) => handleDeleteSingleLog(e, log.id)} 
+                                    className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                                    title="Hapus aktivitas ini"
+                                  >
+                                    <FaTrash size={12} />
+                                  </button>
+                                </div>
                               </div>
-                              <p className="text-xs text-slate-500 font-medium mb-4 leading-relaxed line-clamp-2 italic">"{log.description}"</p>
+                              <p className="mb-4 text-xs italic font-medium leading-relaxed text-slate-500 line-clamp-2">"{log.description}"</p>
 
                               <div className="flex gap-2">
                                 <span className={`text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md bg-${config.color}-100 text-${config.color}-700 border border-${config.color}-200/50`}>{log.module.replace('_', ' ')}</span>
-                                <span className="text-[9px] font-black uppercase tracking-wider px-2.5 py-1 rounded-md bg-white text-slate-400 border border-slate-200 uppercase">{log.action}</span>
+                                <span className="text-[9px] font-black px-2.5 py-1 rounded-md bg-white text-slate-400 border border-slate-200 uppercase">{log.action}</span>
                               </div>
                             </div>
                           </div>
@@ -280,8 +327,8 @@ const Activity = () => {
         {/* Kolom Kanan: Statistics */}
         <div className="flex flex-col gap-6">
           <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 sticky top-6">
-            <h3 className="text-lg font-black text-slate-800 mb-6 flex items-center gap-2"><FaChartBar className="text-blue-600" /> Analitik Modul</h3>
-            <div className="h-72 w-full">
+            <h3 className="flex items-center gap-2 mb-6 text-lg font-black text-slate-800"><FaChartBar className="text-blue-600" /> Analitik Modul</h3>
+            <div className="w-full h-72">
               {chartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData} layout="vertical" margin={{ top: 0, right: 30, left: 0, bottom: 0 }}>
@@ -297,14 +344,14 @@ const Activity = () => {
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="flex h-full items-center justify-center text-slate-400 text-xs font-bold uppercase tracking-widest">No Data Available</div>
+                <div className="flex items-center justify-center h-full text-xs font-bold tracking-widest uppercase text-slate-400">No Data Available</div>
               )}
             </div>
             
-            <div className="mt-8 pt-6 border-t border-slate-50">
+            <div className="pt-6 mt-8 border-t border-slate-50">
               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Tips Admin</p>
-              <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100">
-                <p className="text-xs text-blue-700 font-medium leading-relaxed">Gunakan filter modul untuk melihat riwayat spesifik seperti <strong>Inquiry</strong> untuk memantau pesan masuk dari klien.</p>
+              <div className="p-4 border border-blue-100 bg-blue-50 rounded-2xl">
+                <p className="text-xs font-medium leading-relaxed text-blue-700">Gunakan filter modul untuk melihat riwayat spesifik seperti <strong>Inquiry</strong> untuk memantau pesan masuk dari klien.</p>
               </div>
             </div>
           </div>

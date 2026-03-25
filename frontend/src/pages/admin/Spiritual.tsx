@@ -45,9 +45,7 @@ const quranSurahs = [
 
 const CITIES = { 'Garut': '1208', 'Bandung': '1219', 'Cianjur': '1205' };
 
-// HELPER: Memaksa Date menggunakan zona waktu lokal (Asia/Jakarta)
 const getLocalDateString = (d: Date) => {
-  // Format en-CA secara otomatis menghasilkan YYYY-MM-DD
   return d.toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' });
 };
 
@@ -55,7 +53,6 @@ const Spiritual = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   
-  // Memaksa tampilan tanggal menggunakan Waktu Indonesia (WIB)
   const [currentDate] = useState(new Date().toLocaleDateString('id-ID', { 
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Jakarta' 
   }));
@@ -67,9 +64,7 @@ const Spiritual = () => {
   const [reflection, setReflection] = useState<any>({ gratitude: '', mistake: '', improvement: '', mood: '' });
   const [history, setHistory] = useState<any[]>([]); 
   
-  const [showDoaRec, setShowDoaRec] = useState(false);
   const [isQuranModalOpen, setIsQuranModalOpen] = useState(false);
-
   const [editSurah, setEditSurah] = useState('Al-Baqarah');
   const [editAyat, setEditAyat] = useState(1);
   const [editPage, setEditPage] = useState(1);
@@ -82,7 +77,6 @@ const Spiritual = () => {
 
   const checkTimeReminders = (currentIbadah: any, currentAmalan: any) => {
     const now = new Date();
-    // Gunakan jam lokal
     const hour = parseInt(now.toLocaleTimeString('en-US', { hour: '2-digit', hour12: false, timeZone: 'Asia/Jakarta' }));
 
     if (hour >= 5 && hour < 6 && !sessionStorage.getItem('reminder_subuh_done')) {
@@ -122,39 +116,71 @@ const Spiritual = () => {
     }
   };
 
+  // ==========================================
+  // PERBAIKAN 1: BUSTER CACHE DI FETCH UTAMA
+  // ==========================================
   const fetchSpiritualData = async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return navigate('/login');
-      const res = await fetch(`${API_URL}/api/spiritual`, { headers: { 'Authorization': `Bearer ${token}` } });
+      
+      // Tambahkan `?t=` timestamp agar browser dipaksa menarik data paling baru dari server
+      const res = await fetch(`${API_URL}/api/spiritual?t=${new Date().getTime()}`, { 
+        headers: { 
+          'Authorization': `Bearer ${token}`,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache'
+        } 
+      });
+      
       const result = await res.json();
       if (result.success) {
-        setIbadah(result.data.ibadah);
-        setAmalan(result.data.amalan);
-        setQuran(result.data.quran);
-        setDoaList(result.data.doa);
-        setReflection(result.data.reflection);
+        setIbadah(result.data.ibadah || {});
+        setAmalan(result.data.amalan || {});
+        setQuran(result.data.quran || {});
+        setDoaList(result.data.doa || []);
+        setReflection(result.data.reflection || { gratitude: '', mistake: '', improvement: '', mood: '' });
         if (result.data.history) setHistory(result.data.history);
-        checkTimeReminders(result.data.ibadah, result.data.amalan);
+        checkTimeReminders(result.data.ibadah || {}, result.data.amalan || {});
       }
-    } catch (err) { console.error(err); } finally { setIsLoading(false); }
+    } catch (err) { 
+      console.error("Gagal Mengambil Data Spiritual:", err); 
+    } finally { 
+      setIsLoading(false); 
+    }
   };
 
   const fetchPrayerTimes = async (city: keyof typeof CITIES) => {
     try {
-      // Ambil format YYYY/MM/DD menggunakan zona waktu Jakarta
       const dateStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' }).replace(/-/g, '/');
+      const cachedDataStr = localStorage.getItem('mbnp_prayer_cache');
+      
+      if (cachedDataStr) {
+        const cachedData = JSON.parse(cachedDataStr);
+        if (cachedData.date === dateStr && cachedData.city === city) {
+          setPrayerTimes(cachedData.jadwal);
+          return; 
+        }
+      }
 
-      const cityId = CITIES[city];
-      const response = await fetch(`https://api.myquran.com/v2/sholat/jadwal/${cityId}/${dateStr}`);
+      const response = await fetch(`https://api.myquran.com/v2/sholat/jadwal/${CITIES[city]}/${dateStr}`);
+      if (response.status === 429) {
+        console.warn("API MyQuran limit tercapai (429). Silakan tunggu beberapa saat.");
+        return;
+      }
+
       const data = await response.json();
-      if(data.status) setPrayerTimes(data.data.jadwal);
-    } catch (error) { console.error(error); }
+      if(data.status) {
+        setPrayerTimes(data.data.jadwal);
+        localStorage.setItem('mbnp_prayer_cache', JSON.stringify({ date: dateStr, city: city, jadwal: data.data.jadwal }));
+      }
+    } catch (error) { console.error("Gagal mengambil jadwal:", error); }
   };
 
   useEffect(() => { 
     fetchSpiritualData(); 
     fetchPrayerTimes(selectedCity);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleCityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -164,28 +190,54 @@ const Spiritual = () => {
     fetchPrayerTimes(city);
   };
 
+  // ==========================================
+  // PERBAIKAN 2: ERROR HANDLING ROBUST DI ACTION
+  // ==========================================
   const handleToggleIbadah = async (field: string) => {
-    const isCurrentlyDone = ibadah[field] === 1 || ibadah[field] === true;
-    setIbadah((prev:any) => ({ ...prev, [field]: !isCurrentlyDone }));
+    const currentIbadah = ibadah || {};
+    const isCurrentlyDone = currentIbadah[field] === 1 || currentIbadah[field] === true;
     
-    if (!isCurrentlyDone && ['subuh','dzuhur','ashar','maghrib','isya'].includes(field)) {
-      setShowDoaRec(true); setTimeout(() => setShowDoaRec(false), 10000);
+    // Ubah UI seketika (Optimistic Update)
+    setIbadah((prev:any) => ({ ...(prev || {}), [field]: !isCurrentlyDone }));
+    
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/spiritual/ibadah`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ field })
+      });
+      
+      const result = await res.json();
+      if (!res.ok || !result.success) {
+        // Revert (batal) jika backend gagal, dan munculkan popup merah!
+        setIbadah((prev:any) => ({ ...(prev || {}), [field]: isCurrentlyDone }));
+        Swal.fire('Gagal Menyimpan', result.message || 'Database bermasalah', 'error');
+      }
+    } catch(e) {
+      setIbadah((prev:any) => ({ ...(prev || {}), [field]: isCurrentlyDone }));
+      Swal.fire('Error Koneksi', 'Tidak dapat terhubung ke server', 'error');
     }
-    const token = localStorage.getItem('token');
-    await fetch(`${API_URL}/api/spiritual/ibadah`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ field })
-    });
-    fetchSpiritualData();
   };
 
   const handleToggleAmalan = async (field: string) => {
-    const isCurrentlyDone = amalan[field] === 1 || amalan[field] === true;
-    setAmalan((prev:any) => ({ ...prev, [field]: !isCurrentlyDone }));
-    const token = localStorage.getItem('token');
-    await fetch(`${API_URL}/api/spiritual/amalan`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ field })
-    });
-    fetchSpiritualData();
+    const currentAmalan = amalan || {};
+    const isCurrentlyDone = currentAmalan[field] === 1 || currentAmalan[field] === true;
+    
+    setAmalan((prev:any) => ({ ...(prev || {}), [field]: !isCurrentlyDone }));
+    
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`${API_URL}/api/spiritual/amalan`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ field })
+      });
+      
+      const result = await res.json();
+      if (!res.ok || !result.success) {
+        setAmalan((prev:any) => ({ ...(prev || {}), [field]: isCurrentlyDone }));
+        Swal.fire('Gagal Menyimpan', result.message || 'Database bermasalah', 'error');
+      }
+    } catch(e) {
+      setAmalan((prev:any) => ({ ...(prev || {}), [field]: isCurrentlyDone }));
+    }
   };
 
   const handleSaveQuran = async () => {
@@ -199,12 +251,14 @@ const Spiritual = () => {
   };
 
   const handleReflectionChange = async (key: string, value: string) => {
-    const newRef = { ...reflection, [key]: value };
+    const newRef = { ...(reflection || {}), [key]: value };
     setReflection(newRef);
-    const token = localStorage.getItem('token');
-    await fetch(`${API_URL}/api/spiritual/reflection`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(newRef)
-    });
+    try {
+      const token = localStorage.getItem('token');
+      await fetch(`${API_URL}/api/spiritual/reflection`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(newRef)
+      });
+    } catch(e) {}
   };
 
   const handleAddDoa = async () => {
@@ -222,12 +276,24 @@ const Spiritual = () => {
         content: (document.getElementById('doa-content') as HTMLTextAreaElement).value
       })
     });
+
     if (formValues && formValues.title) {
-      const token = localStorage.getItem('token');
-      await fetch(`${API_URL}/api/spiritual/doa`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(formValues)
-      });
-      fetchSpiritualData();
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${API_URL}/api/spiritual/doa`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(formValues)
+        });
+        const result = await res.json();
+        
+        if (res.ok && result.success) {
+          Swal.fire({ icon: 'success', title: 'Doa Tersimpan', toast: true, position: 'top-end', timer: 1500, showConfirmButton: false });
+          fetchSpiritualData(); // Panggil ulang untuk memunculkan Doa di layar
+        } else {
+          Swal.fire('Gagal Menyimpan', result.message || 'Terjadi kesalahan di server', 'error');
+        }
+      } catch (err) {
+        Swal.fire('Error', 'Koneksi bermasalah', 'error');
+      }
     }
   };
 
@@ -238,9 +304,10 @@ const Spiritual = () => {
   };
 
   const sholatWajib = ['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya'];
-  const completedSholat = sholatWajib.filter(k => ibadah[k]).length;
+  const completedSholat = sholatWajib.filter(k => ibadah && (ibadah[k] === 1 || ibadah[k] === true)).length;
+  
   const dbAmalanFields = ['dzikir_pagi', 'dzikir_petang', 'istighfar', 'sholawat', 'sedekah'];
-  const completedAmalan = dbAmalanFields.filter(k => amalan[k]).length;
+  const completedAmalan = dbAmalanFields.filter(k => amalan && (amalan[k] === 1 || amalan[k] === true)).length;
   const amalanPercent = Math.round((completedAmalan / 5) * 100);
 
   const selectedSurahData = quranSurahs.find(s => s.name === editSurah);
@@ -250,7 +317,6 @@ const Spiritual = () => {
     if (editAyat > maxAyat) setEditAyat(maxAyat);
   }, [editSurah, maxAyat, editAyat]);
 
-  // FIX: Kalender menggunakan Waktu Lokal yang Akurat
   const generateLast7Days = () => {
     const days = [];
     for (let i = 6; i >= 0; i--) {
@@ -264,8 +330,8 @@ const Spiritual = () => {
       } else if (i === 0) {
         days.push({
           log_date: dateStr,
-          subuh: ibadah.subuh, dzuhur: ibadah.dzuhur, ashar: ibadah.ashar, maghrib: ibadah.maghrib, isya: ibadah.isya,
-          dzikir_pagi: amalan.dzikir_pagi, dzikir_petang: amalan.dzikir_petang, istighfar: amalan.istighfar, sholawat: amalan.sholawat, sedekah: amalan.sedekah
+          subuh: ibadah?.subuh, dzuhur: ibadah?.dzuhur, ashar: ibadah?.ashar, maghrib: ibadah?.maghrib, isya: ibadah?.isya,
+          dzikir_pagi: amalan?.dzikir_pagi, dzikir_petang: amalan?.dzikir_petang, istighfar: amalan?.istighfar, sholawat: amalan?.sholawat, sedekah: amalan?.sedekah
         });
       } else {
         days.push({ log_date: dateStr });
@@ -276,70 +342,70 @@ const Spiritual = () => {
 
   const trackerDays = generateLast7Days();
 
-  if (isLoading) return <div className="flex h-screen items-center justify-center bg-[#F8FAFC]"><div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div></div>;
+  if (isLoading) return <div className="flex h-screen items-center justify-center bg-[#F8FAFC]"><div className="w-12 h-12 border-4 border-blue-200 rounded-full border-t-blue-600 animate-spin"></div></div>;
 
   return (
     <div className="max-w-8xl mx-auto font-sans bg-[#F8FAFC] pb-20 selection:bg-emerald-200 selection:text-emerald-900 relative">
       
       {/* MODAL QURAN UPDATE */}
       {isQuranModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
           <div className="bg-white p-6 md:p-8 rounded-[2rem] w-full max-w-md shadow-2xl animate-fade-in-down">
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-black text-slate-800">Update Tilawah</h3>
               <button onClick={() => setIsQuranModalOpen(false)} className="text-slate-400 hover:text-red-500"><FaTimes size={20}/></button>
             </div>
             
-            <label className="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Pilih Surah</label>
-            <select value={editSurah} onChange={e => setEditSurah(e.target.value)} className="w-full p-4 mb-4 border border-slate-200 rounded-xl bg-slate-50 font-bold text-emerald-800 outline-none focus:border-emerald-500 cursor-pointer">
+            <label className="block mb-2 text-xs font-bold tracking-widest uppercase text-slate-500">Pilih Surah</label>
+            <select value={editSurah} onChange={e => setEditSurah(e.target.value)} className="w-full p-4 mb-4 font-bold border outline-none cursor-pointer border-slate-200 rounded-xl bg-slate-50 text-emerald-800 focus:border-emerald-500">
               {quranSurahs.map(s => <option key={s.no} value={s.name}>{s.no}. {s.name} ({s.ayat} Ayat)</option>)}
             </select>
 
             <div className="grid grid-cols-3 gap-4 mb-8">
               <div>
                 <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Ayat</label>
-                <input type="number" min="1" max={maxAyat} value={editAyat} onChange={e => { let val = parseInt(e.target.value); if(val > maxAyat) val = maxAyat; setEditAyat(val); }} className="w-full p-4 border border-slate-200 rounded-xl bg-slate-50 text-center font-bold outline-none focus:border-emerald-500" />
+                <input type="number" min="1" max={maxAyat} value={editAyat} onChange={e => { let val = parseInt(e.target.value); if(val > maxAyat) val = maxAyat; setEditAyat(val); }} className="w-full p-4 font-bold text-center border outline-none border-slate-200 rounded-xl bg-slate-50 focus:border-emerald-500" />
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Hal</label>
-                <input type="number" min="1" max="604" value={editPage} onChange={e => setEditPage(parseInt(e.target.value))} className="w-full p-4 border border-slate-200 rounded-xl bg-slate-50 text-center font-bold outline-none focus:border-emerald-500" />
+                <input type="number" min="1" max="604" value={editPage} onChange={e => setEditPage(parseInt(e.target.value))} className="w-full p-4 font-bold text-center border outline-none border-slate-200 rounded-xl bg-slate-50 focus:border-emerald-500" />
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Juz</label>
-                <input type="number" min="1" max="30" value={editJuz} onChange={e => setEditJuz(parseInt(e.target.value))} className="w-full p-4 border border-slate-200 rounded-xl bg-slate-50 text-center font-bold outline-none focus:border-emerald-500" />
+                <input type="number" min="1" max="30" value={editJuz} onChange={e => setEditJuz(parseInt(e.target.value))} className="w-full p-4 font-bold text-center border outline-none border-slate-200 rounded-xl bg-slate-50 focus:border-emerald-500" />
               </div>
             </div>
 
-            <button onClick={handleSaveQuran} className="w-full py-4 bg-emerald-500 text-white font-black rounded-xl hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/30">Simpan Bacaan</button>
+            <button onClick={handleSaveQuran} className="w-full py-4 font-black text-white transition-all shadow-lg bg-emerald-500 rounded-xl hover:bg-emerald-600 shadow-emerald-500/30">Simpan Bacaan</button>
           </div>
         </div>
       )}
 
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div className="flex flex-col justify-between gap-4 mb-8 md:flex-row md:items-center">
         <div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+          <h2 className="flex items-center gap-3 text-2xl font-black tracking-tight text-slate-900">
             <FaMosque className="text-emerald-600" /> Spiritual Dashboard
           </h2>
-          <p className="text-slate-500 mt-1 text-sm font-medium">Pantau ibadah, amalan, dan perkembangan spiritual harian.</p>
+          <p className="mt-1 text-sm font-medium text-slate-500">Pantau ibadah, amalan, dan perkembangan spiritual harian.</p>
         </div>
         <div className="flex items-center gap-4">
-          <div className="text-right hidden md:block">
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Hari Ini</p>
+          <div className="hidden text-right md:block">
+            <p className="text-xs font-bold tracking-widest uppercase text-slate-400">Hari Ini</p>
             <p className="text-sm font-black text-slate-800">{currentDate}</p>
           </div>
         </div>
       </div>
 
       {/* Summary Analytics */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-8">
+      <div className="grid grid-cols-1 gap-4 mb-8 sm:grid-cols-2 lg:grid-cols-4 md:gap-6">
         {[
           { title: "Sholat Wajib", val: `${completedSholat} / 5`, icon: <FaPrayingHands />, color: "emerald" },
-          { title: "Puasa Sunnah", val: ibadah.puasa_senin || ibadah.puasa_kamis ? "✔ Aktif" : "Tidak", icon: <FaMoon />, color: "indigo" },
-          { title: "Progress Quran", val: `Juz ${quran.juz || 0} Hal ${quran.page || 0}`, icon: <FaBookOpen />, color: "amber" },
+          { title: "Puasa Sunnah", val: ibadah?.puasa_senin || ibadah?.puasa_kamis ? "✔ Aktif" : "Tidak", icon: <FaMoon />, color: "indigo" },
+          { title: "Progress Quran", val: `Juz ${quran?.juz || 0} Hal ${quran?.page || 0}`, icon: <FaBookOpen />, color: "amber" },
           { title: "Amalan Harian", val: `${amalanPercent}%`, icon: <FaChartPie />, color: "blue" },
         ].map((item, idx) => (
-          <div key={idx} className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition-shadow">
+          <div key={`summary-${idx}`} className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition-shadow">
             <div className={`w-14 h-14 rounded-2xl bg-${item.color}-50 text-${item.color}-500 flex items-center justify-center text-2xl shrink-0`}>{item.icon}</div>
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{item.title}</p>
@@ -349,27 +415,28 @@ const Spiritual = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        {/* ================= KOLOM KIRI ================= */}
-        <div className="lg:col-span-2 flex flex-col gap-6">
-          {/* Jadwal Sholat Widget (Ditambah Tanggal Realtime) */}
+      <div className="grid grid-cols-1 gap-6 mb-8 lg:grid-cols-3">
+        {/* KOLOM KIRI */}
+        <div className="flex flex-col gap-6 lg:col-span-2">
+          
+          {/* Jadwal Sholat Widget */}
           <div className="bg-slate-900 p-6 rounded-[2rem] shadow-lg shadow-slate-900/20 text-white flex flex-col md:flex-row justify-between items-center gap-6 relative overflow-hidden">
-             <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+             <div className="absolute top-0 right-0 w-64 h-64 translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none bg-emerald-500/10 blur-3xl"></div>
              
-             <div className="flex items-center gap-4 relative z-10 w-full md:w-auto">
-               <div className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-xl text-emerald-400 border border-white/10 shrink-0"><FaClock /></div>
+             <div className="relative z-10 flex items-center w-full gap-4 md:w-auto">
+               <div className="flex items-center justify-center w-12 h-12 text-xl border bg-white/10 rounded-2xl text-emerald-400 border-white/10 shrink-0"><FaClock /></div>
                <div>
-                 <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-1 flex items-center gap-1"><FaMapMarkerAlt /> Jadwal Adzan • <span className="text-slate-300 font-medium">{currentDate}</span></p>
-                 <select value={selectedCity} onChange={handleCityChange} className="bg-transparent text-lg font-black text-white outline-none cursor-pointer hover:text-emerald-300 transition-colors">
-                    {Object.keys(CITIES).map(city => <option key={city} value={city} className="text-slate-900">{city}</option>)}
+                 <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-1 flex items-center gap-1"><FaMapMarkerAlt /> Jadwal Adzan • <span className="font-medium text-slate-300">{currentDate}</span></p>
+                 <select value={selectedCity} onChange={handleCityChange} className="text-lg font-black text-white transition-colors bg-transparent outline-none cursor-pointer hover:text-emerald-300">
+                    {Object.keys(CITIES).map((city, idx) => <option key={`city-${idx}`} value={city} className="text-slate-900">{city}</option>)}
                  </select>
                </div>
              </div>
 
-             <div className="flex gap-4 relative z-10 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 custom-scrollbar">
+             <div className="relative z-10 flex w-full gap-4 pb-2 overflow-x-auto md:w-auto md:pb-0 custom-scrollbar">
                 {prayerTimes ? (
-                  ['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya'].map(sholat => (
-                    <div key={sholat} className="bg-white/10 border border-white/10 rounded-xl px-4 py-2 text-center min-w-[80px]">
+                  ['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya'].map((sholat, idx) => (
+                    <div key={`prayer-${idx}`} className="bg-white/10 border border-white/10 rounded-xl px-4 py-2 text-center min-w-[80px]">
                       <p className="text-[10px] font-bold text-slate-400 uppercase">{sholat}</p>
                       <p className="text-sm font-black text-emerald-300">{prayerTimes[sholat]}</p>
                     </div>
@@ -380,16 +447,16 @@ const Spiritual = () => {
 
           {/* Ibadah Harian */}
           <div className="bg-white p-6 md:p-8 rounded-[2rem] shadow-sm border border-slate-100">
-            <h3 className="text-lg font-black text-slate-800 mb-6 flex items-center gap-2"><FaPrayingHands className="text-emerald-500" /> Ibadah Harian</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <h3 className="flex items-center gap-2 mb-6 text-lg font-black text-slate-800"><FaPrayingHands className="text-emerald-500" /> Ibadah Harian</h3>
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
               <div>
                 <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Sholat Wajib</h4>
                 <div className="space-y-3">
-                  {sholatWajib.map(sholat => (
-                    <div key={sholat} onClick={() => handleToggleIbadah(sholat)} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${ibadah[sholat] ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-100 hover:border-emerald-200'}`}>
-                      <span className={`font-bold text-sm capitalize ${ibadah[sholat] ? 'text-emerald-800' : 'text-slate-600'}`}>{sholat}</span>
-                      <div className={`text-xl transition-colors ${ibadah[sholat] ? 'text-emerald-500' : 'text-slate-300'}`}>
-                        {ibadah[sholat] ? <FaCheckCircle /> : <FaRegCircle />}
+                  {sholatWajib.map((sholat, idx) => (
+                    <div key={`wajib-${idx}`} onClick={() => handleToggleIbadah(sholat)} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${ibadah && ibadah[sholat] ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-100 hover:border-emerald-200'}`}>
+                      <span className={`font-bold text-sm capitalize ${ibadah && ibadah[sholat] ? 'text-emerald-800' : 'text-slate-600'}`}>{sholat}</span>
+                      <div className={`text-xl transition-colors ${ibadah && ibadah[sholat] ? 'text-emerald-500' : 'text-slate-300'}`}>
+                        {ibadah && ibadah[sholat] ? <FaCheckCircle /> : <FaRegCircle />}
                       </div>
                     </div>
                   ))}
@@ -398,11 +465,11 @@ const Spiritual = () => {
               <div>
                 <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Sholat Sunnah Utama</h4>
                 <div className="space-y-3">
-                  {['dhuha', 'tahajud'].map(sholat => (
-                    <div key={sholat} onClick={() => handleToggleIbadah(sholat)} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${ibadah[sholat] ? 'bg-indigo-50 border-indigo-200' : 'bg-slate-50 border-slate-100 hover:border-indigo-200'}`}>
-                      <span className={`font-bold text-sm capitalize ${ibadah[sholat] ? 'text-indigo-800' : 'text-slate-600'}`}>{sholat}</span>
-                      <div className={`text-xl transition-colors ${ibadah[sholat] ? 'text-indigo-500' : 'text-slate-300'}`}>
-                        {ibadah[sholat] ? <FaCheckCircle /> : <FaRegCircle />}
+                  {['dhuha', 'tahajud'].map((sholat, idx) => (
+                    <div key={`sunnah-${idx}`} onClick={() => handleToggleIbadah(sholat)} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${ibadah && ibadah[sholat] ? 'bg-indigo-50 border-indigo-200' : 'bg-slate-50 border-slate-100 hover:border-indigo-200'}`}>
+                      <span className={`font-bold text-sm capitalize ${ibadah && ibadah[sholat] ? 'text-indigo-800' : 'text-slate-600'}`}>{sholat}</span>
+                      <div className={`text-xl transition-colors ${ibadah && ibadah[sholat] ? 'text-indigo-500' : 'text-slate-300'}`}>
+                        {ibadah && ibadah[sholat] ? <FaCheckCircle /> : <FaRegCircle />}
                       </div>
                     </div>
                   ))}
@@ -411,51 +478,51 @@ const Spiritual = () => {
             </div>
           </div>
 
-          {/* Quran Last Read (Dibuat Lebih Tinggi) */}
-          <div className="bg-gradient-to-br from-emerald-800 to-teal-900 p-8 md:p-10 min-h-[380px] rounded-[2.5rem] shadow-xl shadow-emerald-900/20 text-white relative overflow-hidden flex flex-col justify-between">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 pointer-events-none"></div>
+          {/* Quran Last Read */}
+          <div className="bg-gradient-to-br from-emerald-800 to-teal-900 p-8 md:p-10 min-h-[260px] rounded-[2.5rem] shadow-xl shadow-emerald-900/20 text-white relative overflow-hidden flex flex-col justify-between">
+            <div className="absolute top-0 right-0 w-64 h-64 -translate-y-1/2 rounded-full pointer-events-none bg-white/5 blur-3xl translate-x-1/4"></div>
             
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
+            <div className="relative z-10 flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
               <div className="flex items-center gap-5">
-                <div className="w-16 h-16 bg-white/10 backdrop-blur-sm rounded-2xl flex items-center justify-center text-4xl border border-white/20 shrink-0"><FaBookOpen className="text-emerald-300" /></div>
+                <div className="flex items-center justify-center w-16 h-16 text-4xl border bg-white/10 backdrop-blur-sm rounded-2xl border-white/20 shrink-0"><FaBookOpen className="text-emerald-300" /></div>
                 <div>
                   <p className="text-[10px] font-bold text-emerald-300 uppercase tracking-widest mb-1">Terakhir Dibaca</p>
-                  <h3 className="text-3xl font-black tracking-tight">{quran.surah} <span className="text-emerald-400 text-xl font-bold">Ayat {quran.ayat}</span></h3>
-                  <p className="text-sm text-emerald-100 font-medium mt-1">Juz {quran.juz} | Halaman {quran.page}</p>
+                  <h3 className="text-3xl font-black tracking-tight">{quran?.surah || 'Al-Fatihah'} <span className="text-xl font-bold text-emerald-400">Ayat {quran?.ayat || 1}</span></h3>
+                  <p className="mt-1 text-sm font-medium text-emerald-100">Juz {quran?.juz || 1} | Halaman {quran?.page || 1}</p>
                 </div>
               </div>
-              <button onClick={() => { setEditSurah(quran.surah || 'Al-Fatihah'); setEditAyat(quran.ayat || 1); setEditPage(quran.page || 1); setEditJuz(quran.juz || 1); setIsQuranModalOpen(true); }} className="px-8 py-4 bg-white text-emerald-800 rounded-2xl font-black text-sm hover:bg-emerald-50 transition-all shadow-lg w-full md:w-auto">Update Bacaan</button>
+              <button onClick={() => { setEditSurah(quran?.surah || 'Al-Fatihah'); setEditAyat(quran?.ayat || 1); setEditPage(quran?.page || 1); setEditJuz(quran?.juz || 1); setIsQuranModalOpen(true); }} className="w-full px-8 py-4 text-sm font-black transition-all bg-white shadow-lg text-emerald-800 rounded-2xl hover:bg-emerald-50 md:w-auto">Update Bacaan</button>
             </div>
             
-            <div className="mt-8 pt-6 border-t border-white/10 relative z-10">
-              <div className="flex justify-between text-xs font-bold text-emerald-100 mb-2"><span>Progress Juz {quran.juz}</span><span>{Math.round((quran.page % 20) / 20 * 100) || 0}%</span></div>
-              <div className="w-full bg-black/20 rounded-full h-3 overflow-hidden"><div className="bg-emerald-400 h-full rounded-full" style={{ width: `${(quran.page % 20) / 20 * 100}%` }}></div></div>
+            <div className="relative z-10 pt-6 mt-8 border-t border-white/10">
+              <div className="flex justify-between mb-2 text-xs font-bold text-emerald-100"><span>Progress Juz {quran?.juz || 1}</span><span>{Math.round(((quran?.page || 0) % 20) / 20 * 100) || 0}%</span></div>
+              <div className="w-full h-3 overflow-hidden rounded-full bg-black/20"><div className="h-full rounded-full bg-emerald-400" style={{ width: `${((quran?.page || 0) % 20) / 20 * 100}%` }}></div></div>
             </div>
           </div>
         </div>
 
-        {/* ================= KOLOM KANAN (Sidebar Widget) ================= */}
+        {/* KOLOM KANAN */}
         <div className="flex flex-col gap-6">
           <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100">
-            <h3 className="text-base font-black text-slate-800 mb-4 flex items-center gap-2"><FaMoon className="text-indigo-500" /> Puasa Sunnah</h3>
+            <h3 className="flex items-center gap-2 mb-4 text-base font-black text-slate-800"><FaMoon className="text-indigo-500" /> Puasa Sunnah</h3>
             <div className="flex gap-3 mb-5">
-              {['puasa_senin', 'puasa_kamis'].map(hari => (
-                <div key={hari} onClick={() => handleToggleIbadah(hari)} className={`flex-1 p-3 rounded-xl border text-center cursor-pointer transition-all ${ibadah[hari] ? 'bg-indigo-600 border-indigo-600 text-white shadow-md' : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-indigo-300'}`}>
-                  <span className="text-xs font-bold uppercase tracking-wider">{hari.replace('puasa_', '')}</span>
-                  <div className="mt-1 text-lg">{ibadah[hari] ? <FaCheckCircle className="mx-auto" /> : <FaRegCircle className="mx-auto" />}</div>
+              {['puasa_senin', 'puasa_kamis'].map((hari, idx) => (
+                <div key={`puasa-${idx}`} onClick={() => handleToggleIbadah(hari)} className={`flex-1 p-3 rounded-xl border text-center cursor-pointer transition-all ${ibadah && ibadah[hari] ? 'bg-indigo-600 border-indigo-600 text-white shadow-md' : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-indigo-300'}`}>
+                  <span className="text-xs font-bold tracking-wider uppercase">{hari.replace('puasa_', '')}</span>
+                  <div className="mt-1 text-lg">{ibadah && ibadah[hari] ? <FaCheckCircle className="mx-auto" /> : <FaRegCircle className="mx-auto" />}</div>
                 </div>
               ))}
             </div>
           </div>
 
           <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100">
-            <h3 className="text-base font-black text-slate-800 mb-4 flex items-center gap-2"><FaLeaf className="text-emerald-500" /> Amalan Harian</h3>
+            <h3 className="flex items-center gap-2 mb-4 text-base font-black text-slate-800"><FaLeaf className="text-emerald-500" /> Amalan Harian</h3>
             <div className="space-y-2.5">
-              {dbAmalanFields.map(amal => (
-                <div key={amal} onClick={() => handleToggleAmalan(amal)} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${amalan[amal] ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-100 hover:border-emerald-200'}`}>
-                  <span className={`text-sm font-bold capitalize ${amalan[amal] ? 'text-emerald-800' : 'text-slate-600'}`}>{amal.replace('_', ' ')}</span>
-                  <div className={`text-lg transition-colors ${amalan[amal] ? 'text-emerald-500' : 'text-slate-300'}`}>
-                    {amalan[amal] ? <FaCheckCircle /> : <FaRegCircle />}
+              {dbAmalanFields.map((amal, idx) => (
+                <div key={`amalan-${idx}`} onClick={() => handleToggleAmalan(amal)} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${amalan && amalan[amal] ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-100 hover:border-emerald-200'}`}>
+                  <span className={`text-sm font-bold capitalize ${amalan && amalan[amal] ? 'text-emerald-800' : 'text-slate-600'}`}>{amal.replace('_', ' ')}</span>
+                  <div className={`text-lg transition-colors ${amalan && amalan[amal] ? 'text-emerald-500' : 'text-slate-300'}`}>
+                    {amalan && amalan[amal] ? <FaCheckCircle /> : <FaRegCircle />}
                   </div>
                 </div>
               ))}
@@ -463,21 +530,21 @@ const Spiritual = () => {
           </div>
 
           <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex-1">
-            <h3 className="text-base font-black text-slate-800 mb-5 flex items-center gap-2"><FaHeart className="text-rose-500" /> Refleksi Harian</h3>
+            <h3 className="flex items-center gap-2 mb-5 text-base font-black text-slate-800"><FaHeart className="text-rose-500" /> Refleksi Harian</h3>
             <div className="space-y-4">
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Syukur Hari Ini</label>
-                <textarea value={reflection.gratitude || ''} onChange={e => handleReflectionChange('gratitude', e.target.value)} rows={2} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium outline-none focus:border-rose-300 focus:ring-2 focus:ring-rose-100 resize-none" placeholder="Alhamdulillah untuk..."></textarea>
+                <textarea value={reflection?.gratitude || ''} onChange={e => handleReflectionChange('gratitude', e.target.value)} rows={2} className="w-full p-3 text-xs font-medium border outline-none resize-none bg-slate-50 border-slate-200 rounded-xl focus:border-rose-300 focus:ring-2 focus:ring-rose-100" placeholder="Alhamdulillah untuk..."></textarea>
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Muhasabah (Kesalahan)</label>
-                <textarea value={reflection.mistake || ''} onChange={e => handleReflectionChange('mistake', e.target.value)} rows={2} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium outline-none focus:border-rose-300 focus:ring-2 focus:ring-rose-100 resize-none" placeholder="Astaghfirullah..."></textarea>
+                <textarea value={reflection?.mistake || ''} onChange={e => handleReflectionChange('mistake', e.target.value)} rows={2} className="w-full p-3 text-xs font-medium border outline-none resize-none bg-slate-50 border-slate-200 rounded-xl focus:border-rose-300 focus:ring-2 focus:ring-rose-100" placeholder="Astaghfirullah..."></textarea>
               </div>
               <div>
                 <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Mood / Perasaan</label>
                 <div className="flex flex-wrap gap-2">
-                  {[ { emoji: '😌', val: 'tenang' }, { emoji: '😔', val: 'sedih' }, { emoji: '😟', val: 'cemas' }, { emoji: '🙏', val: 'bersyukur' }, { emoji: '🔥', val: 'semangat' } ].map(m => (
-                    <button key={m.val} onClick={() => handleReflectionChange('mood', m.val)} className={`p-2 rounded-xl text-lg flex items-center justify-center transition-all border ${reflection.mood === m.val ? 'bg-rose-50 border-rose-300 shadow-sm scale-110' : 'bg-white border-slate-200 hover:bg-slate-50'}`} title={m.val}>{m.emoji}</button>
+                  {[ { emoji: '😌', val: 'tenang' }, { emoji: '😔', val: 'sedih' }, { emoji: '😟', val: 'cemas' }, { emoji: '🙏', val: 'bersyukur' }, { emoji: '🔥', val: 'semangat' } ].map((m, idx) => (
+                    <button key={`mood-${idx}`} onClick={() => handleReflectionChange('mood', m.val)} className={`p-2 rounded-xl text-lg flex items-center justify-center transition-all border ${reflection?.mood === m.val ? 'bg-rose-50 border-rose-300 shadow-sm scale-110' : 'bg-white border-slate-200 hover:bg-slate-50'}`} title={m.val}>{m.emoji}</button>
                   ))}
                 </div>
               </div>
@@ -486,26 +553,25 @@ const Spiritual = () => {
         </div>
       </div>
 
-      {/* ================= SECTION DOA PRIBADI (DIPINDAH KE BAWAH FULL WIDTH) ================= */}
+      {/* SECTION DOA PRIBADI */}
       <div className="bg-white p-6 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100 mb-8">
-        <div className="flex items-center justify-between mb-8 border-b border-slate-50 pb-6">
-          <h3 className="text-xl font-black text-slate-800 flex items-center gap-2"><FaPrayingHands className="text-blue-500" /> Kumpulan Doa Pribadi</h3>
+        <div className="flex items-center justify-between pb-6 mb-8 border-b border-slate-50">
+          <h3 className="flex items-center gap-2 text-xl font-black text-slate-800"><FaPrayingHands className="text-blue-500" /> Kumpulan Doa Pribadi</h3>
           <button onClick={handleAddDoa} className="text-sm font-bold text-blue-600 bg-blue-50 px-5 py-2.5 rounded-xl hover:bg-blue-100 flex items-center gap-2 transition-colors">
             <FaPlus /> Tambah Doa
           </button>
         </div>
-        {/* Diubah menjadi lebar 2 kolom (md:grid-cols-2) agar teks doa tidak terjepit */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {doaList.length === 0 ? <p className="text-sm text-slate-400 py-6 col-span-full text-center">Belum ada doa tersimpan.</p> : doaList.map(doa => (
-            <div key={doa.id} className="bg-slate-50 border border-slate-200 p-6 md:p-8 rounded-3xl group relative hover:border-blue-300 transition-all flex flex-col justify-between hover:shadow-md">
-              <div className="absolute top-6 right-6 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button onClick={() => handleDeleteDoa(doa.id)} className="p-3 bg-white text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl shadow-sm border border-slate-100 transition-colors"><FaTrash size={14}/></button>
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          {doaList.length === 0 ? <p className="py-6 text-sm text-center text-slate-400 col-span-full">Belum ada doa tersimpan.</p> : doaList.map((doa, idx) => (
+            <div key={`doa-${doa.id}-${idx}`} className="relative flex flex-col justify-between p-6 transition-all border bg-slate-50 border-slate-200 md:p-8 rounded-3xl group hover:border-blue-300 hover:shadow-md">
+              <div className="absolute flex gap-2 transition-opacity opacity-0 top-6 right-6 group-hover:opacity-100">
+                <button onClick={() => handleDeleteDoa(doa.id)} className="p-3 transition-colors bg-white border shadow-sm text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl border-slate-100"><FaTrash size={14}/></button>
               </div>
               <div className="mb-4">
                 <span className="text-[10px] font-black uppercase tracking-widest text-blue-600 bg-blue-100 px-3 py-1.5 rounded-lg mb-4 inline-block">{doa.category}</span>
-                <h4 className="text-lg font-black text-slate-900 mb-2 pr-12">{doa.title}</h4>
+                <h4 className="pr-12 mb-2 text-lg font-black text-slate-900">{doa.title}</h4>
               </div>
-              <p className="text-sm md:text-base text-slate-600 italic leading-relaxed font-medium bg-white p-6 rounded-2xl border border-slate-100 shadow-sm mt-2">
+              <p className="p-6 mt-2 text-sm italic font-medium leading-relaxed bg-white border shadow-sm md:text-base text-slate-600 rounded-2xl border-slate-100">
                 "{doa.content}"
               </p>
             </div>
@@ -513,16 +579,16 @@ const Spiritual = () => {
         </div>
       </div>
 
-      {/* ================= SECTION RIWAYAT SPIRITUAL ================= */}
+      {/* SECTION RIWAYAT SPIRITUAL */}
       <div className="bg-white p-6 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
-        <h3 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-2">
+        <h3 className="flex items-center gap-2 mb-6 text-xl font-black text-slate-800">
           <FaCalendarCheck className="text-blue-500" /> Riwayat Spiritual (7 Hari Terakhir)
         </h3>
         <p className="text-[10px] font-bold text-slate-400 mb-6">*Klik pada kartu hari untuk mengedit riwayat ibadah yang terlewat.</p>
-        <div className="flex gap-4 overflow-x-auto pb-4 custom-scrollbar">
+        <div className="flex gap-4 pb-4 overflow-x-auto custom-scrollbar">
           {trackerDays.map((day, idx) => {
-            const sholatScore = ['subuh','dzuhur','ashar','maghrib','isya'].filter(k => day[k]).length;
-            const amalanScore = ['dzikir_pagi','dzikir_petang','istighfar','sholawat','sedekah'].filter(k => day[k]).length;
+            const sholatScore = ['subuh','dzuhur','ashar','maghrib','isya'].filter(k => day[k as keyof typeof day]).length;
+            const amalanScore = ['dzikir_pagi','dzikir_petang','istighfar','sholawat','sedekah'].filter(k => day[k as keyof typeof day]).length;
             const isToday = idx === trackerDays.length - 1;
 
             const dateObj = new Date(day.log_date);
@@ -576,19 +642,19 @@ const Spiritual = () => {
             };
 
             return (
-              <div key={day.log_date} onClick={handleEditHistory} className={`min-w-[140px] p-4 rounded-[1.5rem] border transition-all cursor-pointer hover:-translate-y-1 hover:shadow-lg ${isToday ? 'bg-blue-50 border-blue-200 shadow-sm' : 'bg-slate-50 border-slate-100 hover:border-blue-300'}`}>
-                <div className="text-center mb-3">
+              <div key={`history-${day.log_date}-${idx}`} onClick={handleEditHistory} className={`min-w-[140px] p-4 rounded-[1.5rem] border transition-all cursor-pointer hover:-translate-y-1 hover:shadow-lg ${isToday ? 'bg-blue-50 border-blue-200 shadow-sm' : 'bg-slate-50 border-slate-100 hover:border-blue-300'}`}>
+                <div className="mb-3 text-center">
                   <p className={`text-[10px] font-black uppercase tracking-widest ${isToday ? 'text-blue-600' : 'text-slate-400'}`}>{isToday ? 'Hari Ini' : dayName}</p>
                   <p className="text-sm font-bold text-slate-700">{dateNum}</p>
                 </div>
                 <div className="space-y-3">
                   <div>
                     <div className="flex justify-between text-[10px] font-bold text-slate-500 mb-1"><span>Sholat</span><span className={sholatScore === 5 ? 'text-emerald-500' : ''}>{sholatScore}/5</span></div>
-                    <div className="flex gap-0.5 h-1.5">{[...Array(5)].map((_, i) => <div key={i} className={`flex-1 rounded-full ${i < sholatScore ? 'bg-emerald-400' : 'bg-slate-200'}`}></div>)}</div>
+                    <div className="flex gap-0.5 h-1.5">{[...Array(5)].map((_, i) => <div key={`sholat-pt-${idx}-${i}`} className={`flex-1 rounded-full ${i < sholatScore ? 'bg-emerald-400' : 'bg-slate-200'}`}></div>)}</div>
                   </div>
                   <div>
                     <div className="flex justify-between text-[10px] font-bold text-slate-500 mb-1"><span>Amalan</span><span className={amalanScore === 5 ? 'text-emerald-500' : ''}>{amalanScore}/5</span></div>
-                    <div className="flex gap-0.5 h-1.5">{[...Array(5)].map((_, i) => <div key={i} className={`flex-1 rounded-full ${i < amalanScore ? 'bg-blue-400' : 'bg-slate-200'}`}></div>)}</div>
+                    <div className="flex gap-0.5 h-1.5">{[...Array(5)].map((_, i) => <div key={`amalan-pt-${idx}-${i}`} className={`flex-1 rounded-full ${i < amalanScore ? 'bg-blue-400' : 'bg-slate-200'}`}></div>)}</div>
                   </div>
                 </div>
               </div>

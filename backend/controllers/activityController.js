@@ -68,4 +68,14 @@ const clearActivities = async (req, res) => {
   }
 };
 
-module.exports = { logActivity, getActivities, clearActivities };
+const deleteActivityLog = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await db.promise().query('DELETE FROM activity_logs WHERE id = ? AND user_id = ?', [id, req.user.id]);
+    res.status(200).json({ success: true, message: 'Log berhasil dihapus' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Gagal menghapus log' });
+  }
+};
+
+module.exports = { logActivity, getActivities, clearActivities, deleteActivityLog };

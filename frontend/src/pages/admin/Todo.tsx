@@ -1,6 +1,6 @@
 // src/pages/admin/Todo.tsx
 import { useState, useEffect, FormEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import {
   FaCheckCircle, FaClock, FaTimes, FaTasks,
@@ -11,7 +11,6 @@ import {
 } from 'recharts';
 import { API_URL } from '../../config/api';
 
-// --- TYPES ---
 type TaskStatus = 'todo' | 'in_progress' | 'done';
 type TaskPriority = 'Low' | 'Medium' | 'High';
 
@@ -30,55 +29,25 @@ const Todo = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
 
-  // --- STATE DATA API ---
   const [tasks, setTasks] = useState<Task[]>([]);
   const [chartData, setChartData] = useState<any[]>([]);
 
-  // --- POMODORO TIMER STATE WITH LOCALSTORAGE ---
-  const [timerMode, setTimerMode] = useState<'focus' | 'shortBreak' | 'longBreak'>(() => {
-    return (localStorage.getItem('pomo_mode') as any) || 'focus';
-  });
-  const [timeLeft, setTimeLeft] = useState(() => {
-    const saved = localStorage.getItem('pomo_timeLeft');
-    return saved ? parseInt(saved) : 25 * 60;
-  });
-  const [isActive, setIsActive] = useState(() => {
-    return localStorage.getItem('pomo_isActive') === 'true';
-  });
-  const [activeTaskId, setActiveTaskId] = useState<string | null>(() => {
-    return localStorage.getItem('pomo_activeTaskId');
-  });
+  // TARIK STATE POMODORO DARI ADMINLAYOUT
+  const { 
+    timerMode, timeLeft, isActive, activeTaskId, 
+    setActiveTaskId, switchMode, toggleTimer, handleTimerComplete 
+  } = useOutletContext<any>();
 
-  // Efek untuk menyimpan state timer setiap kali berubah
-  useEffect(() => {
-    localStorage.setItem('pomo_timeLeft', timeLeft.toString());
-    localStorage.setItem('pomo_isActive', isActive.toString());
-    localStorage.setItem('pomo_mode', timerMode);
-    if (activeTaskId) localStorage.setItem('pomo_activeTaskId', activeTaskId);
-  }, [timeLeft, isActive, timerMode, activeTaskId]);
-
-  // Minta izin Notifikasi
-  useEffect(() => {
-    if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
-      Notification.requestPermission();
-    }
-  }, []);
-
-  // --- FUNGSI FETCH DARI BACKEND ---
   const fetchTodoData = async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return navigate('/login');
 
-      const res = await fetch(`${API_URL}/api/todos`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const res = await fetch(`${API_URL}/api/todos`, { headers: { 'Authorization': `Bearer ${token}` } });
       const result = await res.json();
 
       if (res.status === 401 || res.status === 403) {
-        localStorage.removeItem('token');
-        navigate('/login');
-        return;
+        localStorage.removeItem('token'); navigate('/login'); return;
       }
 
       if (result.success) {
@@ -94,82 +63,9 @@ const Todo = () => {
 
   useEffect(() => {
     fetchTodoData();
+    window.addEventListener('pomodoro-completed', fetchTodoData);
+    return () => window.removeEventListener('pomodoro-completed', fetchTodoData);
   }, [navigate]);
-
-  // --- TIMER ENGINE ---
-  useEffect(() => {
-    let interval: any = null;
-    if (isActive && timeLeft > 0) {
-      interval = setInterval(() => {
-        setTimeLeft((time) => time - 1);
-      }, 1000);
-    } else if (timeLeft === 0 && isActive) {
-      handleTimerComplete();
-    }
-    return () => clearInterval(interval);
-  }, [isActive, timeLeft]);
-
-  const handleTimerComplete = async () => {
-    setIsActive(false);
-
-    // PEMILIHAN SUARA ALARM
-    // Focus selesai -> alarm.mp3 | Break selesai -> alarm2.mp3
-    const soundFile = timerMode === 'focus' ? '/alarm.mp3' : '/alarm2.mp3';
-
-    try {
-      const audio = new Audio(soundFile);
-      audio.volume = 1.0;
-      await audio.play();
-    } catch (e) {
-      console.log("Audio diblokir oleh browser:", e);
-    }
-
-    if ("Notification" in window && Notification.permission === "granted") {
-      new Notification("Waktu Habis!", {
-        body: timerMode === 'focus' ? "Kerja bagus! Saatnya istirahat." : "Istirahat selesai. Kembali fokus yuk!",
-        icon: "/favicon.ico"
-      });
-    }
-
-    Swal.fire({
-      title: timerMode === 'focus' ? 'Pomodoro Selesai! 🍅' : 'Istirahat Selesai! ☕',
-      text: timerMode === 'focus' ? 'Ambil istirahat 5 menit.' : 'Mari kembali bekerja.',
-      icon: 'success', confirmButtonColor: '#2563EB'
-    });
-
-    if (timerMode === 'focus') {
-      try {
-        const token = localStorage.getItem('token');
-        await fetch(`${API_URL}/api/todos/pomodoro`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({
-            taskId: activeTaskId,
-            duration: 25 * 60
-          })
-        });
-        fetchTodoData();
-      } catch (err) {
-        console.error("Gagal simpan pomodoro", err);
-      }
-      switchMode('shortBreak');
-    } else {
-      switchMode('focus');
-    }
-  };
-
-  const switchMode = (mode: 'focus' | 'shortBreak' | 'longBreak') => {
-    setTimerMode(mode);
-    setIsActive(false);
-    let time = 25 * 60;
-    if (mode === 'shortBreak') time = 5 * 60;
-    if (mode === 'longBreak') time = 15 * 60;
-
-    setTimeLeft(time);
-    localStorage.setItem('pomo_timeLeft', time.toString());
-  };
-
-  const toggleTimer = () => setIsActive(!isActive);
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
@@ -177,10 +73,12 @@ const Todo = () => {
     return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
+  // ==========================================
+  // KALKULASI PROGRESS BAR (NORMAL TIME)
+  // ==========================================
   const totalTimeForMode = timerMode === 'focus' ? 25 * 60 : timerMode === 'shortBreak' ? 5 * 60 : 15 * 60;
   const timerPercent = ((totalTimeForMode - timeLeft) / totalTimeForMode) * 100;
 
-  // --- TASK MANAGEMENT (CRUD API) ---
   const handleAddTask = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
@@ -195,18 +93,13 @@ const Todo = () => {
     try {
       const token = localStorage.getItem('token');
       const res = await fetch(`${API_URL}/api/todos`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify(newTask)
+        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify(newTask)
       });
       if (res.ok) {
-        form.reset();
-        fetchTodoData();
+        form.reset(); fetchTodoData();
         Swal.fire({ icon: 'success', title: 'Task Ditambahkan', toast: true, position: 'top-end', timer: 1500, showConfirmButton: false });
       }
-    } catch (err) {
-      Swal.fire('Error', 'Gagal menambah task', 'error');
-    }
+    } catch (err) { Swal.fire('Error', 'Gagal menambah task', 'error'); }
   };
 
   const moveTask = async (id: string, newStatus: TaskStatus) => {
@@ -214,13 +107,9 @@ const Todo = () => {
       setTasks(tasks.map(t => t.id === id ? { ...t, status: newStatus } : t));
       const token = localStorage.getItem('token');
       await fetch(`${API_URL}/api/todos/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ status: newStatus })
+        method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }, body: JSON.stringify({ status: newStatus })
       });
-    } catch (err) {
-      fetchTodoData();
-    }
+    } catch (err) { fetchTodoData(); }
   };
 
   const deleteTask = async (id: string) => {
@@ -228,40 +117,34 @@ const Todo = () => {
     if (result.isConfirmed) {
       try {
         const token = localStorage.getItem('token');
-        await fetch(`${API_URL}/api/todos/${id}`, {
-          method: 'DELETE',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
+        await fetch(`${API_URL}/api/todos/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
         if (activeTaskId === id) {
           setActiveTaskId(null);
           localStorage.removeItem('pomo_activeTaskId');
         }
         fetchTodoData();
-      } catch (err) {
-        Swal.fire('Error', 'Gagal menghapus task', 'error');
-      }
+      } catch (err) { Swal.fire('Error', 'Gagal menghapus task', 'error'); }
     }
   };
 
-  if (isLoading) return <div className="flex h-screen items-center justify-center bg-[#F8FAFC]"><div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div></div>;
+  if (isLoading) return <div className="flex h-screen items-center justify-center bg-[#F8FAFC]"><div className="w-12 h-12 border-4 border-blue-200 rounded-full border-t-blue-600 animate-spin"></div></div>;
 
   return (
-    <div className="max-w-8xl mx-auto font-sans bg-[#F8FAFC] pb-20 px-4 md:px-0">
-      {/* ... (Header dan Summary Card sama seperti sebelumnya) ... */}
+    <div className="max-w-8xl mx-auto font-sans bg-[#F8FAFC] pb-20 px-4 md:px-0 selection:bg-blue-100">
+      
       <div className="mb-8">
-        <h2 className="text-2xl font-black text-slate-900 tracking-tight">To Do & Focus</h2>
-        <p className="text-slate-500 mt-1 text-sm">Manajemen tugas dan waktu fokus ala Pomodoro.</p>
+        <h2 className="text-2xl font-black tracking-tight text-slate-900">To Do & Focus</h2>
+        <p className="mt-1 text-sm text-slate-500">Manajemen tugas dan waktu fokus ala Pomodoro.</p>
       </div>
 
-      {/* 1️⃣ Task Summary */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 gap-6 mb-8 md:grid-cols-2 lg:grid-cols-4">
         {[
           { title: "Total Task", val: tasks.length, icon: <FaTasks />, color: "blue" },
           { title: "Task Selesai", val: tasks.filter(t => t.status === 'done').length, icon: <FaCheckCircle />, color: "emerald" },
           { title: "Task Pending", val: tasks.filter(t => t.status !== 'done').length, icon: <FaClock />, color: "amber" },
           { title: "Sesi Fokus", val: `${tasks.reduce((acc, t) => acc + (t.completedPomo || 0), 0)} Pomo`, icon: <FaTimes />, color: "red" },
         ].map((item, idx) => (
-          <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
+          <div key={idx} className="flex items-center gap-4 p-6 bg-white border shadow-sm rounded-2xl border-slate-100">
             <div className={`w-14 h-14 rounded-2xl bg-${item.color}-50 flex items-center justify-center text-2xl`}><div className={`text-${item.color}-600`}>{item.icon}</div></div>
             <div>
               <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">{item.title}</p>
@@ -271,10 +154,9 @@ const Todo = () => {
         ))}
       </div>
 
-      {/* 2️⃣ Quick Add Task */}
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-8">
-        <h3 className="text-md font-black text-slate-800 mb-4">⚡ Quick Add Task</h3>
-        <form onSubmit={handleAddTask} className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 items-end">
+      <div className="p-6 mb-8 bg-white border shadow-sm rounded-2xl border-slate-100">
+        <h3 className="mb-4 font-black text-md text-slate-800">⚡ Quick Add Task</h3>
+        <form onSubmit={handleAddTask} className="grid items-end grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-6">
           <div className="lg:col-span-2">
             <label className="text-[10px] font-bold text-slate-400 uppercase">Judul Task</label>
             <input name="title" required type="text" placeholder="Misal: Belajar React Query..." className="w-full p-2.5 mt-1 rounded-xl border border-slate-200 bg-slate-50 outline-none text-sm font-bold" />
@@ -308,22 +190,21 @@ const Todo = () => {
         </form>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        {/* 3️⃣ Task Board (Kanban) - Tetap Sama */}
+      <div className="grid grid-cols-1 gap-6 mb-8 lg:grid-cols-3">
         <div className="lg:col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col h-[600px]">
-          <h3 className="text-lg font-black text-slate-800 mb-4">🗂️ Task Board</h3>
-          <div className="grid grid-cols-3 gap-4 flex-1 overflow-hidden">
+          <h3 className="mb-4 text-lg font-black text-slate-800">🗂️ Task Board</h3>
+          <div className="grid flex-1 grid-cols-3 gap-4 overflow-hidden">
             {['todo', 'in_progress', 'done'].map((col) => (
-              <div key={col} className={`p-3 rounded-xl flex flex-col gap-3 overflow-y-auto border ${col === 'todo' ? 'bg-slate-50 border-slate-100' : col === 'in_progress' ? 'bg-blue-50/50 border-blue-100' : 'bg-emerald-50/50 border-emerald-100'}`}>
-                <div className="flex justify-between items-center px-1">
-                  <h4 className="font-bold text-sm capitalize">{col.replace('_', ' ')}</h4>
+              <div key={col} className={`p-3 rounded-xl flex flex-col gap-3 overflow-y-auto custom-scrollbar border ${col === 'todo' ? 'bg-slate-50 border-slate-100' : col === 'in_progress' ? 'bg-blue-50/50 border-blue-100' : 'bg-emerald-50/50 border-emerald-100'}`}>
+                <div className="flex items-center justify-between px-1">
+                  <h4 className="text-sm font-bold capitalize">{col.replace('_', ' ')}</h4>
                   <span className="text-xs px-2 py-0.5 rounded-full bg-white/50">{tasks.filter(t => t.status === col).length}</span>
                 </div>
                 {tasks.filter(t => t.status === col).map(task => (
-                  <div key={task.id} className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 group relative">
-                    <div className="flex justify-between items-start mb-2">
+                  <div key={task.id} className={`bg-white p-4 rounded-xl shadow-sm border ${activeTaskId === task.id ? 'border-blue-400 ring-2 ring-blue-100' : 'border-slate-100'} group relative transition-all`}>
+                    <div className="flex items-start justify-between mb-2">
                       <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${task.priority === 'High' ? 'bg-red-100 text-red-600' : task.priority === 'Medium' ? 'bg-amber-100 text-amber-600' : 'bg-emerald-100 text-emerald-600'}`}>{task.priority}</span>
-                      <button onClick={() => deleteTask(task.id)} className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><FaTrash size={12} /></button>
+                      <button onClick={() => deleteTask(task.id)} className="transition-opacity opacity-0 text-slate-300 hover:text-red-500 group-hover:opacity-100"><FaTrash size={12} /></button>
                     </div>
                     <h5 className={`font-bold text-sm mb-1 ${task.status === 'done' ? 'line-through text-slate-400' : ''}`}>{task.title}</h5>
                     <p className="text-[10px] text-slate-500 mb-3">{task.category} • 🍅 {task.completedPomo}/{task.targetPomo}</p>
@@ -333,11 +214,11 @@ const Todo = () => {
                           {activeTaskId === task.id ? 'Active' : 'Fokus'}
                         </button>
                       )}
-                      {col === 'todo' && <button onClick={() => moveTask(task.id, 'in_progress')} className="w-8 flex items-center justify-center bg-blue-50 text-blue-600 rounded-lg"><FaArrowRight size={10} /></button>}
+                      {col === 'todo' && <button onClick={() => moveTask(task.id, 'in_progress')} className="flex items-center justify-center w-8 text-blue-600 rounded-lg bg-blue-50 hover:bg-blue-100"><FaArrowRight size={10} /></button>}
                       {col === 'in_progress' && (
                         <>
-                          <button onClick={() => moveTask(task.id, 'todo')} className="w-8 flex items-center justify-center bg-slate-50 text-slate-400 rounded-lg rotate-180"><FaArrowRight size={10} /></button>
-                          <button onClick={() => moveTask(task.id, 'done')} className="w-8 flex items-center justify-center bg-emerald-50 text-emerald-600 rounded-lg"><FaCheckCircle size={10} /></button>
+                          <button onClick={() => moveTask(task.id, 'todo')} className="flex items-center justify-center w-8 rotate-180 rounded-lg bg-slate-50 text-slate-400 hover:bg-slate-200"><FaArrowRight size={10} /></button>
+                          <button onClick={() => moveTask(task.id, 'done')} className="flex items-center justify-center w-8 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100"><FaCheckCircle size={10} /></button>
                         </>
                       )}
                       {col === 'done' && <button onClick={() => moveTask(task.id, 'in_progress')} className="text-[10px] font-bold text-blue-500 underline">Undone</button>}
@@ -349,29 +230,25 @@ const Todo = () => {
           </div>
         </div>
 
-        {/* 4️⃣ Pomodoro Focus Timer */}
-        <div className="bg-slate-900 text-white p-6 rounded-2xl shadow-xl flex flex-col items-center justify-center relative overflow-hidden h-[600px]">
+        <div className="bg-slate-900 text-white p-6 rounded-[2.5rem] shadow-xl flex flex-col items-center justify-center relative overflow-hidden h-[600px]">
           <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500 rounded-full blur-[100px] opacity-20 pointer-events-none"></div>
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-red-500 rounded-full blur-[100px] opacity-20 pointer-events-none"></div>
 
-          <div className="relative z-10 w-full flex flex-col items-center">
-            {/* Mode Selector */}
+          <div className="relative z-10 flex flex-col items-center w-full">
             <div className="flex bg-white/10 p-1 rounded-xl mb-8 w-full max-w-[250px]">
-              <button onClick={() => switchMode('focus')} className={`flex-1 py-2 text-[10px] font-bold rounded-lg transition-all ${timerMode === 'focus' ? 'bg-red-500 shadow-md' : 'text-white/60'}`}>Focus</button>
-              <button onClick={() => switchMode('shortBreak')} className={`flex-1 py-2 text-[10px] font-bold rounded-lg transition-all ${timerMode === 'shortBreak' ? 'bg-emerald-500 shadow-md' : 'text-white/60'}`}>Short</button>
-              <button onClick={() => switchMode('longBreak')} className={`flex-1 py-2 text-[10px] font-bold rounded-lg transition-all ${timerMode === 'longBreak' ? 'bg-blue-500 shadow-md' : 'text-white/60'}`}>Long</button>
+              <button onClick={() => switchMode('focus')} className={`flex-1 py-2 text-[10px] font-bold rounded-lg transition-all ${timerMode === 'focus' ? 'bg-red-500 shadow-md scale-105' : 'text-white/60 hover:text-white'}`}>Focus</button>
+              <button onClick={() => switchMode('shortBreak')} className={`flex-1 py-2 text-[10px] font-bold rounded-lg transition-all ${timerMode === 'shortBreak' ? 'bg-emerald-500 shadow-md scale-105' : 'text-white/60 hover:text-white'}`}>Short</button>
+              <button onClick={() => switchMode('longBreak')} className={`flex-1 py-2 text-[10px] font-bold rounded-lg transition-all ${timerMode === 'longBreak' ? 'bg-blue-500 shadow-md scale-105' : 'text-white/60 hover:text-white'}`}>Long</button>
             </div>
 
-            {/* Active Task Info */}
-            <div className="text-center mb-8 h-12">
+            <div className="h-12 mb-8 text-center">
               <p className="text-[10px] font-bold text-white/50 uppercase tracking-widest mb-1">Active Task</p>
-              <h4 className="font-black text-lg text-blue-300 line-clamp-1 px-4">
+              <h4 className="px-4 text-lg font-black text-blue-300 line-clamp-1">
                 {activeTaskId ? tasks.find(t => t.id === activeTaskId)?.title : 'Pilih task di Board'}
               </h4>
             </div>
 
-            {/* Timer Display */}
-            <div className="relative w-56 h-56 flex items-center justify-center mb-8">
+            <div className="relative flex items-center justify-center w-56 h-56 mb-8">
               <svg className="absolute inset-0 w-full h-full transform -rotate-90">
                 <circle cx="112" cy="112" r="105" fill="none" stroke="rgba(255,255,255,0.1)" strokeWidth="6" />
                 <circle cx="112" cy="112" r="105" fill="none"
@@ -381,13 +258,12 @@ const Todo = () => {
                 />
               </svg>
               <div className="text-center">
-                <h1 className="text-6xl font-black tabular-nums tracking-tighter">{formatTime(timeLeft)}</h1>
+                <h1 className="text-6xl font-black tracking-tighter tabular-nums">{formatTime(timeLeft)}</h1>
               </div>
             </div>
 
-            {/* Controls */}
             <div className="flex items-center gap-4">
-              <button onClick={() => switchMode(timerMode)} className="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors text-white/70" title="Reset">
+              <button onClick={() => switchMode(timerMode)} className="flex items-center justify-center w-12 h-12 transition-colors rounded-full bg-white/10 hover:bg-white/20 text-white/70" title="Reset">
                 <FaStop />
               </button>
               <button onClick={toggleTimer} className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl transition-transform hover:scale-105 shadow-xl ${isActive ? 'bg-amber-400 text-amber-900' : 'bg-white text-slate-900'}`}>
@@ -401,11 +277,10 @@ const Todo = () => {
         </div>
       </div>
 
-      {/* 5️⃣ Statistics & Riwayat (Tetap Sama) */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-          <h3 className="text-lg font-black text-slate-800 mb-6">📈 Focus Session (7 Hari)</h3>
-          <div className="h-64 w-full">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="p-6 bg-white border shadow-sm rounded-2xl border-slate-100">
+          <h3 className="mb-6 text-lg font-black text-slate-800">📈 Focus Session (7 Hari)</h3>
+          <div className="w-full h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
@@ -420,21 +295,21 @@ const Todo = () => {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col">
-          <h3 className="text-lg font-black text-slate-800 mb-6">🏆 Riwayat Selesai</h3>
-          <div className="flex-1 overflow-y-auto max-h-64">
+        <div className="flex flex-col p-6 bg-white border shadow-sm rounded-2xl border-slate-100">
+          <h3 className="mb-6 text-lg font-black text-slate-800">🏆 Riwayat Selesai</h3>
+          <div className="flex-1 overflow-y-auto max-h-64 custom-scrollbar">
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-wider sticky top-0">
-                  <th className="p-3 font-bold">Task</th>
-                  <th className="p-3 font-bold text-center">Pomo</th>
+                  <th className="p-3 font-bold rounded-l-lg">Task</th>
+                  <th className="p-3 font-bold text-center rounded-r-lg">Pomo</th>
                 </tr>
               </thead>
               <tbody className="text-sm">
                 {tasks.filter(t => t.status === 'done').map(task => (
                   <tr key={task.id} className="border-b border-slate-50">
                     <td className="p-3 font-bold text-slate-700">{task.title}</td>
-                    <td className="p-3 text-center font-black text-red-500">🍅 {task.completedPomo}</td>
+                    <td className="p-3 font-black text-center text-red-500">🍅 {task.completedPomo}</td>
                   </tr>
                 ))}
               </tbody>
