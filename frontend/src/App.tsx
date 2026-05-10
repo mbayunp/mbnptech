@@ -27,6 +27,7 @@ import Habits from './pages/admin/Habits';
 import Spiritual from './pages/admin/Spiritual';
 import Achievements from './pages/admin/Achievements';
 import Inquiry from './pages/admin/Inquiry';
+import Wedding from './pages/admin/Wedding';
 import Settings from './pages/admin/Settings';
 
 function App() {
@@ -59,6 +60,7 @@ function App() {
           <Route path="achievements" element={<Achievements />} />
           <Route path="spiritual" element={<Spiritual />} />
           <Route path="inquiry" element={<Inquiry />} />
+          <Route path="wedding" element={<Wedding />} />
           <Route path="settings" element={<Settings />} />
 
           {/* Nanti route lain ditambahkan di sini, contoh: */}

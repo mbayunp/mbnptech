@@ -2,11 +2,11 @@
 import { useState, useEffect, useRef } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
-import { API_URL } from '../config/api'; 
+import { API_URL } from '../config/api';
 import {
-  FaThLarge, FaWallet, FaTasks, FaFolderOpen, FaEnvelope, 
-  FaCog, FaSignOutAlt, FaBars, FaBell, FaSearch, FaGlobe, 
-  FaListUl, FaMedal, FaHistory, FaMosque
+  FaThLarge, FaWallet, FaTasks, FaFolderOpen, FaEnvelope,
+  FaCog, FaSignOutAlt, FaBars, FaBell, FaSearch, FaGlobe,
+  FaListUl, FaMedal, FaHistory, FaMosque, FaHeart
 } from 'react-icons/fa';
 
 const CITIES = { 'Garut': '1208', 'Bandung': '1219', 'Cianjur': '1205' };
@@ -67,7 +67,7 @@ const AdminLayout = () => {
       const dateStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jakarta' }).replace(/-/g, '/');
       const response = await fetch(`https://api.myquran.com/v2/sholat/jadwal/${CITIES[city]}/${dateStr}`);
       const data = await response.json();
-      if(data.status) setPrayerTimes(data.data.jadwal);
+      if (data.status) setPrayerTimes(data.data.jadwal);
     } catch (error) { console.error(error); }
   };
 
@@ -125,8 +125,8 @@ const AdminLayout = () => {
 
   const handleTimerComplete = async () => {
     setIsActive(false);
-    clearInterval(timerRef.current); 
-    
+    clearInterval(timerRef.current);
+
     const soundFile = timerMode === 'focus' ? '/alarm.mp3' : '/alarm2.mp3';
     try { const audio = new Audio(soundFile); audio.volume = 1.0; await audio.play(); } catch (e) { console.log(e); }
 
@@ -145,10 +145,10 @@ const AdminLayout = () => {
         const token = localStorage.getItem('token');
         await fetch(`${API_URL}/api/todos/pomodoro`, {
           method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({ taskId: activeTaskId, duration: 25 * 60 }) 
+          body: JSON.stringify({ taskId: activeTaskId, duration: 25 * 60 })
         });
         window.dispatchEvent(new Event('pomodoro-completed'));
-      } catch (err) {}
+      } catch (err) { }
       switchMode('shortBreak');
     } else {
       switchMode('focus');
@@ -173,7 +173,7 @@ const AdminLayout = () => {
       if (timerRef.current) clearInterval(timerRef.current);
     }
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [isActive]); 
+  }, [isActive]);
 
   useEffect(() => {
     if (timeLeft === 0 && isActive) {
@@ -190,11 +190,11 @@ const AdminLayout = () => {
   const switchMode = (mode: 'focus' | 'shortBreak' | 'longBreak') => {
     if (timerRef.current) clearInterval(timerRef.current);
     setTimerMode(mode); setIsActive(false);
-    
-    let time = 25 * 60; 
+
+    let time = 25 * 60;
     if (mode === 'shortBreak') time = 5 * 60;
     if (mode === 'longBreak') time = 15 * 60;
-    
+
     setTimeLeft(time);
     localStorage.setItem('pomo_timeLeft', time.toString());
   };
@@ -202,7 +202,7 @@ const AdminLayout = () => {
   const toggleTimer = () => setIsActive(!isActive);
 
   const pomoContext = {
-    timerMode, timeLeft, isActive, activeTaskId, 
+    timerMode, timeLeft, isActive, activeTaskId,
     setActiveTaskId, switchMode, toggleTimer, handleTimerComplete
   };
 
@@ -210,11 +210,11 @@ const AdminLayout = () => {
     Swal.fire({
       title: 'Yakin ingin keluar?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#EF4444', confirmButtonText: 'Ya, Logout!'
     }).then((result) => {
-      if (result.isConfirmed) { 
-        if (timerRef.current) clearInterval(timerRef.current); 
-        localStorage.removeItem('token'); 
-        localStorage.removeItem('user'); 
-        navigate('/login'); 
+      if (result.isConfirmed) {
+        if (timerRef.current) clearInterval(timerRef.current);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        navigate('/login');
       }
     });
   };
@@ -229,6 +229,7 @@ const AdminLayout = () => {
     { path: '/admin/achievements', name: 'Achievements', icon: <FaMedal /> },
     { path: '/admin/spiritual', name: 'Spiritual', icon: <FaMosque /> },
     { path: '/admin/inquiry', name: 'Inquiry', icon: <FaEnvelope /> },
+    { path: '/admin/wedding', name: 'Wedding Planner', icon: <FaHeart /> },
     { path: '/admin/settings', name: 'Settings', icon: <FaCog /> },
   ];
 
@@ -289,6 +290,16 @@ const AdminLayout = () => {
               <button onClick={() => setIsNotifOpen(!isNotifOpen)} className={`relative p-2.5 rounded-xl transition-all ${isNotifOpen ? 'bg-blue-50 text-blue-600' : 'text-slate-400 hover:bg-slate-100 hover:text-blue-600'}`}>
                 <FaBell className="text-xl" />
                 {newInquiries.length > 0 && <span className="absolute top-1.5 right-1.5 w-5 h-5 bg-rose-500 text-white text-[10px] font-black rounded-full border-2 border-white flex items-center justify-center animate-bounce">{newInquiries.length}</span>}
+              </button>
+
+              <button
+                onClick={() => navigate('/admin/wedding')}
+                className={`relative p-2.5 rounded-xl transition-all ${isNotifOpen ? 'bg-blue-50 text-blue-600' : 'text-slate-400 hover:bg-slate-100 hover:text-blue-600'}`}
+              >
+                <FaHeart className="text-xl" />
+                {newInquiries.length > 0 && (
+                  <span className="absolute top-1.5 right-1.5 w-5 h-5 bg-rose-500 text-white text-[10px] font-black rounded-full border-2 border-white flex items-center justify-center animate-bounce">{newInquiries.length}</span>
+                )}
               </button>
 
               {isNotifOpen && (

@@ -21,6 +21,7 @@ const lifeRoutes = require('./routes/lifeRoutes');
 const activityRoutes = require('./routes/activityRoutes');
 const spiritualRoutes = require('./routes/spiritualRoutes');
 const inquiryRoutes = require('./routes/inquiryRoutes');
+const weddingRoutes = require('./routes/weddingRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 
@@ -35,13 +36,14 @@ app.use('/api/activities', require('./routes/activityRoutes'));
 app.use('/api/spiritual', spiritualRoutes);
 app.use('/api/inquiries', require('./routes/inquiryRoutes'));
 app.use('/api/settings', settingsRoutes);
+app.use('/api/wedding', weddingRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/dashboard', dashboardRoutes);
 
 
 // Route Dasar
 app.get('/', (req, res) => {
-  res.json({ 
+  res.json({
     message: 'Welcome to MBNP Tech API',
     status: 'Server is running perfectly 🚀'
   });
