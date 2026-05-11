@@ -21,7 +21,7 @@ const AboutHero = () => (
     <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden">
       <div className="absolute top-[-10%] right-[-10%] w-[80%] md:w-[50%] h-[50%] bg-blue-400/20 rounded-full blur-[80px] md:blur-[120px] mix-blend-multiply"></div>
       <div className="absolute bottom-[-10%] left-[10%] md:left-[20%] w-[80%] md:w-[60%] h-[40%] bg-indigo-400/20 rounded-full blur-[80px] md:blur-[120px] mix-blend-multiply"></div>
-      <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
+      <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay bg-[url('/noise.svg')]"></div>
     </div>
 
     <div className="container mx-auto px-4 md:px-6 relative z-10 pt-24 md:pt-32 text-center">
@@ -86,7 +86,7 @@ const FounderProfile = () => (
   <section className="py-16 md:py-24 bg-[#0F172A] text-white relative overflow-hidden">
     {/* Glow Effects */}
     <div className="absolute top-0 right-0 w-[300px] md:w-[500px] h-[300px] md:h-[500px] bg-blue-600/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
-    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 mix-blend-overlay pointer-events-none"></div>
+    <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-5 mix-blend-overlay pointer-events-none"></div>
 
     <div className="container mx-auto px-4 md:px-6 max-w-6xl relative z-10 flex flex-col lg:flex-row items-center gap-10 md:gap-16">
 

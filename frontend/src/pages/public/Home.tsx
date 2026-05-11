@@ -1,16 +1,16 @@
 import { Link } from 'react-router-dom';
 
 const HeroSection = () => (
-  <section className="relative min-h-[90vh] md:min-h-[95vh] flex items-center justify-center pb-12 md:pb-20 overflow-hidden bg-[#fafafa]">
+  <section className="relative min-h-[80vh] md:min-h-[95vh] flex items-center justify-center pb-12 md:pb-20 overflow-hidden bg-[#fafafa]">
     {/* Modern Animated Gradient Background blobs */}
     <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden">
       <div className="absolute top-[-10%] left-[-10%] w-[80%] md:w-[50%] h-[50%] bg-blue-400/20 rounded-full blur-[80px] md:blur-[120px] mix-blend-multiply"></div>
       <div className="absolute top-[20%] right-[-10%] w-[60%] md:w-[40%] h-[50%] bg-indigo-400/20 rounded-full blur-[80px] md:blur-[120px] mix-blend-multiply border border-indigo-200"></div>
       <div className="absolute bottom-[-10%] left-[10%] md:left-[20%] w-[80%] md:w-[60%] h-[40%] bg-emerald-400/20 rounded-full blur-[80px] md:blur-[120px] mix-blend-multiply"></div>
-      <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
+      <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay bg-[url('/noise.svg')]"></div>
     </div>
 
-    <div className="container mx-auto px-4 md:px-6 relative z-10 pt-20 md:pt-10">
+    <div className="container mx-auto px-4 md:px-6 relative z-10 pt-4 mt-16 md:mt-0 md:pt-10">
       <div className="max-w-5xl mx-auto text-center">
         {/* Pill Badge */}
         <div className="inline-flex items-center gap-2 md:gap-3 px-4 md:px-5 py-2 md:py-2.5 rounded-full bg-white/70 backdrop-blur-md border border-slate-200/60 shadow-sm mb-8 md:mb-10 hover:bg-white hover:scale-105 transition-all cursor-pointer">
@@ -213,7 +213,7 @@ const OtherProjectsSection = () => {
 
 const FlowSection = () => (
   <section className="py-16 md:py-24 bg-[#0F172A] text-white overflow-hidden relative border-t border-slate-800">
-    <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 mix-blend-overlay pointer-events-none"></div>
+    <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-5 mix-blend-overlay pointer-events-none"></div>
     <div className="container mx-auto px-4 md:px-6 max-w-6xl relative z-10">
       <div className="mb-12 md:mb-16 md:w-1/2 text-center md:text-left">
         <h2 className="text-xs md:text-sm font-bold text-sky-400 uppercase tracking-widest mb-3 md:mb-4">Eksekusi Tanpa Kompromi</h2>

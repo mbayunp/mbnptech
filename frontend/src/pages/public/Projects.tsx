@@ -22,7 +22,7 @@ const ProjectsHero = () => (
     <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden">
       <div className="absolute top-[0%] left-[50%] -translate-x-1/2 w-[80%] md:w-[60%] h-[60%] bg-blue-400/20 rounded-full blur-[80px] md:blur-[120px] mix-blend-multiply"></div>
       <div className="absolute bottom-[-10%] left-[20%] w-[80%] md:w-[50%] h-[40%] bg-indigo-400/10 rounded-full blur-[80px] md:blur-[120px] mix-blend-multiply"></div>
-      <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
+      <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay bg-[url('/noise.svg')]"></div>
     </div>
 
     <div className="container mx-auto px-4 md:px-6 relative z-10 pt-24 md:pt-32 text-center">
@@ -239,7 +239,7 @@ const ProjectImpact = () => {
   return (
     <section className="py-16 md:py-24 bg-[#0F172A] text-white px-4 md:px-6 relative overflow-hidden">
       <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-blue-600/20 rounded-full blur-[100px] pointer-events-none"></div>
-      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 mix-blend-overlay pointer-events-none"></div>
+      <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-5 mix-blend-overlay pointer-events-none"></div>
 
       <div className="container mx-auto max-w-6xl flex flex-col lg:flex-row gap-10 md:gap-16 items-center relative z-10">
         <div className="w-full lg:w-1/2 text-center lg:text-left">

@@ -100,7 +100,7 @@ const Contact = () => {
         <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden">
           <div className="absolute top-0 right-0 w-[80%] md:w-[50%] h-[60%] bg-blue-400/20 rounded-full blur-[80px] md:blur-[120px] -translate-y-1/4 translate-x-1/4 mix-blend-multiply"></div>
           <div className="absolute bottom-0 left-0 w-[80%] md:w-[50%] h-[60%] bg-sky-400/20 rounded-full blur-[80px] md:blur-[120px] translate-y-1/4 -translate-x-1/4 mix-blend-multiply"></div>
-          <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
+          <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay bg-[url('/noise.svg')]"></div>
         </div>
 
         <div className="container mx-auto max-w-4xl relative z-10">
@@ -313,7 +313,7 @@ const Contact = () => {
 
       {/* 5️⃣ Call To Action */}
       <section className="py-20 md:py-32 bg-[#0F172A] text-white text-center px-4 md:px-6 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 mix-blend-overlay pointer-events-none"></div>
+        <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-5 mix-blend-overlay pointer-events-none"></div>
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] md:w-[600px] md:h-[600px] bg-blue-600/30 rounded-full blur-[100px] pointer-events-none"></div>
 
         <div className="container mx-auto max-w-3xl relative z-10">

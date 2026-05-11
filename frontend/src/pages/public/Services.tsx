@@ -20,7 +20,7 @@ const ServicesHero = () => (
     <div className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden">
       <div className="absolute top-[-20%] left-[-10%] w-[80%] md:w-[60%] h-[60%] bg-blue-600/20 rounded-full blur-[100px] md:blur-[150px] mix-blend-screen"></div>
       <div className="absolute bottom-[-10%] right-[-10%] w-[80%] md:w-[50%] h-[50%] bg-indigo-600/20 rounded-full blur-[100px] md:blur-[150px] mix-blend-screen"></div>
-      <div className="absolute inset-0 opacity-[0.05] mix-blend-overlay bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
+      <div className="absolute inset-0 opacity-[0.05] mix-blend-overlay bg-[url('/noise.svg')]"></div>
     </div>
 
     <div className="container mx-auto px-4 md:px-6 relative z-10 pt-24 md:pt-32 text-center">
@@ -207,7 +207,7 @@ const DevelopmentProcess = () => {
 
   return (
     <section className="py-16 md:py-24 bg-[#0F172A] text-white overflow-hidden relative">
-      <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 mix-blend-overlay pointer-events-none"></div>
+      <div className="absolute inset-0 bg-[url('/noise.svg')] opacity-5 mix-blend-overlay pointer-events-none"></div>
       <div className="container mx-auto px-4 md:px-6 max-w-6xl relative z-10">
         <div className="text-center mb-12 md:mb-16">
           <h2 className="text-xs md:text-sm font-bold text-sky-400 uppercase tracking-widest mb-3">Development Workflow</h2>

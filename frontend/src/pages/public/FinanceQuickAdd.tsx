@@ -6,7 +6,7 @@ import { API_URL } from '../../config/api';
 
 // DATA KATEGORI & SUMBER UANG
 const INCOME_CATEGORIES = ["Gaji", "Projek", "Pinjaman", "Lainnya"];
-const EXPENSE_CATEGORIES = ["Kosan", "Motor", "Melunasi Hutang", "Makan & Minum", "Sedekah", "Memberi", "Jajan", "Barang", "Laundry", "Lainnya"];
+const EXPENSE_CATEGORIES = ["Kosan", "Motor", "Melunasi Hutang", "Makan & Minum", "Sedekah", "Memberi", "Jajan", "Barang", "Laundry", "Hutang", "Lainnya"];
 const SOURCES = ["Bank BJB", "Digicash", "Bank BSI 1", "Bank BSI 2", "Dana", "Cash/Dompet", "Gopay", "Shopeepay"];
 
 const FinanceQuickAdd = () => {
