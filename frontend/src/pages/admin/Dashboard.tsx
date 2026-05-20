@@ -1,6 +1,7 @@
 // src/pages/admin/Dashboard.tsx
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { 
   FaWallet, FaCheckCircle, FaFire, FaClock, FaChartPie, 
   FaMosque, FaTasks, FaBullseye, FaBolt, FaExclamationTriangle, 
@@ -81,6 +82,10 @@ const Dashboard = () => {
 
   return (
     <div className="pb-12 mx-auto max-w-7xl selection:bg-blue-100">
+      <Helmet>
+        <title>Dashboard Utama | MBNP Tech System</title>
+        <meta name="robots" content="noindex, nofollow" />
+      </Helmet>
       
       {/* HEADER */}
       <div className="flex items-end justify-between mb-8">
