@@ -126,6 +126,38 @@ const addContribution = async (req, res) => {
     }
 };
 
+// FITUR BARU: UPDATE KONTRIBUSI
+const updateContribution = async (req, res) => {
+    const { name, type, amount } = req.body;
+    const userId = req.user.id;
+    const contributionId = req.params.id;
+    try {
+        await db.promise().query(
+            'UPDATE wedding_contributions SET name = ?, type = ?, amount = ? WHERE id = ? AND user_id = ?',
+            [name, type, amount, contributionId, userId]
+        );
+        await logActivity(userId, 'wedding', 'update', 'Dana Masuk Diperbarui', `Memperbarui data nominal/nama dari ${name}`);
+        res.status(200).json({ success: true, message: 'Kontribusi diperbarui' });
+    } catch (error) {
+        console.error("Update Contribution Error:", error);
+        res.status(500).json({ success: false, message: 'Gagal update kontribusi' });
+    }
+};
+
+// FITUR BARU: DELETE KONTRIBUSI
+const deleteContribution = async (req, res) => {
+    const userId = req.user.id;
+    const contributionId = req.params.id;
+    try {
+        await db.promise().query('DELETE FROM wedding_contributions WHERE id = ? AND user_id = ?', [contributionId, userId]);
+        await logActivity(userId, 'wedding', 'delete', 'Dana Masuk Dihapus', 'Menghapus satu catatan pemasukan');
+        res.status(200).json({ success: true, message: 'Kontribusi dihapus' });
+    } catch (error) {
+        console.error("Delete Contribution Error:", error);
+        res.status(500).json({ success: false, message: 'Gagal menghapus kontribusi' });
+    }
+};
+
 // ==========================================
 // 5. VENDORS
 // ==========================================
@@ -181,6 +213,8 @@ module.exports = {
     deleteBudget,
     addExpense,
     addContribution,
+    updateContribution,
+    deleteContribution,
     addVendor,
     updateVendorStatus,
     addTimelineTask

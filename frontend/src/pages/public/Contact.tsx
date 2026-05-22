@@ -93,7 +93,7 @@ const Contact = () => {
               <span className="text-xs font-black text-slate-700 tracking-widest uppercase">Let's Connect</span>
             </motion.div>
 
-            <motion.h1 variants={fadeUp} className="font-display text-[2.8rem] sm:text-6xl md:text-[5.5rem] font-black text-slate-900 mb-5 tracking-tighter leading-[1.04]">
+            <motion.h1 variants={fadeUp} className="font-display text-4xl sm:text-6xl md:text-[5rem] lg:text-[6rem] font-black text-slate-900 mb-5 tracking-tighter leading-[1.04]">
               Contact <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-sky-500">MBNP</span>
             </motion.h1>
             <motion.p variants={fadeUp} className="text-lg md:text-xl font-medium text-slate-600 mb-10 px-2">
@@ -136,7 +136,7 @@ const Contact = () => {
 
           {/* Contact Form */}
           <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }} className="lg:col-span-3">
-            <div className="bg-white p-7 md:p-12 rounded-[2.5rem] md:rounded-[3rem] border border-slate-100 shadow-xl shadow-slate-200/50 relative overflow-hidden">
+            <div className="bg-white p-5 md:p-12 rounded-[2.5rem] md:rounded-[3rem] border border-slate-100 shadow-xl shadow-slate-200/50 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-blue-50 to-transparent rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
               <div className="absolute bottom-0 left-0 w-40 h-40 bg-gradient-to-tr from-indigo-50 to-transparent rounded-full translate-y-1/2 -translate-x-1/2 pointer-events-none" />
               <h2 className="font-display text-2xl md:text-4xl font-black text-slate-900 mb-2 tracking-tight relative z-10">Kirim Pesan</h2>
@@ -220,7 +220,7 @@ const Contact = () => {
             ].map((soc, i) => (
               <motion.a key={i} href={soc.href} target="_blank" rel="noopener noreferrer" variants={fadeUp}
                 whileHover={{ scale: 1.04, y: -5 }} transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-                className={`group p-7 md:p-9 rounded-[2.5rem] bg-slate-50 border border-slate-100 ${soc.hoverBorder} ${soc.hoverBg} transition-all text-center cursor-pointer`}>
+                className={`group p-5 md:p-9 rounded-[2.5rem] bg-slate-50 border border-slate-100 ${soc.hoverBorder} ${soc.hoverBg} transition-all text-center cursor-pointer`}>
                 <div className={`w-16 h-16 mx-auto bg-white rounded-2xl shadow-sm flex items-center justify-center mb-5 group-hover:scale-110 transition-all ${soc.iconHover}`} style={{ color: soc.color }}>
                   {soc.icon}
                 </div>

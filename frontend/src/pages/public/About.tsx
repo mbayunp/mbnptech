@@ -25,7 +25,7 @@ const AboutHero = () => (
           <span className="text-xs font-black text-slate-700 tracking-widest uppercase">Kisah Kami</span>
         </motion.div>
 
-        <motion.h1 variants={fadeUp} className="font-display text-[2.8rem] sm:text-6xl md:text-[5.5rem] font-black text-slate-900 tracking-tighter mb-6 leading-[1.04]">
+        <motion.h1 variants={fadeUp} className="font-display text-4xl sm:text-6xl md:text-[5rem] lg:text-[6rem] font-black text-slate-900 tracking-tighter mb-6 leading-[1.04]">
           Tentang <br className="hidden md:block" />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600">MBNP Tech</span>
         </motion.h1>
@@ -44,7 +44,7 @@ const AboutMBNPTech = () => (
     <div className="absolute top-[-5%] right-[5%] w-[400px] h-[300px] bg-gradient-to-br from-blue-50/80 to-indigo-50/30 rounded-full blur-[120px] pointer-events-none" />
     <div className="container mx-auto px-5 md:px-8 max-w-6xl relative z-10">
       <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }}
-        className="bg-slate-50 border border-slate-100 rounded-[2.5rem] md:rounded-[3rem] p-9 md:p-16 relative overflow-hidden hover:shadow-xl transition-shadow duration-500">
+        className="bg-slate-50 border border-slate-100 rounded-[2.5rem] md:rounded-[3rem] p-5 md:p-16 relative overflow-hidden hover:shadow-xl transition-shadow duration-500">
         <div className="absolute right-0 bottom-0 top-0 w-full md:w-1/2 bg-[radial-gradient(#CBD5E1_1px,transparent_1px)] [background-size:16px_16px] [mask-image:linear-gradient(to_bottom,white,transparent)] md:[mask-image:linear-gradient(to_left,white,transparent)] pointer-events-none opacity-50" />
         <div className="flex flex-col md:flex-row gap-10 md:gap-16 items-center relative z-10">
           <div className="w-full md:w-1/3 flex flex-col items-center md:items-start text-center md:text-left">
@@ -73,8 +73,8 @@ const FounderProfile = () => (
 
     <div className="container mx-auto px-5 md:px-8 max-w-6xl relative z-10 flex flex-col lg:flex-row items-center gap-12 md:gap-16">
       {/* Founder Visual Card */}
-      <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }} className="w-full lg:w-1/3">
-        <div className="aspect-[4/5] bg-slate-800/50 backdrop-blur-xl rounded-[2.5rem] border border-slate-700/80 flex flex-col items-center justify-center p-10 text-center shadow-2xl relative overflow-hidden group hover:border-blue-500/30 transition-colors duration-500">
+      <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }} className="w-full md:max-w-md md:mx-auto lg:max-w-none lg:w-1/3">
+        <div className="aspect-[4/5] bg-slate-800/50 backdrop-blur-xl rounded-[2.5rem] border border-slate-700/80 flex flex-col items-center justify-center p-5 md:p-16 text-center shadow-2xl relative overflow-hidden group hover:border-blue-500/30 transition-colors duration-500">
           <div className="absolute inset-0 bg-gradient-to-t from-blue-900/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
           {/* Icon placeholder replacing emoji */}
           <div className="w-24 h-24 md:w-32 md:h-32 bg-blue-500/20 rounded-full flex items-center justify-center mb-6 border border-slate-600 group-hover:border-blue-400 group-hover:scale-105 transition-all shadow-inner relative z-10">
@@ -135,7 +135,7 @@ const SkillsTech = () => (
         {techStacks.map((stack, idx) => (
           <motion.div key={idx} variants={fadeUp}
             whileHover={{ scale: 1.04, y: -5 }} transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-            className={`bg-gradient-to-br ${stack.bg} p-7 md:p-9 rounded-[2.5rem] border border-white/80 hover:shadow-xl hover:shadow-slate-200/60 transition-shadow duration-500 group cursor-default`}>
+            className={`bg-gradient-to-br ${stack.bg} p-5 md:p-9 rounded-[2.5rem] border border-white/80 hover:shadow-xl hover:shadow-slate-200/60 transition-shadow duration-500 group cursor-default`}>
             <div className={`w-12 h-12 ${stack.iconBg} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg`}>{stack.icon}</div>
             <h3 className="font-display text-lg font-black text-slate-900 mb-4">{stack.title}</h3>
             <ul className="space-y-2">
@@ -173,7 +173,7 @@ const ProfessionalValues = () => (
         {values.map((val, idx) => (
           <motion.div key={idx} variants={fadeUp}
             whileHover={{ scale: 1.015 }} transition={{ type: 'spring', stiffness: 180, damping: 20 }}
-            className="bg-white p-8 md:p-10 rounded-[2.5rem] border border-slate-100 flex flex-col md:flex-row gap-5 items-start hover:shadow-xl hover:shadow-slate-200/50 hover:border-blue-100 transition-all duration-500 cursor-default">
+            className="bg-white p-5 md:p-10 rounded-[2.5rem] border border-slate-100 flex flex-col md:flex-row gap-5 items-start hover:shadow-xl hover:shadow-slate-200/50 hover:border-blue-100 transition-all duration-500 cursor-default">
             <div className="text-5xl md:text-6xl font-black text-slate-100 leading-none shrink-0">0{idx + 1}</div>
             <div>
               <h3 className="font-display text-lg md:text-xl font-black text-slate-800 mb-2">{val.title}</h3>
@@ -192,10 +192,10 @@ const VisionGoals = () => (
     <div className="absolute top-[-5%] left-[40%] w-[500px] h-[400px] bg-gradient-to-br from-blue-50/60 to-violet-50/20 rounded-full blur-[130px] pointer-events-none" />
     <div className="container mx-auto px-5 md:px-8 max-w-6xl relative z-10">
       <motion.div variants={stagger} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }}
-        className="grid grid-cols-1 lg:grid-cols-2 gap-5 md:gap-6">
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-5 md:gap-6">
         <motion.div variants={fadeUp}
           whileHover={{ scale: 1.02, y: -4 }} transition={{ type: 'spring', stiffness: 180, damping: 20 }}
-          className="bg-gradient-to-br from-blue-50 to-indigo-50/50 p-9 md:p-12 rounded-[2.5rem] border border-blue-100/50 hover:shadow-xl hover:shadow-blue-100/50 transition-shadow duration-500 cursor-default">
+          className="bg-gradient-to-br from-blue-50 to-indigo-50/50 p-5 md:p-12 rounded-[2.5rem] border border-blue-100/50 hover:shadow-xl hover:shadow-blue-100/50 transition-shadow duration-500 cursor-default">
           <div className="flex items-center gap-4 mb-6 md:mb-8">
             <div className="w-12 h-12 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-blue-600/30">
               <FiEye size={20} />
@@ -209,7 +209,7 @@ const VisionGoals = () => (
 
         <motion.div variants={fadeUp}
           whileHover={{ scale: 1.02, y: -4 }} transition={{ type: 'spring', stiffness: 180, damping: 20 }}
-          className="bg-gradient-to-br from-emerald-50 to-teal-50/50 p-9 md:p-12 rounded-[2.5rem] border border-emerald-100/50 hover:shadow-xl hover:shadow-emerald-100/50 transition-shadow duration-500 cursor-default">
+          className="bg-gradient-to-br from-emerald-50 to-teal-50/50 p-5 md:p-12 rounded-[2.5rem] border border-emerald-100/50 hover:shadow-xl hover:shadow-emerald-100/50 transition-shadow duration-500 cursor-default">
           <div className="flex items-center gap-4 mb-6 md:mb-8">
             <div className="w-12 h-12 bg-emerald-500 text-white rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/30">
               <FiTarget size={20} />

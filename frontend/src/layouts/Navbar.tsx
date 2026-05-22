@@ -99,13 +99,13 @@ const Navbar = () => {
 
             {/* Hamburger Menu (Mobile) */}
             <button
-              className="lg:hidden w-9 h-9 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-900 rounded-full transition-colors"
+              className="lg:hidden w-11 h-11 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-900 rounded-full transition-colors"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label="Toggle Menu"
             >
               {isMobileMenuOpen
-                ? <X size={16} strokeWidth={2.5} />
-                : <Menu size={16} strokeWidth={2.5} />
+                ? <X size={20} strokeWidth={2.5} />
+                : <Menu size={20} strokeWidth={2.5} />
               }
             </button>
           </div>

@@ -9,6 +9,8 @@ const {
     deleteBudget,
     addExpense,
     addContribution,
+    updateContribution, // <-- DITAMBAHKAN DI SINI
+    deleteContribution, // <-- DITAMBAHKAN DI SINI
     addVendor,
     updateVendorStatus,
     addTimelineTask
@@ -36,6 +38,8 @@ router.post('/expenses', addExpense);
 
 // Endpoint Contributions (Pemasukan)
 router.post('/contributions', addContribution);
+router.put('/contributions/:id', updateContribution);
+router.delete('/contributions/:id', deleteContribution);
 
 // Endpoint Vendors
 router.post('/vendors', addVendor);

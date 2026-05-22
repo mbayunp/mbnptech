@@ -25,7 +25,7 @@ const ProjectsHero = () => (
           <span className="text-xs font-black text-slate-700 tracking-widest uppercase">Our Best Work</span>
         </motion.div>
 
-        <motion.h1 variants={fadeUp} className="font-display text-[2.8rem] sm:text-6xl md:text-[5.5rem] font-black text-slate-900 tracking-tighter mb-6 leading-[1.04]">
+        <motion.h1 variants={fadeUp} className="font-display text-4xl sm:text-6xl md:text-[5rem] lg:text-[6rem] font-black text-slate-900 tracking-tighter mb-6 leading-[1.04]">
           Projects & <br className="hidden md:block" />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-500">Portfolio</span>
         </motion.h1>
@@ -93,7 +93,7 @@ const FeaturedProjects = () => (
       </motion.div>
 
       <motion.div variants={stagger} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }}
-        className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 md:gap-8">
         {featuredProjects.map((project, idx) => (
           <motion.div key={idx} variants={fadeUp}
             whileHover={{ scale: 1.015, y: -6 }} transition={{ type: 'spring', stiffness: 180, damping: 20 }}
@@ -102,7 +102,7 @@ const FeaturedProjects = () => (
               <img src={project.image} alt={`Tangkapan layar ${project.title}`} className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700 ease-in-out" />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-900/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </div>
-            <div className="p-7 md:p-10 flex flex-col flex-grow">
+            <div className="p-5 md:p-10 flex flex-col flex-grow">
               <div className="flex flex-wrap justify-between items-start mb-5 gap-3">
                 <span className={`px-3 py-1.5 text-[10px] font-black uppercase tracking-wider rounded-xl border ${tagColorMap[project.tagColor]}`}>{project.category}</span>
                 <div className="flex flex-wrap gap-1.5">
@@ -154,7 +154,7 @@ const TechHighlight = () => (
         {techStacks.map((cat, idx) => (
           <motion.div key={idx} variants={fadeUp}
             whileHover={{ scale: 1.04, y: -5 }} transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-            className={`p-7 md:p-9 rounded-[2.5rem] bg-gradient-to-br ${cat.bg} border border-white/80 text-left hover:shadow-xl hover:shadow-slate-200/60 transition-shadow duration-500 group cursor-default`}>
+            className={`p-5 md:p-9 rounded-[2.5rem] bg-gradient-to-br ${cat.bg} border border-white/80 text-left hover:shadow-xl hover:shadow-slate-200/60 transition-shadow duration-500 group cursor-default`}>
             <div className={`w-12 h-12 ${cat.iconBg} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform shadow-lg`}>{cat.icon}</div>
             <h3 className="font-display text-lg font-black text-slate-900 mb-4">{cat.title}</h3>
             <ul className="space-y-2">

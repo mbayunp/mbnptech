@@ -33,7 +33,7 @@ const HeroSection = () => (
         </motion.div>
 
         {/* Headline */}
-        <motion.h1 variants={fadeUp} className="font-display text-[2.8rem] sm:text-6xl md:text-8xl font-black text-slate-900 tracking-tighter mb-7 leading-[1.04]">
+        <motion.h1 variants={fadeUp} className="font-display text-4xl sm:text-6xl md:text-[5rem] lg:text-[6rem] font-black text-slate-900 tracking-tighter mb-7 leading-[1.04]">
           Membangun Ekosistem <br className="hidden md:block" />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600">
             Digital Terskalabel
@@ -101,7 +101,7 @@ const FeaturesBentoSection = () => (
             viewport={{ once: true, margin: '-80px' }}
             whileHover={{ scale: 1.02, y: -4 }}
             transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-            className={`${item.bg} rounded-[2.5rem] p-8 md:p-10 relative overflow-hidden group cursor-default border transition-shadow duration-500 hover:shadow-2xl ${item.dark ? 'border-slate-800 hover:shadow-blue-900/30' : 'border-slate-100 hover:shadow-slate-200/50'} ${item.wide ? 'md:col-span-2' : ''}`}
+            className={`${item.bg} rounded-[2.5rem] p-5 md:p-10 relative overflow-hidden group cursor-default border transition-shadow duration-500 hover:shadow-2xl ${item.dark ? 'border-slate-800 hover:shadow-blue-900/30' : 'border-slate-100 hover:shadow-slate-200/50'} ${item.wide ? 'md:col-span-2' : ''}`}
           >
             {item.glow && <div className={`absolute top-0 right-0 w-48 h-48 ${item.glow} rounded-full blur-[80px] group-hover:opacity-150 transition-colors`} />}
             <div className="relative z-10 h-full flex flex-col justify-between min-h-[160px]">
@@ -200,7 +200,7 @@ const OtherProjectsSection = () => (
         {projects.map((p, i) => (
           <motion.div key={i} variants={fadeUp}
             whileHover={{ scale: 1.02, y: -4 }} transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-            className="bg-slate-50 border border-slate-200/80 rounded-[2rem] p-7 md:p-9 hover:shadow-xl hover:shadow-slate-200/50 transition-shadow duration-500 cursor-default">
+            className="bg-slate-50 border border-slate-200/80 rounded-[2rem] p-5 md:p-9 hover:shadow-xl hover:shadow-slate-200/50 transition-shadow duration-500 cursor-default">
             <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-[10px] font-black uppercase tracking-wider rounded-lg mb-4">{p.category}</span>
             <h3 className="font-display text-lg md:text-xl font-black text-slate-800 mb-4">{p.title}</h3>
             <div className="flex flex-wrap gap-2">

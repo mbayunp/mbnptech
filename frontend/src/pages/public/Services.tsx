@@ -26,7 +26,7 @@ const ServicesHero = () => (
           <span className="text-xs font-black text-sky-300 tracking-widest uppercase">Layanan Utama Kami</span>
         </motion.div>
 
-        <motion.h1 variants={fadeUp} className="font-display text-[2.8rem] sm:text-6xl md:text-[5.5rem] font-black text-white tracking-tighter mb-6 leading-[1.04]">
+        <motion.h1 variants={fadeUp} className="font-display text-4xl sm:text-6xl md:text-[5rem] lg:text-[6rem] font-black text-white tracking-tighter mb-6 leading-[1.04]">
           Professional Web <br className="hidden md:block" />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 via-blue-500 to-indigo-500">Development</span>
         </motion.h1>
@@ -87,7 +87,7 @@ const CoreServices = () => (
           return (
             <motion.div key={idx} variants={fadeUp}
               whileHover={{ scale: 1.02, y: -5 }} transition={{ type: 'spring', stiffness: 180, damping: 20 }}
-              className="bg-white p-7 md:p-9 rounded-[2.5rem] border border-slate-100 hover:shadow-2xl hover:shadow-slate-200/60 transition-shadow duration-500 flex flex-col group cursor-default">
+              className="bg-white p-5 md:p-9 rounded-[2.5rem] border border-slate-100 hover:shadow-2xl hover:shadow-slate-200/60 transition-shadow duration-500 flex flex-col group cursor-default">
               <div className={`w-12 h-12 ${colors.icon} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform`}>{srv.icon}</div>
               <h3 className="font-display text-xl font-black text-slate-900 mb-3 tracking-tight">{srv.title}</h3>
               <p className="text-slate-500 mb-6 text-sm leading-relaxed font-medium flex-grow">{srv.desc}</p>
@@ -132,7 +132,7 @@ const IndustrySolutions = () => (
         {industries.map((ind, idx) => (
           <motion.div key={idx} variants={fadeUp}
             whileHover={{ scale: 1.015 }} transition={{ type: 'spring', stiffness: 180, damping: 20 }}
-            className="bg-white p-7 md:p-9 rounded-[2.5rem] border border-slate-100 flex flex-col md:flex-row gap-5 items-start hover:shadow-xl hover:shadow-slate-200/50 hover:border-blue-100 transition-all duration-500 cursor-default">
+            className="bg-white p-5 md:p-9 rounded-[2.5rem] border border-slate-100 flex flex-col md:flex-row gap-5 items-start hover:shadow-xl hover:shadow-slate-200/50 hover:border-blue-100 transition-all duration-500 cursor-default">
             <div className="text-5xl md:text-6xl font-black text-slate-100 leading-none shrink-0 group-hover:text-blue-100 transition-colors">0{idx + 1}</div>
             <div>
               <h3 className="font-display text-xl font-black text-slate-800 mb-2 tracking-tight">{ind.title}</h3>
@@ -172,7 +172,7 @@ const DevelopmentProcess = () => (
         {processSteps.map((step, idx) => (
           <motion.div key={idx} variants={fadeUp}
             whileHover={{ scale: 1.02, y: -4 }} transition={{ type: 'spring', stiffness: 180, damping: 20 }}
-            className="bg-slate-800/40 backdrop-blur-sm p-7 md:p-9 rounded-[2.5rem] border border-slate-700/50 hover:bg-slate-800/70 hover:border-slate-600/50 transition-all duration-300 relative overflow-hidden group cursor-default">
+            className="bg-slate-800/40 backdrop-blur-sm p-5 md:p-9 rounded-[2.5rem] border border-slate-700/50 hover:bg-slate-800/70 hover:border-slate-600/50 transition-all duration-300 relative overflow-hidden group cursor-default">
             <div className="absolute top-5 right-7 text-5xl font-black text-slate-700/25 group-hover:text-blue-500/10 transition-colors">{step.num}</div>
             <div className="relative z-10 mt-8">
               <h3 className="font-display text-lg font-bold text-white mb-3">{step.title}</h3>
@@ -190,7 +190,7 @@ const MaintenanceSupport = () => (
   <section className="py-20 md:py-28 bg-white">
     <div className="container mx-auto px-5 md:px-8 max-w-6xl">
       <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }}
-        className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2.5rem] md:rounded-[3rem] p-10 md:p-16 text-white relative overflow-hidden shadow-2xl shadow-blue-600/20 flex flex-col lg:flex-row gap-10 md:gap-16 items-center">
+        className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[2.5rem] md:rounded-[3rem] p-5 md:p-16 text-white relative overflow-hidden shadow-2xl shadow-blue-600/20 flex flex-col lg:flex-row gap-10 md:gap-16 items-center">
         <div className="absolute top-0 right-0 w-[400px] h-[400px] bg-white/10 rounded-full blur-[80px] -translate-y-1/2 translate-x-1/4 pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-indigo-900/30 rounded-full blur-[80px] translate-y-1/2 -translate-x-1/4 pointer-events-none" />
         <div className="w-full lg:w-1/2 relative z-10 text-center lg:text-left">
@@ -201,7 +201,7 @@ const MaintenanceSupport = () => (
           </p>
         </div>
         <div className="w-full lg:w-1/2 relative z-10">
-          <div className="bg-white/10 p-7 md:p-9 rounded-[2rem] backdrop-blur-md border border-white/20">
+          <div className="bg-white/10 p-5 md:p-9 rounded-[2rem] backdrop-blur-md border border-white/20">
             <h3 className="font-display font-black text-lg md:text-xl mb-6">Paket Layanan Termasuk:</h3>
             <ul className="space-y-4">
               {['Update Teknologi & Keamanan Framework', 'Monitoring Server & Database Backup', 'Pemecahan Masalah (Bug Fixing) Cepat', 'Penambahan Modul & Skalabilitas Fitur'].map((item, i) => (
