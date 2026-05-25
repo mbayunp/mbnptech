@@ -5,7 +5,7 @@ import Swal from 'sweetalert2';
 import {
   FaWallet, FaArrowDown, FaArrowUp, FaCreditCard,
   FaEdit, FaTrash, FaPlus, FaCalendarAlt, FaShieldAlt,
-  FaHistory, FaChartLine
+  FaHistory, FaChartLine, FaSearch, FaFilter
 } from 'react-icons/fa';
 import {
   BarChart, Bar, PieChart, Pie, Cell,
@@ -13,6 +13,7 @@ import {
   Legend, ResponsiveContainer
 } from 'recharts';
 import { API_URL } from '../../config/api';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const formatRp = (angka: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka || 0);
 const PIE_COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6'];
@@ -24,13 +25,12 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, outerRadius, percent, index }
   const y = cy + radius * Math.sin(-midAngle * RADIAN);
   if (percent === 0) return null;
   return (
-    <text x={x} y={y} fill={PIE_COLORS[index % PIE_COLORS.length]} textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize="11" fontWeight="900">
+    <text x={x} y={y} fill={PIE_COLORS[index % PIE_COLORS.length]} textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" fontSize="10" fontWeight="900">
       {`${(percent * 100).toFixed(0)}%`}  
     </text>
   );
 };
 
-// DATA KATEGORI & SUMBER UANG
 const INCOME_CATEGORIES = ["Gaji", "Projek", "Pinjaman", "Lainnya"];
 const EXPENSE_CATEGORIES = ["Kosan", "Motor", "Melunasi Hutang", "Makan & Minum", "Sedekah", "Memberi", "Jajan", "Barang", "Laundry", "Hutang", "Lainnya"];
 const SOURCES = ["Bank BJB", "Digicash", "Bank BSI 1", "Bank BSI 2", "Dana", "Cash/Dompet", "Gopay", "Shopeepay"];
@@ -41,8 +41,8 @@ const Finance = () => {
 
   const [data, setData] = useState({
     summary: { balance: 0, monthIncome: 0, monthExpense: 0 },
-    debts: [] as any[], // Array Hutang
-    totalDebtRemaining: 0, // Total sisa semua hutang
+    debts: [] as any[], 
+    totalDebtRemaining: 0, 
     transactions: [] as any[],
     barChart: [] as any[],
     pieChart: [] as any[]
@@ -50,17 +50,22 @@ const Finance = () => {
 
   // State Form Transaksi
   const [qaType, setQaType] = useState<'expense' | 'income'>('expense');
-  const [qaSource, setQaSource] = useState(SOURCES[5]); // Default Cash/Dompet
+  const [qaSource, setQaSource] = useState(SOURCES[5]); 
   const [qaAmount, setQaAmount] = useState('');
   const [qaCategory, setQaCategory] = useState(EXPENSE_CATEGORIES[0]);
   const [qaDate, setQaDate] = useState(new Date().toISOString().split('T')[0]);
   const [qaNote, setQaNote] = useState('');
 
+  // State Filters
+  const [filterType, setFilterType] = useState('all');
+  const [filterSource, setFilterSource] = useState('all');
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+
   // State Debt Strategy
   const [payDebtId, setPayDebtId] = useState('');
   const [debtAmount, setDebtAmount] = useState('');
   
-  // Menggunakan string agar bisa diformat dengan titik (contoh: 500.000)
   const [monthlyCommitmentStr, setMonthlyCommitmentStr] = useState('500.000');
   const monthlyCommitment = parseInt(monthlyCommitmentStr.replace(/\D/g, '')) || 0;
 
@@ -78,13 +83,11 @@ const Finance = () => {
 
   useEffect(() => { fetchFinanceData(); }, [navigate]);
 
-  // Efek mengubah default kategori saat jenis transaksi berubah
   useEffect(() => {
     if (qaType === 'income') setQaCategory(INCOME_CATEGORIES[0]);
     else setQaCategory(EXPENSE_CATEGORIES[0]);
   }, [qaType]);
 
-  // --- CRUD TRANSAKSI ---
   const handleQuickAdd = async (e: FormEvent) => {
     e.preventDefault();
     try {
@@ -115,8 +118,6 @@ const Finance = () => {
       : EXPENSE_CATEGORIES.map(c => `<option value="${c}" ${trx.category === c ? 'selected' : ''}>${c}</option>`).join('');
 
     const sourceOptions = SOURCES.map(s => `<option value="${s}" ${trx.source === s ? 'selected' : ''}>${s}</option>`).join('');
-
-    // Format nilai awal ke bentuk ribuan titik (contoh: 100000 menjadi "100.000")
     const initialFormattedAmount = new Intl.NumberFormat('id-ID').format(trx.amount);
 
     const { value: formValues } = await Swal.fire({
@@ -178,7 +179,6 @@ const Finance = () => {
     }
   };
 
-  // --- CRUD MULTI-HUTANG ---
   const handleAddDebt = async () => {
     const { value: formValues } = await Swal.fire({
       title: 'Tambah Hutang Baru',
@@ -216,7 +216,6 @@ const Finance = () => {
   };
 
   const handleEditDebt = async (debt: any) => {
-    // Format angka ke titik sebelum dimasukkan ke form
     const initialAmount = new Intl.NumberFormat('id-ID').format(debt.total_debt);
 
     const { value: formValues } = await Swal.fire({
@@ -290,33 +289,72 @@ const Finance = () => {
   const debtRatio = incomeThisMonth > 0 ? (data.totalDebtRemaining / incomeThisMonth) * 100 : 0;
   
   let healthScore = 100;
-  if (expenseThisMonth > incomeThisMonth) healthScore -= 40; // Defisit
-  if (debtRatio > 100) healthScore -= 30; // Hutang lebih besar dari gaji
-  if (savingRate < 20 && savingRate >= 0) healthScore -= 10; // Kurang menabung
+  if (expenseThisMonth > incomeThisMonth) healthScore -= 40; 
+  if (debtRatio > 100) healthScore -= 30; 
+  if (savingRate < 20 && savingRate >= 0) healthScore -= 10; 
   healthScore = Math.max(0, healthScore);
 
   // --- DEBT ELIMINATION STRATEGY ---
   const prioritizedDebts = [...data.debts].sort((a, b) => a.remaining_debt - b.remaining_debt);
   const estimatedMonthsToDebtFree = data.totalDebtRemaining > 0 && monthlyCommitment > 0 ? Math.ceil(data.totalDebtRemaining / monthlyCommitment) : 0;
 
-  if (isLoading) return <div className="flex h-screen items-center justify-center bg-[#F8FAFC]"><div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div></div>;
+  // Custom Glass Tooltip for Recharts
+  const CustomBarTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white/90 dark:bg-[#0B0F19]/90 backdrop-blur-md border border-slate-200/50 dark:border-white/[0.05] p-4 rounded-2xl shadow-xl">
+          <p className="text-xs font-bold text-slate-400 dark:text-slate-500 mb-1.5">{label}</p>
+          <p className="text-xs font-extrabold text-emerald-500 flex justify-between gap-4">
+            <span>Pemasukan:</span> <span>{formatRp(Number(payload[0].value))}</span>
+          </p>
+          <p className="text-xs font-extrabold text-rose-500 flex justify-between gap-4 mt-1">
+            <span>Pengeluaran:</span> <span>{formatRp(Number(payload[1].value))}</span>
+          </p>
+        </div>
+      );
+    }
+    return null;
+  };
+
+  // Filtered Transactions
+  const filteredTransactions = data.transactions.filter((trx: any) => {
+    const matchesType = filterType === 'all' || trx.type === filterType;
+    const matchesSource = filterSource === 'all' || trx.source === filterSource;
+    const matchesCategory = filterCategory === 'all' || trx.category === filterCategory;
+    const matchesSearch = searchQuery === '' || 
+      (trx.note && trx.note.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (trx.category && trx.category.toLowerCase().includes(searchQuery.toLowerCase()));
+    return matchesType && matchesSource && matchesCategory && matchesSearch;
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[#F8FAFC] dark:bg-[#030712] transition-colors duration-300">
+        <div className="w-12 h-12 border-4 border-blue-500/20 border-t-blue-600 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-8xl mx-auto font-sans bg-[#F8FAFC] pb-20">
-
+    <motion.div 
+      initial={{ opacity: 0, y: 15 }} 
+      animate={{ opacity: 1, y: 0 }} 
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className="max-w-8xl mx-auto pb-20 dark:text-white"
+    >
       {/* Header & Financial Health Score */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">Financial Hub</h2>
-          <p className="text-slate-500 mt-1 text-sm font-medium">Kelola aset, pantau pengeluaran, dan targetkan kebebasan finansial.</p>
+          <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight font-display">Financial Hub</h2>
+          <p className="text-slate-500 dark:text-slate-400 mt-1 text-sm font-medium">Kelola aset, pantau pengeluaran, dan targetkan kebebasan finansial.</p>
         </div>
-        <div className="bg-white px-5 py-3 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4">
-          <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0 ${healthScore >= 70 ? 'bg-emerald-50 text-emerald-500' : healthScore >= 40 ? 'bg-amber-50 text-amber-500' : 'bg-rose-50 text-rose-500'}`}>
+        <div className="bg-white dark:bg-[#0B0F19] px-5 py-3 rounded-2xl shadow-sm border border-slate-200/50 dark:border-white/[0.05] flex items-center gap-4 transition-all duration-300">
+          <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0 ${healthScore >= 70 ? 'bg-emerald-50 dark:bg-emerald-600/10 text-emerald-500' : healthScore >= 40 ? 'bg-amber-50 dark:bg-amber-600/10 text-amber-500' : 'bg-rose-50 dark:bg-rose-600/10 text-rose-500'}`}>
             <FaShieldAlt />
           </div>
           <div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Health Score</p>
-            <h4 className="text-lg font-black text-slate-800 leading-none">{healthScore} / 100</h4>
+            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">Health Score</p>
+            <h4 className="text-lg font-black text-slate-800 dark:text-slate-200 leading-none">{healthScore} / 100</h4>
           </div>
         </div>
       </div>
@@ -324,43 +362,43 @@ const Finance = () => {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {[
-          { title: "Total Saldo", amount: data.summary.balance, badge: "Keseluruhan", icon: <FaWallet />, color: "blue" },
-          { title: "Pemasukan", amount: data.summary.monthIncome, badge: "Bulan Ini", icon: <FaArrowUp />, color: "emerald" },
-          { title: "Pengeluaran", amount: data.summary.monthExpense, badge: "Bulan Ini", icon: <FaArrowDown />, color: "red" },
-          { title: "Total Hutang", amount: data.totalDebtRemaining, badge: `${data.debts.length} Hutang Aktif`, icon: <FaCreditCard />, color: "orange" },
+          { title: "Total Saldo", amount: data.summary.balance, badge: "Keseluruhan", icon: <FaWallet />, color: "blue", textClass: "text-blue-500", bgClass: "bg-blue-50 dark:bg-blue-600/10" },
+          { title: "Pemasukan", amount: data.summary.monthIncome, badge: "Bulan Ini", icon: <FaArrowUp />, color: "emerald", textClass: "text-emerald-500", bgClass: "bg-emerald-50 dark:bg-emerald-600/10" },
+          { title: "Pengeluaran", amount: data.summary.monthExpense, badge: "Bulan Ini", icon: <FaArrowDown />, color: "red", textClass: "text-rose-500", bgClass: "bg-rose-50 dark:bg-rose-600/10" },
+          { title: "Total Hutang", amount: data.totalDebtRemaining, badge: `${data.debts.length} Hutang Aktif`, icon: <FaCreditCard />, color: "orange", textClass: "text-amber-500", bgClass: "bg-amber-50 dark:bg-amber-600/10" },
         ].map((item, idx) => (
-          <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition-shadow">
-            <div className={`w-14 h-14 rounded-2xl bg-${item.color}-50 text-${item.color}-600 flex items-center justify-center text-2xl shrink-0`}>{item.icon}</div>
+          <div key={idx} className="bg-white dark:bg-[#0B0F19] p-6 rounded-[2rem] shadow-sm border border-slate-200/50 dark:border-white/[0.05] flex items-center gap-4 hover:shadow-md transition-all duration-300">
+            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shrink-0 ${item.bgClass} ${item.textClass}`}>{item.icon}</div>
             <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">{item.title}</p>
-              <h4 className="text-xl font-black text-slate-800">{formatRp(item.amount)}</h4>
-              <p className={`text-[10px] font-bold text-${item.color}-500 mt-1 bg-${item.color}-50 px-2 py-0.5 rounded inline-block`}>{item.badge}</p>
+              <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1">{item.title}</p>
+              <h4 className="text-xl font-black text-slate-800 dark:text-slate-200">{formatRp(item.amount)}</h4>
+              <p className={`text-[10px] font-black uppercase tracking-wider mt-1.5 px-2 py-0.5 rounded inline-block ${item.bgClass} ${item.textClass}`}>{item.badge}</p>
             </div>
           </div>
         ))}
       </div>
 
       {/* QUICK ADD TRANSACTION */}
-      <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-100 mb-8 relative overflow-hidden">
-        <h3 className="text-lg font-black text-slate-800 mb-6 relative z-10">⚡ Quick Add Transaction</h3>
+      <div className="bg-white dark:bg-[#0B0F19] p-6 md:p-8 rounded-[2rem] shadow-sm border border-slate-200/50 dark:border-white/[0.05] mb-8 relative overflow-hidden transition-all duration-300">
+        <h3 className="text-lg font-black text-slate-800 dark:text-white mb-6 relative z-10 font-display">⚡ Quick Add Transaction</h3>
         <form onSubmit={handleQuickAdd} className="relative z-10">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Jenis</label>
-              <select value={qaType} onChange={(e) => setQaType(e.target.value as 'income' | 'expense')} className="w-full p-3.5 rounded-xl border border-slate-200 bg-slate-50 font-bold outline-none focus:border-blue-400 cursor-pointer">
+              <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">Jenis</label>
+              <select value={qaType} onChange={(e) => setQaType(e.target.value as 'income' | 'expense')} className="w-full p-3.5 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900/40 font-bold outline-none text-slate-700 dark:text-slate-200 cursor-pointer">
                 <option value="expense">📉 Pengeluaran</option>
                 <option value="income">📈 Pemasukan</option>
               </select>
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Sumber Uang</label>
-              <select value={qaSource} onChange={(e) => setQaSource(e.target.value)} required className="w-full p-3.5 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-700 outline-none focus:border-blue-400 cursor-pointer">
+              <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">Sumber Uang</label>
+              <select value={qaSource} onChange={(e) => setQaSource(e.target.value)} required className="w-full p-3.5 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900/40 font-bold text-slate-700 dark:text-slate-200 outline-none cursor-pointer">
                 {SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Kategori</label>
-              <select value={qaCategory} onChange={(e) => setQaCategory(e.target.value)} required className="w-full p-3.5 rounded-xl border border-slate-200 bg-slate-50 font-bold text-slate-700 outline-none focus:border-blue-400 cursor-pointer">
+              <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">Kategori</label>
+              <select value={qaCategory} onChange={(e) => setQaCategory(e.target.value)} required className="w-full p-3.5 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900/40 font-bold text-slate-700 dark:text-slate-200 outline-none cursor-pointer">
                 {qaType === 'income' 
                   ? INCOME_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)
                   : EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)
@@ -368,22 +406,22 @@ const Finance = () => {
               </select>
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Jumlah (Rp)</label>
-              <input type="text" inputMode="numeric" required value={qaAmount} onChange={(e) => { const val = e.target.value.replace(/\D/g, ''); setQaAmount(val ? new Intl.NumberFormat('id-ID').format(Number(val)) : ''); }} placeholder="0" className="w-full p-3.5 rounded-xl border border-slate-200 bg-slate-50 font-black text-blue-600 outline-none focus:border-blue-400" />
+              <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">Jumlah (Rp)</label>
+              <input type="text" inputMode="numeric" required value={qaAmount} onChange={(e) => { const val = e.target.value.replace(/\D/g, ''); setQaAmount(val ? new Intl.NumberFormat('id-ID').format(Number(val)) : ''); }} placeholder="0" className="w-full p-3.5 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900/40 font-black text-blue-600 dark:text-blue-400 outline-none focus:border-blue-400" />
             </div>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-end">
             <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Tanggal</label>
-              <input type="date" required value={qaDate} onChange={(e) => setQaDate(e.target.value)} className="w-full p-3.5 rounded-xl border border-slate-200 bg-slate-50 font-medium outline-none focus:border-blue-400 text-slate-700 cursor-pointer" />
+              <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">Tanggal</label>
+              <input type="date" required value={qaDate} onChange={(e) => setQaDate(e.target.value)} className="w-full p-3.5 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900/40 font-medium outline-none text-slate-700 dark:text-slate-200 cursor-pointer" />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Catatan Keterangan</label>
-              <input type="text" value={qaNote} onChange={(e) => setQaNote(e.target.value)} placeholder="Opsional (misal: Beli makan siang...)" className="w-full p-3.5 rounded-xl border border-slate-200 bg-slate-50 text-sm outline-none focus:border-blue-400" />
+              <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">Catatan Keterangan</label>
+              <input type="text" value={qaNote} onChange={(e) => setQaNote(e.target.value)} placeholder="Opsional (misal: Beli makan siang...)" className="w-full p-3.5 rounded-xl border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-slate-900/40 text-sm outline-none dark:text-slate-200 focus:border-blue-400" />
             </div>
             <div>
-              <button type="submit" className="w-full p-3.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-600/20 transition-all flex justify-center gap-2 text-sm"><FaPlus /> Simpan</button>
+              <button type="submit" className="w-full p-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold rounded-xl shadow-lg shadow-blue-600/10 transition-all flex justify-center gap-2 text-sm"><FaPlus /> Simpan</button>
             </div>
           </div>
         </form>
@@ -392,27 +430,37 @@ const Finance = () => {
       {/* CHARTS SECTION */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {/* Bar Chart */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 lg:col-span-2">
-          <h3 className="text-lg font-black text-slate-800 mb-6 flex justify-between">📊 Income vs Expense</h3>
+        <div className="bg-white dark:bg-[#0B0F19] p-6 rounded-[2rem] shadow-sm border border-slate-200/50 dark:border-white/[0.05] lg:col-span-2 transition-all duration-300">
+          <h3 className="text-lg font-black text-slate-800 dark:text-white mb-6 font-display">📊 Income vs Expense</h3>
           <div className="h-72 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data.barChart} margin={{ top: 0, right: 0, left: 10, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 12 }} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 12 }} tickFormatter={(val) => `Rp${val / 1000}k`} />
-                <RechartsTooltip cursor={{ fill: '#F8FAFC' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} formatter={(value) => formatRp(Number(value))} />
-                <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} />
-                <Bar dataKey="Income" fill="#10B981" radius={[4, 4, 0, 0]} maxBarSize={40} />
-                <Bar dataKey="Expense" fill="#EF4444" radius={[4, 4, 0, 0]} maxBarSize={40} />
+                <defs>
+                  <linearGradient id="incGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#10B981" stopOpacity={0.8} />
+                    <stop offset="100%" stopColor="#10B981" stopOpacity={0.1} />
+                  </linearGradient>
+                  <linearGradient id="expGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#EF4444" stopOpacity={0.8} />
+                    <stop offset="100%" stopColor="#EF4444" stopOpacity={0.1} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(148, 163, 184, 0.08)" />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 11, fontWeight: 'bold' }} dy={10} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94A3B8', fontSize: 11 }} tickFormatter={(val) => `Rp${val / 1000}k`} />
+                <RechartsTooltip cursor={{ fill: 'rgba(148, 163, 184, 0.05)', radius: 8 }} content={<CustomBarTooltip />} />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', paddingTop: '10px', fontWeight: 'extrabold' }} />
+                <Bar name="Pemasukan" dataKey="Income" fill="url(#incGrad)" radius={[6, 6, 0, 0]} maxBarSize={35} />
+                <Bar name="Pengeluaran" dataKey="Expense" fill="url(#expGrad)" radius={[6, 6, 0, 0]} maxBarSize={35} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
         
         {/* Pie Chart Kategori */}
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col">
-          <h3 className="text-lg font-black text-slate-800 mb-1">📈 Kategori Pengeluaran</h3>
-          <p className="text-xs text-slate-500 mb-6">Analisis biaya bulan ini.</p>
+        <div className="bg-white dark:bg-[#0B0F19] p-6 rounded-[2rem] shadow-sm border border-slate-200/50 dark:border-white/[0.05] flex flex-col transition-all duration-300">
+          <h3 className="text-lg font-black text-slate-800 dark:text-white mb-1 font-display">📈 Kategori Pengeluaran</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-6">Analisis biaya bulan ini.</p>
           <div className="h-56 w-full relative flex-1">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -427,18 +475,18 @@ const Finance = () => {
       </div>
 
       {/* REKAPAN & ANALISIS BULANAN */}
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-8">
-        <h3 className="text-lg font-black text-slate-800 mb-6 flex items-center gap-2">
+      <div className="bg-white dark:bg-[#0B0F19] p-6 rounded-[2rem] shadow-sm border border-slate-200/50 dark:border-white/[0.05] mb-8 transition-all duration-300">
+        <h3 className="text-lg font-black text-slate-800 dark:text-white mb-6 flex items-center gap-2 font-display">
           <FaHistory className="text-blue-500" /> Rekapan & Analisis Bulanan
         </h3>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[500px]">
             <thead>
-              <tr className="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-widest">
+              <tr className="bg-slate-50 dark:bg-slate-900/30 text-slate-500 dark:text-slate-400 text-[10px] uppercase tracking-widest border-b dark:border-white/[0.02]">
                 <th className="p-4 font-bold rounded-l-xl">Bulan</th>
-                <th className="p-4 font-bold text-right text-emerald-600">Pemasukan</th>
-                <th className="p-4 font-bold text-right text-rose-600">Pengeluaran</th>
-                <th className="p-4 font-bold text-right text-blue-600">Selisih Bersih (Net)</th>
+                <th className="p-4 font-bold text-right text-emerald-600 dark:text-emerald-400">Pemasukan</th>
+                <th className="p-4 font-bold text-right text-rose-600 dark:text-rose-400">Pengeluaran</th>
+                <th className="p-4 font-bold text-right text-blue-600 dark:text-blue-400">Selisih Bersih (Net)</th>
                 <th className="p-4 font-bold text-center rounded-r-xl">Trend Pengeluaran</th>
               </tr>
             </thead>
@@ -450,7 +498,7 @@ const Finance = () => {
                 let trendIcon = '-';
                 let trendColor = 'text-slate-400';
                 if (idx < arr.length - 1) {
-                   const prevRow = arr[idx + 1]; // Bulan sebelumnya (karena direverse)
+                   const prevRow = arr[idx + 1]; 
                    if (row.Expense > prevRow.Expense) {
                      trendIcon = 'Lebih Boros 📈';
                      trendColor = 'text-rose-500';
@@ -464,12 +512,12 @@ const Finance = () => {
                 }
 
                 return (
-                  <tr key={idx} className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors">
-                    <td className="p-4 text-slate-800 font-black">{row.name}</td>
-                    <td className="p-4 text-emerald-600 font-medium text-right">{formatRp(row.Income)}</td>
-                    <td className="p-4 text-rose-500 font-medium text-right">{formatRp(row.Expense)}</td>
+                  <tr key={idx} className="border-b border-slate-100 dark:border-white/[0.02] hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors">
+                    <td className="p-4 text-slate-800 dark:text-slate-200 font-black">{row.name}</td>
+                    <td className="p-4 text-emerald-600 dark:text-emerald-400 font-medium text-right">{formatRp(row.Income)}</td>
+                    <td className="p-4 text-rose-500 dark:text-rose-400 font-medium text-right">{formatRp(row.Expense)}</td>
                     <td className="p-4 text-right">
-                      <span className={`px-3 py-1 rounded-md text-xs font-black ${isPositive ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                      <span className={`px-3 py-1 rounded-md text-xs font-black ${isPositive ? 'bg-emerald-100/80 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' : 'bg-rose-100/80 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400'}`}>
                         {isPositive ? '+' : ''}{formatRp(netIncome)}
                       </span>
                     </td>
@@ -485,17 +533,17 @@ const Finance = () => {
       </div>
 
       {/* DEBT ELIMINATION STRATEGY */}
-      <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-100 mb-8">
+      <div className="bg-white dark:bg-[#0B0F19] p-6 md:p-8 rounded-[2rem] shadow-sm border border-slate-200/50 dark:border-white/[0.05] mb-8 transition-all duration-300">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
           <div>
-            <h3 className="text-lg font-black text-slate-800 flex items-center gap-2 mb-1"><FaCreditCard className="text-orange-500" /> Debt Elimination Strategy</h3>
-            <p className="text-xs text-slate-500 font-medium">Sistem merekomendasikan metode <strong>Snowball (Lunasi yang terkecil dulu)</strong>.</p>
+            <h3 className="text-lg font-black text-slate-800 dark:text-white flex items-center gap-2 mb-1 font-display"><FaCreditCard className="text-orange-500" /> Debt Elimination Strategy</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Sistem merekomendasikan metode <strong>Snowball (Lunasi yang terkecil dulu)</strong>.</p>
           </div>
           
           {/* Target Lunas Estimator */}
-          <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-200 flex items-center gap-3 w-full md:w-auto">
+          <div className="bg-slate-50 dark:bg-slate-900/40 p-2.5 rounded-2xl border border-slate-200 dark:border-white/10 flex items-center gap-3 w-full md:w-auto">
             <div className="flex flex-col flex-1">
-              <label className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Budget Bayar / Bulan</label>
+              <label className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">Budget Bayar / Bulan</label>
               <div className="flex items-center gap-1">
                  <span className="text-xs font-bold text-slate-400">Rp</span>
                  <input 
@@ -506,53 +554,52 @@ const Finance = () => {
                      const val = e.target.value.replace(/\D/g, ''); 
                      setMonthlyCommitmentStr(val ? new Intl.NumberFormat('id-ID').format(Number(val)) : ''); 
                    }} 
-                   className="w-24 bg-transparent outline-none text-sm font-black text-slate-700" 
+                   className="w-24 bg-transparent outline-none text-sm font-black text-slate-700 dark:text-slate-200" 
                  />
               </div>
             </div>
-            <div className="bg-orange-100 px-3 py-2 rounded-md text-center border border-orange-200">
-               <p className="text-[9px] font-black text-orange-600 uppercase tracking-widest mb-0.5">Estimasi Lunas</p>
-               <p className="text-sm font-black text-orange-700">{estimatedMonthsToDebtFree} Bulan</p>
+            <div className="bg-orange-100 dark:bg-orange-500/10 px-3 py-2 rounded-xl text-center border border-orange-200 dark:border-orange-500/20 shrink-0">
+               <p className="text-[9px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-widest mb-0.5">Estimasi Lunas</p>
+               <p className="text-sm font-black text-orange-700 dark:text-orange-400">{estimatedMonthsToDebtFree} Bulan</p>
             </div>
           </div>
         </div>
 
         <div className="flex justify-end mb-4">
-           <button onClick={handleAddDebt} className="bg-slate-900 text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-slate-800 transition-all flex items-center gap-2 shadow-md">
+           <button onClick={handleAddDebt} className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-slate-800 dark:hover:bg-slate-100 transition-all flex items-center gap-2 shadow-md">
              <FaPlus /> Tambah Hutang
            </button>
         </div>
 
-        {/* List Hutang Prioritas - BUTTON DI PERBAIKI DISINI */}
+        {/* List Hutang Prioritas */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
           {prioritizedDebts.length === 0 ? (
-            <div className="col-span-full text-center text-slate-400 py-10 text-sm font-medium border-2 border-dashed border-slate-100 rounded-xl">Belum ada hutang. Anda bebas! 🎉</div>
+            <div className="col-span-full text-center text-slate-400 py-10 text-sm font-medium border-2 border-dashed border-slate-200 dark:border-white/10 rounded-[2rem]">Belum ada hutang. Anda bebas! 🎉</div>
           ) : (
             prioritizedDebts.map((debt, index) => {
               const progress = Math.round((Number(debt.total_paid) / Number(debt.total_debt)) * 100);
               const isPriority = index === 0; 
               return (
-                <div key={debt.id} className={`p-5 rounded-2xl border transition-all ${isPriority ? 'bg-orange-50 border-orange-200 shadow-sm' : 'bg-slate-50 border-slate-100'}`}>
+                <div key={debt.id} className={`p-5 rounded-[2rem] border transition-all ${isPriority ? 'bg-orange-50/50 dark:bg-orange-500/5 border-orange-200 dark:border-orange-500/20 shadow-sm' : 'bg-slate-50/50 dark:bg-slate-900/20 border-slate-100 dark:border-white/[0.02]'}`}>
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <h4 className={`font-black ${isPriority ? 'text-orange-700' : 'text-slate-800'}`}>{debt.name}</h4>
+                        <h4 className={`font-black ${isPriority ? 'text-orange-700 dark:text-orange-400' : 'text-slate-800 dark:text-slate-200'}`}>{debt.name}</h4>
                         {isPriority && <span className="bg-orange-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded shadow-sm tracking-wider">Prioritas 1</span>}
                       </div>
-                      <p className="text-[10px] text-slate-500 flex items-center gap-1 font-bold"><FaCalendarAlt /> Tempo: {debt.due_date ? new Date(debt.due_date).toLocaleDateString('id-ID') : '-'}</p>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-1 font-bold"><FaCalendarAlt /> Tempo: {debt.due_date ? new Date(debt.due_date).toLocaleDateString('id-ID') : '-'}</p>
                     </div>
-                    {/* TOMBOL EDIT/HAPUS DIBUAT SELALU TERLIHAT DAN BERBENTUK KOTAK */}
-                    <div className="flex gap-2">
-                      <button onClick={() => handleEditDebt(debt)} className="w-8 h-8 flex items-center justify-center bg-blue-100 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg transition-colors text-xs" title="Edit Hutang"><FaEdit /></button>
-                      <button onClick={() => handleDeleteDebt(debt.id)} className="w-8 h-8 flex items-center justify-center bg-red-100 text-red-600 hover:bg-red-600 hover:text-white rounded-lg transition-colors text-xs" title="Hapus Hutang"><FaTrash /></button>
+                    <div className="flex gap-1.5">
+                      <button onClick={() => handleEditDebt(debt)} className="w-8 h-8 flex items-center justify-center bg-blue-50 dark:bg-blue-600/10 text-blue-600 dark:text-blue-400 hover:bg-blue-600 hover:text-white rounded-lg transition-all text-xs" title="Edit Hutang"><FaEdit /></button>
+                      <button onClick={() => handleDeleteDebt(debt.id)} className="w-8 h-8 flex items-center justify-center bg-red-50 dark:bg-red-600/10 text-red-600 dark:text-red-400 hover:bg-red-600 hover:text-white rounded-lg transition-all text-xs" title="Hapus Hutang"><FaTrash /></button>
                     </div>
                   </div>
                   <div className="flex justify-between text-xs mb-1.5 font-bold">
-                    <span className="text-slate-600">Sisa: <span className={isPriority ? 'text-orange-600' : 'text-slate-800'}>{formatRp(debt.remaining_debt)}</span></span>
+                    <span className="text-slate-600 dark:text-slate-400">Sisa: <span className={isPriority ? 'text-orange-600 dark:text-orange-400' : 'text-slate-800 dark:text-slate-200'}>{formatRp(debt.remaining_debt)}</span></span>
                     <span className={isPriority ? 'text-orange-500' : 'text-slate-400'}>{progress}% Terbayar</span>
                   </div>
-                  <div className={`w-full rounded-full h-1.5 overflow-hidden ${isPriority ? 'bg-orange-200' : 'bg-slate-200'}`}>
-                    <div className={`${isPriority ? 'bg-orange-500' : 'bg-slate-400'} h-full rounded-full`} style={{ width: `${progress}%` }}></div>
+                  <div className={`w-full rounded-full h-1.5 overflow-hidden ${isPriority ? 'bg-orange-200 dark:bg-orange-500/20' : 'bg-slate-200 dark:bg-white/10'}`}>
+                    <div className={`${isPriority ? 'bg-orange-500' : 'bg-slate-450'} h-full rounded-full`} style={{ width: `${progress}%` }}></div>
                   </div>
                 </div>
               )
@@ -561,29 +608,68 @@ const Finance = () => {
         </div>
 
         {/* Form Pembayaran Dropdown */}
-        <form onSubmit={handleDebtPayment} className="bg-slate-50 p-4 rounded-xl border border-slate-200 mt-auto flex flex-col sm:flex-row gap-3 items-end">
+        <form onSubmit={handleDebtPayment} className="bg-slate-50 dark:bg-slate-900/20 p-4 rounded-2xl border border-slate-200 dark:border-white/10 mt-auto flex flex-col sm:flex-row gap-3 items-end">
           <div className="w-full sm:flex-1">
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Pilih Hutang yang Dibayar</label>
-            <select value={payDebtId} onChange={(e) => setPayDebtId(e.target.value)} required className="w-full p-3 rounded-xl border border-slate-200 outline-none text-sm font-bold text-slate-700 bg-white">
+            <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5">Pilih Hutang yang Dibayar</label>
+            <select value={payDebtId} onChange={(e) => setPayDebtId(e.target.value)} required className="w-full p-3 rounded-xl border border-slate-200 dark:border-white/10 outline-none text-sm font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-[#0B0F19] cursor-pointer">
               <option value="" disabled>-- Pilih Hutang --</option>
               {prioritizedDebts.map(d => <option key={d.id} value={d.id}>{d.name} (Sisa: {formatRp(d.remaining_debt)})</option>)}
             </select>
           </div>
           <div className="w-full sm:w-1/3">
-            <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5">Nominal Bayar</label>
-            <input type="text" inputMode="numeric" required value={debtAmount} onChange={(e) => { const val = e.target.value.replace(/\D/g, ''); setDebtAmount(val ? new Intl.NumberFormat('id-ID').format(Number(val)) : ''); }} placeholder="Rp 0" className="w-full p-3 rounded-xl border border-slate-200 outline-none text-sm font-bold bg-white" />
+            <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5">Nominal Bayar</label>
+            <input type="text" inputMode="numeric" required value={debtAmount} onChange={(e) => { const val = e.target.value.replace(/\D/g, ''); setDebtAmount(val ? new Intl.NumberFormat('id-ID').format(Number(val)) : ''); }} placeholder="Rp 0" className="w-full p-3 rounded-xl border border-slate-200 dark:border-white/10 outline-none text-sm font-bold bg-white dark:bg-[#0B0F19] dark:text-slate-200" />
           </div>
-          <button type="submit" disabled={data.debts.length === 0} className="w-full sm:w-auto p-3 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-300 text-white rounded-xl font-bold transition-all text-sm px-8">Catat Cicilan</button>
+          <button type="submit" disabled={data.debts.length === 0} className="w-full sm:w-auto p-3 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 disabled:bg-slate-355 text-white dark:text-slate-900 rounded-xl font-bold transition-all text-sm px-8">Catat Cicilan</button>
         </form>
       </div>
 
       {/* Tabel Transaksi Terakhir */}
-      <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 mb-8">
-        <h3 className="text-lg font-black text-slate-800 mb-6">📋 Transaksi Terakhir</h3>
+      <div className="bg-white dark:bg-[#0B0F19] p-6 rounded-[2rem] shadow-sm border border-slate-200/50 dark:border-white/[0.05] mb-8 transition-all duration-300">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <h3 className="text-lg font-black text-slate-800 dark:text-white font-display">📋 Transaksi Terakhir</h3>
+          
+          {/* SEARCH & FILTERS CONTROLS */}
+          <div className="flex flex-wrap gap-2 items-center">
+            {/* Search note query */}
+            <div className="relative">
+              <input 
+                type="text" 
+                placeholder="Cari transaksi..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-8 pr-3 py-2 rounded-xl text-xs border border-slate-200 dark:border-white/10 outline-none bg-slate-50 dark:bg-slate-900/40 text-slate-800 dark:text-slate-200 w-44 focus:border-blue-400 transition-all"
+              />
+              <FaSearch className="absolute left-3 top-3 text-slate-400 text-[10px]" />
+            </div>
+
+            {/* Filter by Type */}
+            <select 
+              value={filterType} 
+              onChange={(e) => setFilterType(e.target.value)}
+              className="px-3 py-2 rounded-xl text-xs border border-slate-200 dark:border-white/10 outline-none bg-slate-50 dark:bg-slate-900/40 text-slate-700 dark:text-slate-200 cursor-pointer font-bold"
+            >
+              <option value="all">Semua Jenis</option>
+              <option value="income">📈 Pemasukan</option>
+              <option value="expense">📉 Pengeluaran</option>
+            </select>
+
+            {/* Filter by Source */}
+            <select 
+              value={filterSource} 
+              onChange={(e) => setFilterSource(e.target.value)}
+              className="px-3 py-2 rounded-xl text-xs border border-slate-200 dark:border-white/10 outline-none bg-slate-50 dark:bg-slate-900/40 text-slate-700 dark:text-slate-200 cursor-pointer font-bold"
+            >
+              <option value="all">Semua Akun</option>
+              {SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+        </div>
+
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[700px]">
             <thead>
-              <tr className="bg-slate-50 text-slate-500 text-[10px] uppercase tracking-widest">
+              <tr className="bg-slate-50 dark:bg-slate-900/30 text-slate-500 dark:text-slate-400 text-[10px] uppercase tracking-widest border-b dark:border-white/[0.02]">
                 <th className="p-4 font-bold rounded-l-xl">Tanggal</th>
                 <th className="p-4 font-bold">Jenis</th>
                 <th className="p-4 font-bold">Sumber Uang</th>
@@ -594,33 +680,218 @@ const Finance = () => {
               </tr>
             </thead>
             <tbody className="text-sm">
-              {data.transactions.map((trx, idx) => {
-                const isBigExpense = trx.type === 'expense' && trx.amount > 500000;
-                
-                return (
-                  <tr key={idx} className={`border-b border-slate-50 hover:bg-slate-50/50 transition-colors ${isBigExpense ? 'bg-red-50/30' : ''}`}>
-                    <td className="p-4 text-slate-500 font-medium text-xs">{new Date(trx.date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
-                    <td className="p-4"><span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${trx.type === 'income' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}>{trx.type}</span></td>
-                    <td className="p-4 text-slate-600 font-medium text-xs">{trx.source || '-'}</td>
-                    <td className="p-4 text-slate-800 font-bold">{trx.category}</td>
-                    <td className="p-4 text-slate-700 font-medium">
-                      {trx.note || '-'}
-                      {isBigExpense && <span className="ml-2 text-[10px] font-bold text-red-500 bg-red-100 px-1.5 py-0.5 rounded">Besar ⚠</span>}
-                    </td>
-                    <td className={`p-4 font-black text-right ${trx.type === 'income' ? 'text-emerald-500' : 'text-slate-800'}`}>{trx.type === 'income' ? '+' : '-'} {formatRp(trx.amount)}</td>
-                    <td className="p-4 flex justify-center gap-3 text-slate-400">
-                      <button onClick={() => handleEditTransaction(trx)} className="w-8 h-8 flex items-center justify-center bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-lg transition-colors"><FaEdit /></button>
-                      <button onClick={() => handleDeleteTransaction(trx.id)} className="w-8 h-8 flex items-center justify-center bg-red-50 text-red-600 hover:bg-red-600 hover:text-white rounded-lg transition-colors"><FaTrash /></button>
-                    </td>
-                  </tr>
-                )
-              })}
+              {filteredTransactions.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="p-10 text-center text-slate-400">Tidak ada transaksi yang cocok dengan filter.</td>
+                </tr>
+              ) : (
+                filteredTransactions.map((trx, idx) => {
+                  const isBigExpense = trx.type === 'expense' && trx.amount > 500000;
+                  
+                  return (
+                    <tr key={idx} className={`border-b border-slate-100 dark:border-white/[0.02] hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors ${isBigExpense ? 'bg-red-50/30 dark:bg-red-950/5' : ''}`}>
+                      <td className="p-4 text-slate-500 dark:text-slate-400 font-medium text-xs">{new Date(trx.date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                      <td className="p-4"><span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${trx.type === 'income' ? 'bg-emerald-100 dark:bg-emerald-600/10 text-emerald-600 dark:text-emerald-450' : 'bg-rose-100 dark:bg-rose-600/10 text-rose-600 dark:text-rose-450'}`}>{trx.type}</span></td>
+                      <td className="p-4 text-slate-650 dark:text-slate-400 font-medium text-xs">{trx.source || '-'}</td>
+                      <td className="p-4 text-slate-800 dark:text-slate-200 font-bold">{trx.category}</td>
+                      <td className="p-4 text-slate-700 dark:text-slate-350 font-medium">
+                        {trx.note || '-'}
+                        {isBigExpense && <span className="ml-2 text-[10px] font-bold text-red-500 bg-red-100 dark:bg-red-500/10 px-1.5 py-0.5 rounded">Besar ⚠</span>}
+                      </td>
+                      <td className={`p-4 font-black text-right ${trx.type === 'income' ? 'text-emerald-500' : 'text-slate-800 dark:text-slate-200'}`}>{trx.type === 'income' ? '+' : '-'} {formatRp(trx.amount)}</td>
+                      <td className="p-4 flex justify-center gap-2 text-slate-400">
+                        <button onClick={() => handleEditTransaction(trx)} className="w-8 h-8 flex items-center justify-center bg-blue-50 dark:bg-blue-600/10 text-blue-600 dark:text-blue-400 hover:bg-blue-600 hover:text-white rounded-lg transition-all"><FaEdit size={12} /></button>
+                        <button onClick={() => handleDeleteTransaction(trx.id)} className="w-8 h-8 flex items-center justify-center bg-red-50 dark:bg-red-600/10 text-red-600 dark:text-red-400 hover:bg-red-600 hover:text-white rounded-lg transition-all"><FaTrash size={12} /></button>
+                      </td>
+                    </tr>
+                  )
+                })
+              )}
             </tbody>
           </table>
         </div>
       </div>
 
-    </div>
+      {/* DEBT ELIMINATION STRATEGY */}
+      <div className="bg-white dark:bg-[#0B0F19] p-6 md:p-8 rounded-[2rem] shadow-sm border border-slate-200/50 dark:border-white/[0.05] mb-8 transition-all duration-300">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-4">
+          <div>
+            <h3 className="text-lg font-black text-slate-800 dark:text-white flex items-center gap-2 mb-1 font-display"><FaCreditCard className="text-orange-500" /> Debt Elimination Strategy</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Sistem merekomendasikan metode <strong>Snowball (Lunasi yang terkecil dulu)</strong>.</p>
+          </div>
+          
+          {/* Target Lunas Estimator */}
+          <div className="bg-slate-50 dark:bg-slate-900/40 p-2.5 rounded-2xl border border-slate-200 dark:border-white/10 flex items-center gap-3 w-full md:w-auto">
+            <div className="flex flex-col flex-1">
+              <label className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-0.5">Budget Bayar / Bulan</label>
+              <div className="flex items-center gap-1">
+                 <span className="text-xs font-bold text-slate-400">Rp</span>
+                 <input 
+                   type="text" 
+                   inputMode="numeric"
+                   value={monthlyCommitmentStr} 
+                   onChange={(e) => { 
+                     const val = e.target.value.replace(/\D/g, ''); 
+                     setMonthlyCommitmentStr(val ? new Intl.NumberFormat('id-ID').format(Number(val)) : ''); 
+                   }} 
+                   className="w-24 bg-transparent outline-none text-sm font-black text-slate-700 dark:text-slate-200" 
+                 />
+              </div>
+            </div>
+            <div className="bg-orange-100 dark:bg-orange-500/10 px-3 py-2 rounded-xl text-center border border-orange-200 dark:border-orange-500/20 shrink-0">
+               <p className="text-[9px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-widest mb-0.5">Estimasi Lunas</p>
+               <p className="text-sm font-black text-orange-700 dark:text-orange-400">{estimatedMonthsToDebtFree} Bulan</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-end mb-4">
+           <button onClick={handleAddDebt} className="bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold px-4 py-2.5 rounded-xl hover:bg-slate-800 dark:hover:bg-slate-100 transition-all flex items-center gap-2 shadow-md">
+             <FaPlus /> Tambah Hutang
+           </button>
+        </div>
+
+        {/* List Hutang Prioritas */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+          {prioritizedDebts.length === 0 ? (
+            <div className="col-span-full text-center text-slate-400 py-10 text-sm font-medium border-2 border-dashed border-slate-200 dark:border-white/10 rounded-[2rem]">Belum ada hutang. Anda bebas! 🎉</div>
+          ) : (
+            prioritizedDebts.map((debt, index) => {
+              const progress = Math.round((Number(debt.total_paid) / Number(debt.total_debt)) * 100);
+              const isPriority = index === 0; 
+              return (
+                <div key={debt.id} className={`p-5 rounded-[2rem] border transition-all ${isPriority ? 'bg-orange-50/50 dark:bg-orange-500/5 border-orange-200 dark:border-orange-500/20 shadow-sm' : 'bg-slate-50/50 dark:bg-slate-900/20 border-slate-100 dark:border-white/[0.02]'}`}>
+                  <div className="flex justify-between items-start mb-4">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className={`font-black ${isPriority ? 'text-orange-700 dark:text-orange-400' : 'text-slate-800 dark:text-slate-200'}`}>{debt.name}</h4>
+                        {isPriority && <span className="bg-orange-500 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded shadow-sm tracking-wider">Prioritas 1</span>}
+                      </div>
+                      <p className="text-[10px] text-slate-500 dark:text-slate-400 flex items-center gap-1 font-bold"><FaCalendarAlt /> Tempo: {debt.due_date ? new Date(debt.due_date).toLocaleDateString('id-ID') : '-'}</p>
+                    </div>
+                    <div className="flex gap-1.5">
+                      <button onClick={() => handleEditDebt(debt)} className="w-8 h-8 flex items-center justify-center bg-blue-50 dark:bg-blue-600/10 text-blue-600 dark:text-blue-400 hover:bg-blue-600 hover:text-white rounded-lg transition-all text-xs" title="Edit Hutang"><FaEdit /></button>
+                      <button onClick={() => handleDeleteDebt(debt.id)} className="w-8 h-8 flex items-center justify-center bg-red-50 dark:bg-red-600/10 text-red-600 dark:text-red-400 hover:bg-red-600 hover:text-white rounded-lg transition-all text-xs" title="Hapus Hutang"><FaTrash /></button>
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-xs mb-1.5 font-bold">
+                    <span className="text-slate-600 dark:text-slate-400">Sisa: <span className={isPriority ? 'text-orange-600 dark:text-orange-400' : 'text-slate-800 dark:text-slate-200'}>{formatRp(debt.remaining_debt)}</span></span>
+                    <span className={isPriority ? 'text-orange-500' : 'text-slate-400'}>{progress}% Terbayar</span>
+                  </div>
+                  <div className={`w-full rounded-full h-1.5 overflow-hidden ${isPriority ? 'bg-orange-200 dark:bg-orange-500/20' : 'bg-slate-200 dark:bg-white/10'}`}>
+                    <div className={`${isPriority ? 'bg-orange-500' : 'bg-slate-450'} h-full rounded-full`} style={{ width: `${progress}%` }}></div>
+                  </div>
+                </div>
+              )
+            })
+          )}
+        </div>
+
+        {/* Form Pembayaran Dropdown */}
+        <form onSubmit={handleDebtPayment} className="bg-slate-50 dark:bg-slate-900/20 p-4 rounded-2xl border border-slate-200 dark:border-white/10 mt-auto flex flex-col sm:flex-row gap-3 items-end">
+          <div className="w-full sm:flex-1">
+            <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5">Pilih Hutang yang Dibayar</label>
+            <select value={payDebtId} onChange={(e) => setPayDebtId(e.target.value)} required className="w-full p-3 rounded-xl border border-slate-200 dark:border-white/10 outline-none text-sm font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-[#0B0F19] cursor-pointer">
+              <option value="" disabled>-- Pilih Hutang --</option>
+              {prioritizedDebts.map(d => <option key={d.id} value={d.id}>{d.name} (Sisa: {formatRp(d.remaining_debt)})</option>)}
+            </select>
+          </div>
+          <div className="w-full sm:w-1/3">
+            <label className="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5">Nominal Bayar</label>
+            <input type="text" inputMode="numeric" required value={debtAmount} onChange={(e) => { const val = e.target.value.replace(/\D/g, ''); setDebtAmount(val ? new Intl.NumberFormat('id-ID').format(Number(val)) : ''); }} placeholder="Rp 0" className="w-full p-3 rounded-xl border border-slate-200 dark:border-white/10 outline-none text-sm font-bold bg-white dark:bg-[#0B0F19] dark:text-slate-200" />
+          </div>
+          <button type="submit" disabled={data.debts.length === 0} className="w-full sm:w-auto p-3 bg-slate-900 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 disabled:bg-slate-355 text-white dark:text-slate-900 rounded-xl font-bold transition-all text-sm px-8">Catat Cicilan</button>
+        </form>
+      </div>
+
+      {/* Tabel Transaksi Terakhir */}
+      <div className="bg-white dark:bg-[#0B0F19] p-6 rounded-[2rem] shadow-sm border border-slate-200/50 dark:border-white/[0.05] mb-8 transition-all duration-300">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <h3 className="text-lg font-black text-slate-800 dark:white font-display">📋 Transaksi Terakhir</h3>
+          
+          {/* SEARCH & FILTERS CONTROLS */}
+          <div className="flex flex-wrap gap-2 items-center">
+            {/* Search note query */}
+            <div className="relative">
+              <input 
+                type="text" 
+                placeholder="Cari transaksi..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-8 pr-3 py-2 rounded-xl text-xs border border-slate-200 dark:border-white/10 outline-none bg-slate-50 dark:bg-slate-900/40 text-slate-800 dark:text-slate-200 w-44 focus:border-blue-400 transition-all"
+              />
+              <FaSearch className="absolute left-3 top-3 text-slate-400 text-[10px]" />
+            </div>
+
+            {/* Filter by Type */}
+            <select 
+              value={filterType} 
+              onChange={(e) => setFilterType(e.target.value)}
+              className="px-3 py-2 rounded-xl text-xs border border-slate-200 dark:border-white/10 outline-none bg-slate-50 dark:bg-slate-900/40 text-slate-700 dark:text-slate-200 cursor-pointer font-bold"
+            >
+              <option value="all">Semua Jenis</option>
+              <option value="income">📈 Pemasukan</option>
+              <option value="expense">📉 Pengeluaran</option>
+            </select>
+
+            {/* Filter by Source */}
+            <select 
+              value={filterSource} 
+              onChange={(e) => setFilterSource(e.target.value)}
+              className="px-3 py-2 rounded-xl text-xs border border-slate-200 dark:border-white/10 outline-none bg-slate-50 dark:bg-slate-900/40 text-slate-700 dark:text-slate-200 cursor-pointer font-bold"
+            >
+              <option value="all">Semua Akun</option>
+              {SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[700px]">
+            <thead>
+              <tr className="bg-slate-50 dark:bg-slate-900/30 text-slate-500 dark:text-slate-400 text-[10px] uppercase tracking-widest border-b dark:border-white/[0.02]">
+                <th className="p-4 font-bold rounded-l-xl">Tanggal</th>
+                <th className="p-4 font-bold">Jenis</th>
+                <th className="p-4 font-bold">Sumber Uang</th>
+                <th className="p-4 font-bold">Kategori</th>
+                <th className="p-4 font-bold">Catatan</th>
+                <th className="p-4 font-bold text-right">Jumlah</th>
+                <th className="p-4 font-bold text-center rounded-r-xl">Aksi</th>
+              </tr>
+            </thead>
+            <tbody className="text-sm">
+              {filteredTransactions.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="p-10 text-center text-slate-400">Tidak ada transaksi yang cocok dengan filter.</td>
+                </tr>
+              ) : (
+                filteredTransactions.map((trx, idx) => {
+                  const isBigExpense = trx.type === 'expense' && trx.amount > 500000;
+                  
+                  return (
+                    <tr key={idx} className={`border-b border-slate-100 dark:border-white/[0.02] hover:bg-slate-50/50 dark:hover:bg-white/[0.02] transition-colors ${isBigExpense ? 'bg-red-50/30 dark:bg-red-950/5' : ''}`}>
+                      <td className="p-4 text-slate-500 dark:text-slate-400 font-medium text-xs">{new Date(trx.date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                      <td className="p-4"><span className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${trx.type === 'income' ? 'bg-emerald-100 dark:bg-emerald-600/10 text-emerald-600 dark:text-emerald-450' : 'bg-rose-100 dark:bg-rose-600/10 text-rose-600 dark:text-rose-450'}`}>{trx.type}</span></td>
+                      <td className="p-4 text-slate-650 dark:text-slate-400 font-medium text-xs">{trx.source || '-'}</td>
+                      <td className="p-4 text-slate-800 dark:text-slate-200 font-bold">{trx.category}</td>
+                      <td className="p-4 text-slate-700 dark:text-slate-350 font-medium">
+                        {trx.note || '-'}
+                        {isBigExpense && <span className="ml-2 text-[10px] font-bold text-red-500 bg-red-100 dark:bg-red-500/10 px-1.5 py-0.5 rounded">Besar ⚠</span>}
+                      </td>
+                      <td className={`p-4 font-black text-right ${trx.type === 'income' ? 'text-emerald-500' : 'text-slate-800 dark:text-slate-200'}`}>{trx.type === 'income' ? '+' : '-'} {formatRp(trx.amount)}</td>
+                      <td className="p-4 flex justify-center gap-2 text-slate-400">
+                        <button onClick={() => handleEditTransaction(trx)} className="w-8 h-8 flex items-center justify-center bg-blue-50 dark:bg-blue-600/10 text-blue-600 dark:text-blue-400 hover:bg-blue-600 hover:text-white rounded-lg transition-all"><FaEdit size={12} /></button>
+                        <button onClick={() => handleDeleteTransaction(trx.id)} className="w-8 h-8 flex items-center justify-center bg-red-50 dark:bg-red-600/10 text-red-600 dark:text-red-400 hover:bg-red-600 hover:text-white rounded-lg transition-all"><FaTrash size={12} /></button>
+                      </td>
+                    </tr>
+                  )
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </motion.div>
   );
 };
 

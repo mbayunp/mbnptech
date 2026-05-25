@@ -6,9 +6,12 @@ import { API_URL } from '../../config/api';
 import {
   FaMoon, FaBookOpen, FaPrayingHands, FaHeart,
   FaChartPie, FaCheckCircle, FaRegCircle, FaPlus,
-  FaTrash, FaStar, FaLeaf, FaMosque, FaTimes, FaClock,
-  FaMapMarkerAlt, FaCalendarCheck
+  FaTrash, FaLeaf, FaMosque, FaTimes, FaClock,
+  FaMapMarkerAlt, FaCalendarCheck, FaRegSmile
 } from 'react-icons/fa';
+import { motion, AnimatePresence } from 'framer-motion';
+import MagneticGlowCard from '../../components/MagneticGlowCard';
+import ActivityHeatmap from '../../components/ActivityHeatmap';
 
 // --- DATA 114 SURAH ---
 const quranSurahs = [
@@ -52,6 +55,7 @@ const getLocalDateString = (d: Date) => {
 const Spiritual = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'harian' | 'quran' | 'kontemplasi'>('harian');
 
   const [currentDate] = useState(new Date().toLocaleDateString('id-ID', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Jakarta'
@@ -63,6 +67,7 @@ const Spiritual = () => {
   const [doaList, setDoaList] = useState<any[]>([]);
   const [reflection, setReflection] = useState<any>({ gratitude: '', mistake: '', improvement: '', mood: '' });
   const [history, setHistory] = useState<any[]>([]);
+  const [heatmapData, setHeatmapData] = useState<any[]>([]);
 
   const [isQuranModalOpen, setIsQuranModalOpen] = useState(false);
   const [editSurah, setEditSurah] = useState('Al-Baqarah');
@@ -116,24 +121,29 @@ const Spiritual = () => {
     }
   };
 
-  // ==========================================
-  // PERBAIKAN 1: BUSTER CACHE DI FETCH UTAMA
-  // ==========================================
   const fetchSpiritualData = async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return navigate('/login');
 
-      // Tambahkan `?t=` timestamp agar browser dipaksa menarik data paling baru dari server
-      const res = await fetch(`${API_URL}/api/spiritual?t=${new Date().getTime()}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache'
-        }
-      });
+      const [res, heatmapRes] = await Promise.all([
+        fetch(`${API_URL}/api/spiritual?t=${new Date().getTime()}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache'
+          }
+        }),
+        fetch(`${API_URL}/api/dashboard/heatmap`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+      ]);
 
       const result = await res.json();
+      const heatmapResult = await heatmapRes.json();
+
       if (result.success) {
         setIbadah(result.data.ibadah || {});
         setAmalan(result.data.amalan || {});
@@ -141,7 +151,19 @@ const Spiritual = () => {
         setDoaList(result.data.doa || []);
         setReflection(result.data.reflection || { gratitude: '', mistake: '', improvement: '', mood: '' });
         if (result.data.history) setHistory(result.data.history);
+
+        // Sync local edit states with quran state
+        if (result.data.quran) {
+          setEditSurah(result.data.quran.surah || 'Al-Baqarah');
+          setEditAyat(result.data.quran.ayat || 1);
+          setEditPage(result.data.quran.page || 1);
+          setEditJuz(result.data.quran.juz || 1);
+        }
+        
         checkTimeReminders(result.data.ibadah || {}, result.data.amalan || {});
+      }
+      if (heatmapResult.success) {
+        setHeatmapData(heatmapResult.data.spiritual || []);
       }
     } catch (err) {
       console.error("Gagal Mengambil Data Spiritual:", err);
@@ -190,14 +212,10 @@ const Spiritual = () => {
     fetchPrayerTimes(city);
   };
 
-  // ==========================================
-  // PERBAIKAN 2: ERROR HANDLING ROBUST DI ACTION
-  // ==========================================
   const handleToggleIbadah = async (field: string) => {
     const currentIbadah = ibadah || {};
     const isCurrentlyDone = currentIbadah[field] === 1 || currentIbadah[field] === true;
 
-    // Ubah UI seketika (Optimistic Update)
     setIbadah((prev: any) => ({ ...(prev || {}), [field]: !isCurrentlyDone }));
 
     try {
@@ -208,7 +226,6 @@ const Spiritual = () => {
 
       const result = await res.json();
       if (!res.ok || !result.success) {
-        // Revert (batal) jika backend gagal, dan munculkan popup merah!
         setIbadah((prev: any) => ({ ...(prev || {}), [field]: isCurrentlyDone }));
         Swal.fire('Gagal Menyimpan', result.message || 'Database bermasalah', 'error');
       }
@@ -269,7 +286,7 @@ const Spiritual = () => {
         <input id="doa-cat" class="w-full p-3 mb-3 border rounded-lg outline-none font-medium" placeholder="Kategori (Misal: Rezeki, Harian)">
         <textarea id="doa-content" class="w-full p-3 border rounded-lg outline-none" rows="4" placeholder="Isi Doa..."></textarea>
       `,
-      showCancelButton: true, confirmButtonText: 'Simpan', confirmButtonColor: '#6366F1',
+      showCancelButton: true, confirmButtonText: 'Simpan', confirmButtonColor: '#10B981',
       preConfirm: () => ({
         title: (document.getElementById('doa-title') as HTMLInputElement).value,
         category: (document.getElementById('doa-cat') as HTMLInputElement).value,
@@ -287,7 +304,7 @@ const Spiritual = () => {
 
         if (res.ok && result.success) {
           Swal.fire({ icon: 'success', title: 'Doa Tersimpan', toast: true, position: 'top-end', timer: 1500, showConfirmButton: false });
-          fetchSpiritualData(); // Panggil ulang untuk memunculkan Doa di layar
+          fetchSpiritualData();
         } else {
           Swal.fire('Gagal Menyimpan', result.message || 'Terjadi kesalahan di server', 'error');
         }
@@ -342,41 +359,51 @@ const Spiritual = () => {
 
   const trackerDays = generateLast7Days();
 
-  if (isLoading) return <div className="flex h-screen items-center justify-center bg-[#F8FAFC]"><div className="w-12 h-12 border-4 border-blue-200 rounded-full border-t-blue-600 animate-spin"></div></div>;
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[#F8FAFC] dark:bg-[#030712] transition-colors duration-300">
+        <div className="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-600 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-8xl mx-auto font-sans bg-[#F8FAFC] pb-20 selection:bg-emerald-200 selection:text-emerald-900 relative">
-
+    <div className="max-w-8xl mx-auto pb-20 dark:text-white transition-colors duration-300">
+      
       {/* MODAL QURAN UPDATE */}
       {isQuranModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-          <div className="bg-white p-6 md:p-8 rounded-[2rem] w-full max-w-md shadow-2xl animate-fade-in-down">
+        <div className="fixed inset-0 z-55 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
+          <div className="bg-white dark:bg-[#0B0F19] border border-slate-200/50 dark:border-white/[0.05] p-6 md:p-8 rounded-[2rem] w-full max-w-md shadow-2xl animate-fade-in">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-black text-slate-800">Update Tilawah</h3>
-              <button onClick={() => setIsQuranModalOpen(false)} className="text-slate-400 hover:text-red-500"><FaTimes size={20} /></button>
+              <h3 className="text-lg font-black text-slate-800 dark:text-white font-display">Update Tilawah</h3>
+              <button onClick={() => setIsQuranModalOpen(false)} className="text-slate-400 hover:text-red-500"><FaTimes size={18} /></button>
             </div>
 
-            <label className="block mb-2 text-xs font-bold tracking-widest uppercase text-slate-500">Pilih Surah</label>
-            <select value={editSurah} onChange={e => setEditSurah(e.target.value)} className="w-full p-4 mb-4 font-bold border outline-none cursor-pointer border-slate-200 rounded-xl bg-slate-50 text-emerald-800 focus:border-emerald-500">
-              {quranSurahs.map(s => <option key={s.no} value={s.name}>{s.no}. {s.name} ({s.ayat} Ayat)</option>)}
+            <label className="block mb-2 text-[10px] font-black tracking-widest uppercase text-slate-400 dark:text-slate-500">Pilih Surah</label>
+            <select 
+              value={editSurah} 
+              onChange={e => setEditSurah(e.target.value)} 
+              className="w-full p-3.5 mb-4 font-bold border border-slate-200 dark:border-white/10 outline-none cursor-pointer rounded-xl bg-slate-50 dark:bg-slate-900/40 text-emerald-600 dark:text-emerald-400 focus:border-emerald-500"
+            >
+              {quranSurahs.map(s => <option key={s.no} value={s.name} className="dark:bg-[#0B0F19]">{s.no}. {s.name} ({s.ayat} Ayat)</option>)}
             </select>
 
-            <div className="grid grid-cols-3 gap-4 mb-8">
+            <div className="grid grid-cols-3 gap-4 mb-6">
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Ayat</label>
-                <input type="number" min="1" max={maxAyat} value={editAyat} onChange={e => { let val = parseInt(e.target.value); if (val > maxAyat) val = maxAyat; setEditAyat(val); }} className="w-full p-4 font-bold text-center border outline-none border-slate-200 rounded-xl bg-slate-50 focus:border-emerald-500" />
+                <label className="block text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-widest mb-2">Ayat</label>
+                <input type="number" min="1" max={maxAyat} value={editAyat} onChange={e => { let val = parseInt(e.target.value); if (val > maxAyat) val = maxAyat; setEditAyat(val); }} className="w-full p-3.5 font-bold text-center border border-slate-200 dark:border-white/10 outline-none rounded-xl bg-slate-50 dark:bg-slate-900/40 focus:border-emerald-500 dark:text-white" />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Hal</label>
-                <input type="number" min="1" max="604" value={editPage} onChange={e => setEditPage(parseInt(e.target.value))} className="w-full p-4 font-bold text-center border outline-none border-slate-200 rounded-xl bg-slate-50 focus:border-emerald-500" />
+                <label className="block text-[10px] font-bold text-slate-455 dark:text-slate-500 uppercase tracking-widest mb-2">Hal</label>
+                <input type="number" min="1" max="604" value={editPage} onChange={e => setEditPage(parseInt(e.target.value))} className="w-full p-3.5 font-bold text-center border border-slate-200 dark:border-white/10 outline-none rounded-xl bg-slate-50 dark:bg-slate-900/40 focus:border-emerald-500 dark:text-white" />
               </div>
               <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Juz</label>
-                <input type="number" min="1" max="30" value={editJuz} onChange={e => setEditJuz(parseInt(e.target.value))} className="w-full p-4 font-bold text-center border outline-none border-slate-200 rounded-xl bg-slate-50 focus:border-emerald-500" />
+                <label className="block text-[10px] font-bold text-slate-455 dark:text-slate-500 uppercase tracking-widest mb-2">Juz</label>
+                <input type="number" min="1" max="30" value={editJuz} onChange={e => setEditJuz(parseInt(e.target.value))} className="w-full p-3.5 font-bold text-center border border-slate-200 dark:border-white/10 outline-none rounded-xl bg-slate-50 dark:bg-slate-900/40 focus:border-emerald-500 dark:text-white" />
               </div>
             </div>
 
-            <button onClick={handleSaveQuran} className="w-full py-4 font-black text-white transition-all shadow-lg bg-emerald-500 rounded-xl hover:bg-emerald-600 shadow-emerald-500/30">Simpan Bacaan</button>
+            <button onClick={handleSaveQuran} className="w-full py-3.5 font-black text-white bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-450 hover:to-teal-500 rounded-xl transition-all shadow-lg shadow-emerald-500/20">Simpan Bacaan</button>
           </div>
         </div>
       )}
@@ -384,284 +411,467 @@ const Spiritual = () => {
       {/* Header */}
       <div className="flex flex-col justify-between gap-4 mb-8 md:flex-row md:items-center">
         <div>
-          <h2 className="flex items-center gap-3 text-2xl font-black tracking-tight text-slate-900">
-            <FaMosque className="text-emerald-600" /> Spiritual Dashboard
+          <h2 className="flex items-center gap-3 text-2xl font-black tracking-tight text-slate-900 dark:text-white font-display">
+            <FaMosque className="text-emerald-600 dark:text-emerald-450" /> Spiritual Hub
           </h2>
-          <p className="mt-1 text-sm font-medium text-slate-500">Pantau ibadah, amalan, dan perkembangan spiritual harian.</p>
+          <p className="mt-1 text-sm font-medium text-slate-500 dark:text-slate-400">Pantau ibadah, tilawah Qur'an, amalan harian, dan kembangkan refleksi diri secara rutin.</p>
         </div>
         <div className="flex items-center gap-4">
           <div className="hidden text-right md:block">
-            <p className="text-xs font-bold tracking-widest uppercase text-slate-400">Hari Ini</p>
-            <p className="text-sm font-black text-slate-800">{currentDate}</p>
+            <p className="text-[10px] font-black tracking-widest uppercase text-slate-400 dark:text-slate-500">Hari Ini</p>
+            <p className="text-sm font-black text-slate-800 dark:text-slate-200">{currentDate}</p>
           </div>
         </div>
       </div>
 
-      {/* Summary Analytics */}
+      {/* Summary Analytics Cards */}
       <div className="grid grid-cols-1 gap-4 mb-8 sm:grid-cols-2 lg:grid-cols-4 md:gap-6">
         {[
-          { title: "Sholat Wajib", val: `${completedSholat} / 5`, icon: <FaPrayingHands />, color: "emerald" },
-          { title: "Puasa Sunnah", val: ibadah?.puasa_senin || ibadah?.puasa_kamis ? "✔ Aktif" : "Tidak", icon: <FaMoon />, color: "indigo" },
-          { title: "Progress Quran", val: `Juz ${quran?.juz || 0} Hal ${quran?.page || 0}`, icon: <FaBookOpen />, color: "amber" },
-          { title: "Amalan Harian", val: `${amalanPercent}%`, icon: <FaChartPie />, color: "blue" },
+          { title: "Sholat Wajib", val: `${completedSholat} / 5`, icon: <FaPrayingHands />, color: "emerald", bg: "bg-emerald-50 dark:bg-emerald-600/10 text-emerald-500" },
+          { title: "Puasa Sunnah", val: ibadah?.puasa_senin || ibadah?.puasa_kamis ? "✔ Aktif" : "Tidak", icon: <FaMoon />, color: "indigo", bg: "bg-indigo-50 dark:bg-indigo-600/10 text-indigo-500" },
+          { title: "Progress Quran", val: `Juz ${quran?.juz || 0} Hal ${quran?.page || 0}`, icon: <FaBookOpen />, color: "amber", bg: "bg-amber-50 dark:bg-amber-600/10 text-amber-500" },
+          { title: "Amalan Harian", val: `${amalanPercent}%`, icon: <FaChartPie />, color: "blue", bg: "bg-blue-50 dark:bg-blue-600/10 text-blue-500" },
         ].map((item, idx) => (
-          <div key={`summary-${idx}`} className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex items-center gap-4 hover:shadow-md transition-shadow">
-            <div className={`w-14 h-14 rounded-2xl bg-${item.color}-50 text-${item.color}-500 flex items-center justify-center text-2xl shrink-0`}>{item.icon}</div>
+          <div key={`summary-${idx}`} className="bg-white dark:bg-[#0B0F19] p-6 rounded-[2rem] shadow-sm border border-slate-200/50 dark:border-white/[0.05] flex items-center gap-4 hover:shadow-md transition-all duration-300">
+            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shrink-0 ${item.bg}`}>{item.icon}</div>
             <div>
-              <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">{item.title}</p>
-              <h4 className="text-xl font-black text-slate-800">{item.val}</h4>
+              <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">{item.title}</p>
+              <h4 className="text-xl font-black text-slate-800 dark:text-slate-200">{item.val}</h4>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 gap-6 mb-8 lg:grid-cols-3">
-        {/* KOLOM KIRI */}
-        <div className="flex flex-col gap-6 lg:col-span-2">
-
-          {/* Jadwal Sholat Widget */}
-          <div className="bg-slate-900 p-6 rounded-[2rem] shadow-lg shadow-slate-900/20 text-white flex flex-col md:flex-row justify-between items-center gap-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-64 h-64 translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none bg-emerald-500/10 blur-3xl"></div>
-
-            <div className="relative z-10 flex items-center w-full gap-4 md:w-auto">
-              <div className="flex items-center justify-center w-12 h-12 text-xl border bg-white/10 rounded-2xl text-emerald-400 border-white/10 shrink-0"><FaClock /></div>
-              <div>
-                <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-widest mb-1 flex items-center gap-1"><FaMapMarkerAlt /> Jadwal Adzan • <span className="font-medium text-slate-300">{currentDate}</span></p>
-                <select value={selectedCity} onChange={handleCityChange} className="text-lg font-black text-white transition-colors bg-transparent outline-none cursor-pointer hover:text-emerald-300">
-                  {Object.keys(CITIES).map((city, idx) => <option key={`city-${idx}`} value={city} className="text-slate-900">{city}</option>)}
-                </select>
-              </div>
-            </div>
-
-            <div className="relative z-10 flex w-full gap-4 pb-2 overflow-x-auto md:w-auto md:pb-0 custom-scrollbar">
-              {prayerTimes ? (
-                ['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya'].map((sholat, idx) => (
-                  <div key={`prayer-${idx}`} className="bg-white/10 border border-white/10 rounded-xl px-4 py-2 text-center min-w-[80px]">
-                    <p className="text-[10px] font-bold text-slate-400 uppercase">{sholat}</p>
-                    <p className="text-sm font-black text-emerald-300">{prayerTimes[sholat]}</p>
-                  </div>
-                ))
-              ) : <p className="text-sm text-slate-400 animate-pulse">Memuat jadwal sholat...</p>}
-            </div>
-          </div>
-
-          {/* Ibadah Harian */}
-          <div className="bg-white p-6 md:p-8 rounded-[2rem] shadow-sm border border-slate-100">
-            <h3 className="flex items-center gap-2 mb-6 text-lg font-black text-slate-800"><FaPrayingHands className="text-emerald-500" /> Ibadah Harian</h3>
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-              <div>
-                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Sholat Wajib</h4>
-                <div className="space-y-3">
-                  {sholatWajib.map((sholat, idx) => (
-                    <div key={`wajib-${idx}`} onClick={() => handleToggleIbadah(sholat)} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${ibadah && ibadah[sholat] ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-100 hover:border-emerald-200'}`}>
-                      <span className={`font-bold text-sm capitalize ${ibadah && ibadah[sholat] ? 'text-emerald-800' : 'text-slate-600'}`}>{sholat}</span>
-                      <div className={`text-xl transition-colors ${ibadah && ibadah[sholat] ? 'text-emerald-500' : 'text-slate-300'}`}>
-                        {ibadah && ibadah[sholat] ? <FaCheckCircle /> : <FaRegCircle />}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4">Sholat Sunnah Utama</h4>
-                <div className="space-y-3">
-                  {['dhuha', 'tahajud'].map((sholat, idx) => (
-                    <div key={`sunnah-${idx}`} onClick={() => handleToggleIbadah(sholat)} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${ibadah && ibadah[sholat] ? 'bg-indigo-50 border-indigo-200' : 'bg-slate-50 border-slate-100 hover:border-indigo-200'}`}>
-                      <span className={`font-bold text-sm capitalize ${ibadah && ibadah[sholat] ? 'text-indigo-800' : 'text-slate-600'}`}>{sholat}</span>
-                      <div className={`text-xl transition-colors ${ibadah && ibadah[sholat] ? 'text-indigo-500' : 'text-slate-300'}`}>
-                        {ibadah && ibadah[sholat] ? <FaCheckCircle /> : <FaRegCircle />}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Quran Last Read */}
-          <div className="bg-gradient-to-br from-emerald-800 to-teal-900 p-8 md:p-10 min-h-[260px] rounded-[2.5rem] shadow-xl shadow-emerald-900/20 text-white relative overflow-hidden flex flex-col justify-between">
-            <div className="absolute top-0 right-0 w-64 h-64 -translate-y-1/2 rounded-full pointer-events-none bg-white/5 blur-3xl translate-x-1/4"></div>
-
-            <div className="relative z-10 flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
-              <div className="flex items-center gap-5">
-                <div className="flex items-center justify-center w-16 h-16 text-4xl border bg-white/10 backdrop-blur-sm rounded-2xl border-white/20 shrink-0"><FaBookOpen className="text-emerald-300" /></div>
-                <div>
-                  <p className="text-[10px] font-bold text-emerald-300 uppercase tracking-widest mb-1">Terakhir Dibaca</p>
-                  <h3 className="text-3xl font-black tracking-tight">{quran?.surah || 'Al-Fatihah'} <span className="text-xl font-bold text-emerald-400">Ayat {quran?.ayat || 1}</span></h3>
-                  <p className="mt-1 text-sm font-medium text-emerald-100">Juz {quran?.juz || 1} | Halaman {quran?.page || 1}</p>
-                </div>
-              </div>
-              <button onClick={() => { setEditSurah(quran?.surah || 'Al-Fatihah'); setEditAyat(quran?.ayat || 1); setEditPage(quran?.page || 1); setEditJuz(quran?.juz || 1); setIsQuranModalOpen(true); }} className="w-full px-8 py-4 text-sm font-black transition-all bg-white shadow-lg text-emerald-800 rounded-2xl hover:bg-emerald-50 md:w-auto">Update Bacaan</button>
-            </div>
-
-            <div className="relative z-10 pt-6 mt-8 border-t border-white/10">
-              <div className="flex justify-between mb-2 text-xs font-bold text-emerald-100"><span>Progress Juz {quran?.juz || 1}</span><span>{Math.round(((quran?.page || 0) % 20) / 20 * 100) || 0}%</span></div>
-              <div className="w-full h-3 overflow-hidden rounded-full bg-black/20"><div className="h-full rounded-full bg-emerald-400" style={{ width: `${((quran?.page || 0) % 20) / 20 * 100}%` }}></div></div>
-            </div>
-          </div>
-        </div>
-
-        {/* KOLOM KANAN */}
-        <div className="flex flex-col gap-6">
-          <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100">
-            <h3 className="flex items-center gap-2 mb-4 text-base font-black text-slate-800"><FaMoon className="text-indigo-500" /> Puasa Sunnah</h3>
-            <div className="flex gap-3 mb-5">
-              {['puasa_senin', 'puasa_kamis'].map((hari, idx) => (
-                <div key={`puasa-${idx}`} onClick={() => handleToggleIbadah(hari)} className={`flex-1 p-3 rounded-xl border text-center cursor-pointer transition-all ${ibadah && ibadah[hari] ? 'bg-indigo-600 border-indigo-600 text-white shadow-md' : 'bg-slate-50 border-slate-200 text-slate-500 hover:border-indigo-300'}`}>
-                  <span className="text-xs font-bold tracking-wider uppercase">{hari.replace('puasa_', '')}</span>
-                  <div className="mt-1 text-lg">{ibadah && ibadah[hari] ? <FaCheckCircle className="mx-auto" /> : <FaRegCircle className="mx-auto" />}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100">
-            <h3 className="flex items-center gap-2 mb-4 text-base font-black text-slate-800"><FaLeaf className="text-emerald-500" /> Amalan Harian</h3>
-            <div className="space-y-2.5">
-              {dbAmalanFields.map((amal, idx) => (
-                <div key={`amalan-${idx}`} onClick={() => handleToggleAmalan(amal)} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${amalan && amalan[amal] ? 'bg-emerald-50 border-emerald-200' : 'bg-white border-slate-100 hover:border-emerald-200'}`}>
-                  <span className={`text-sm font-bold capitalize ${amalan && amalan[amal] ? 'text-emerald-800' : 'text-slate-600'}`}>{amal.replace('_', ' ')}</span>
-                  <div className={`text-lg transition-colors ${amalan && amalan[amal] ? 'text-emerald-500' : 'text-slate-300'}`}>
-                    {amalan && amalan[amal] ? <FaCheckCircle /> : <FaRegCircle />}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 flex-1">
-            <h3 className="flex items-center gap-2 mb-5 text-base font-black text-slate-800"><FaHeart className="text-rose-500" /> Refleksi Harian</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Syukur Hari Ini</label>
-                <textarea value={reflection?.gratitude || ''} onChange={e => handleReflectionChange('gratitude', e.target.value)} rows={2} className="w-full p-3 text-xs font-medium border outline-none resize-none bg-slate-50 border-slate-200 rounded-xl focus:border-rose-300 focus:ring-2 focus:ring-rose-100" placeholder="Alhamdulillah untuk..."></textarea>
-              </div>
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5">Muhasabah (Kesalahan)</label>
-                <textarea value={reflection?.mistake || ''} onChange={e => handleReflectionChange('mistake', e.target.value)} rows={2} className="w-full p-3 text-xs font-medium border outline-none resize-none bg-slate-50 border-slate-200 rounded-xl focus:border-rose-300 focus:ring-2 focus:ring-rose-100" placeholder="Astaghfirullah..."></textarea>
-              </div>
-              <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Mood / Perasaan</label>
-                <div className="flex flex-wrap gap-2">
-                  {[{ emoji: '😌', val: 'tenang' }, { emoji: '😔', val: 'sedih' }, { emoji: '😟', val: 'cemas' }, { emoji: '🙏', val: 'bersyukur' }, { emoji: '🔥', val: 'semangat' }].map((m, idx) => (
-                    <button key={`mood-${idx}`} onClick={() => handleReflectionChange('mood', m.val)} className={`p-2 rounded-xl text-lg flex items-center justify-center transition-all border ${reflection?.mood === m.val ? 'bg-rose-50 border-rose-300 shadow-sm scale-110' : 'bg-white border-slate-200 hover:bg-slate-50'}`} title={m.val}>{m.emoji}</button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* SECTION DOA PRIBADI */}
-      <div className="bg-white p-6 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100 mb-8">
-        <div className="flex items-center justify-between pb-6 mb-8 border-b border-slate-50">
-          <h3 className="flex items-center gap-2 text-xl font-black text-slate-800"><FaPrayingHands className="text-blue-500" /> Kumpulan Doa Pribadi</h3>
-          <button onClick={handleAddDoa} className="text-sm font-bold text-blue-600 bg-blue-50 px-5 py-2.5 rounded-xl hover:bg-blue-100 flex items-center gap-2 transition-colors">
-            <FaPlus /> Tambah Doa
-          </button>
-        </div>
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          {doaList.length === 0 ? <p className="py-6 text-sm text-center text-slate-400 col-span-full">Belum ada doa tersimpan.</p> : doaList.map((doa, idx) => (
-            <div key={`doa-${doa.id}-${idx}`} className="relative flex flex-col justify-between p-6 transition-all border bg-slate-50 border-slate-200 md:p-8 rounded-3xl group hover:border-blue-300 hover:shadow-md">
-              <div className="absolute flex gap-2 transition-opacity opacity-0 top-6 right-6 group-hover:opacity-100">
-                <button onClick={() => handleDeleteDoa(doa.id)} className="p-3 transition-colors bg-white border shadow-sm text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-xl border-slate-100"><FaTrash size={14} /></button>
-              </div>
-              <div className="mb-4">
-                <span className="text-[10px] font-black uppercase tracking-widest text-blue-600 bg-blue-100 px-3 py-1.5 rounded-lg mb-4 inline-block">{doa.category}</span>
-                <h4 className="pr-12 mb-2 text-lg font-black text-slate-900">{doa.title}</h4>
-              </div>
-              <p className="p-6 mt-2 text-sm italic font-medium leading-relaxed bg-white border shadow-sm md:text-base text-slate-600 rounded-2xl border-slate-100">
-                "{doa.content}"
-              </p>
-            </div>
+      {/* Modern Glass Tab Selector */}
+      <div className="flex justify-center mb-8">
+        <div className="flex bg-slate-100 dark:bg-white/[0.03] p-1.5 rounded-2xl border border-slate-200/40 dark:border-white/[0.05] shadow-inner">
+          {[
+            { id: 'harian', label: 'Ibadah & Amalan', icon: <FaPrayingHands /> },
+            { id: 'quran', label: 'Tilawah Qur\'an', icon: <FaBookOpen /> },
+            { id: 'kontemplasi', label: 'Kontemplasi & Doa', icon: <FaHeart /> }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black transition-all ${
+                activeTab === tab.id
+                  ? 'bg-white dark:bg-white/10 text-emerald-600 dark:text-emerald-450 shadow-md scale-105'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white'
+              }`}
+            >
+              {tab.icon}
+              {tab.label}
+            </button>
           ))}
         </div>
       </div>
 
-      {/* SECTION RIWAYAT SPIRITUAL */}
-      <div className="bg-white p-6 md:p-8 rounded-[2.5rem] shadow-sm border border-slate-100">
-        <h3 className="flex items-center gap-2 mb-6 text-xl font-black text-slate-800">
-          <FaCalendarCheck className="text-blue-500" /> Riwayat Spiritual (7 Hari Terakhir)
-        </h3>
-        <p className="text-[10px] font-bold text-slate-400 mb-6">*Klik pada kartu hari untuk mengedit riwayat ibadah yang terlewat.</p>
-        <div className="flex gap-4 pb-4 overflow-x-auto custom-scrollbar">
-          {trackerDays.map((day, idx) => {
-            const sholatScore = ['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya'].filter(k => day[k as keyof typeof day]).length;
-            const amalanScore = ['dzikir_pagi', 'dzikir_petang', 'istighfar', 'sholawat', 'sedekah'].filter(k => day[k as keyof typeof day]).length;
-            const isToday = idx === trackerDays.length - 1;
+      {/* SPIRITUAL HEATMAP */}
+      {heatmapData && heatmapData.length > 0 && (
+        <div className="mb-8">
+          <ActivityHeatmap data={heatmapData} type="spiritual" />
+        </div>
+      )}
 
-            const dateObj = new Date(day.log_date);
-            const dayName = dateObj.toLocaleDateString('id-ID', { weekday: 'short' });
-            const dateNum = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+      {/* Tabs Content Router */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 15 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -15 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+        >
+          {activeTab === 'harian' && (
+            <div className="space-y-6">
+              {/* Jadwal Sholat Widget */}
+              <div className="bg-slate-900 dark:bg-[#0B0F19] p-6 rounded-[2rem] border border-slate-800 dark:border-white/[0.05] shadow-lg text-white flex flex-col md:flex-row justify-between items-center gap-6 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 translate-x-1/2 -translate-y-1/2 rounded-full pointer-events-none bg-emerald-500/10 blur-3xl"></div>
 
-            const handleEditHistory = async () => {
-              if (isToday) return Swal.fire({ icon: 'info', title: 'Ini Hari Ini', text: 'Silakan gunakan widget "Ibadah Harian" di atas untuk hari ini.', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
-
-              const { value: formValues } = await Swal.fire({
-                title: `Edit Riwayat`,
-                html: `
-                  <div class="text-left font-sans">
-                    <p class="text-sm font-bold text-slate-500 mb-6 text-center">${dayName}, ${dateNum}</p>
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-4">
-                      <h4 class="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-3 flex items-center gap-2"><i class="fa fa-praying-hands"></i> Sholat Wajib</h4>
-                      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs font-bold text-slate-700">
-                        <label class="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-emerald-300 transition-colors"><input type="checkbox" id="h-subuh" class="w-4 h-4 accent-emerald-500" ${day.subuh ? 'checked' : ''}> Subuh</label>
-                        <label class="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-emerald-300 transition-colors"><input type="checkbox" id="h-dzuhur" class="w-4 h-4 accent-emerald-500" ${day.dzuhur ? 'checked' : ''}> Dzuhur</label>
-                        <label class="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-emerald-300 transition-colors"><input type="checkbox" id="h-ashar" class="w-4 h-4 accent-emerald-500" ${day.ashar ? 'checked' : ''}> Ashar</label>
-                        <label class="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-emerald-300 transition-colors"><input type="checkbox" id="h-maghrib" class="w-4 h-4 accent-emerald-500" ${day.maghrib ? 'checked' : ''}> Maghrib</label>
-                        <label class="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-emerald-300 transition-colors"><input type="checkbox" id="h-isya" class="w-4 h-4 accent-emerald-500" ${day.isya ? 'checked' : ''}> Isya</label>
-                      </div>
-                    </div>
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                      <h4 class="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-3 flex items-center gap-2"><i class="fa fa-leaf"></i> Amalan Harian</h4>
-                      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs font-bold text-slate-700">
-                        <label class="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-300 transition-colors"><input type="checkbox" id="h-dzikir_pagi" class="w-4 h-4 accent-blue-500" ${day.dzikir_pagi ? 'checked' : ''}> Dzikir Pagi</label>
-                        <label class="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-300 transition-colors"><input type="checkbox" id="h-dzikir_petang" class="w-4 h-4 accent-blue-500" ${day.dzikir_petang ? 'checked' : ''}> Dzikir Pet</label>
-                        <label class="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-300 transition-colors"><input type="checkbox" id="h-istighfar" class="w-4 h-4 accent-blue-500" ${day.istighfar ? 'checked' : ''}> Istighfar</label>
-                        <label class="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-300 transition-colors"><input type="checkbox" id="h-sholawat" class="w-4 h-4 accent-blue-500" ${day.sholawat ? 'checked' : ''}> Sholawat</label>
-                        <label class="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-300 transition-colors"><input type="checkbox" id="h-sedekah" class="w-4 h-4 accent-blue-500" ${day.sedekah ? 'checked' : ''}> Sedekah</label>
-                      </div>
-                    </div>
+                <div className="relative z-10 flex items-center w-full gap-4 md:w-auto">
+                  <div className="flex items-center justify-center w-12 h-12 text-xl border bg-white/10 border-white/15 rounded-2xl text-emerald-400 shrink-0"><FaClock /></div>
+                  <div>
+                    <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1 flex items-center gap-1"><FaMapMarkerAlt /> Jadwal Sholat • <span className="font-medium text-slate-300">{currentDate}</span></p>
+                    <select 
+                      value={selectedCity} 
+                      onChange={handleCityChange} 
+                      className="text-base font-black text-white bg-transparent outline-none cursor-pointer hover:text-emerald-300 focus:text-emerald-300 transition-colors"
+                    >
+                      {Object.keys(CITIES).map((city, idx) => <option key={`city-${idx}`} value={city} className="text-slate-900 dark:bg-[#0B0F19] dark:text-white">{city}</option>)}
+                    </select>
                   </div>
-                `,
-                showCancelButton: true, confirmButtonText: 'Simpan', cancelButtonText: 'Batal', confirmButtonColor: '#10B981', customClass: { popup: 'rounded-[2rem] p-6 max-w-lg' },
-                preConfirm: () => ({
-                  log_date: day.log_date,
-                  ibadah: { subuh: (document.getElementById('h-subuh') as HTMLInputElement).checked, dzuhur: (document.getElementById('h-dzuhur') as HTMLInputElement).checked, ashar: (document.getElementById('h-ashar') as HTMLInputElement).checked, maghrib: (document.getElementById('h-maghrib') as HTMLInputElement).checked, isya: (document.getElementById('h-isya') as HTMLInputElement).checked },
-                  amalan: { dzikir_pagi: (document.getElementById('h-dzikir_pagi') as HTMLInputElement).checked, dzikir_petang: (document.getElementById('h-dzikir_petang') as HTMLInputElement).checked, istighfar: (document.getElementById('h-istighfar') as HTMLInputElement).checked, sholawat: (document.getElementById('h-sholawat') as HTMLInputElement).checked, sedekah: (document.getElementById('h-sedekah') as HTMLInputElement).checked }
-                })
-              });
-
-              if (formValues) {
-                try {
-                  const res = await fetch(`${API_URL}/api/spiritual/history`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` }, body: JSON.stringify(formValues) });
-                  if (res.ok) { Swal.fire({ icon: 'success', title: 'Riwayat Diperbarui', toast: true, position: 'top-end', timer: 1500, showConfirmButton: false }); fetchSpiritualData(); }
-                } catch (err) { Swal.fire('Error', 'Gagal menyimpan data', 'error'); }
-              }
-            };
-
-            return (
-              <div key={`history-${day.log_date}-${idx}`} onClick={handleEditHistory} className={`min-w-[140px] p-4 rounded-[1.5rem] border transition-all cursor-pointer hover:-translate-y-1 hover:shadow-lg ${isToday ? 'bg-blue-50 border-blue-200 shadow-sm' : 'bg-slate-50 border-slate-100 hover:border-blue-300'}`}>
-                <div className="mb-3 text-center">
-                  <p className={`text-[10px] font-black uppercase tracking-widest ${isToday ? 'text-blue-600' : 'text-slate-400'}`}>{isToday ? 'Hari Ini' : dayName}</p>
-                  <p className="text-sm font-bold text-slate-700">{dateNum}</p>
                 </div>
-                <div className="space-y-3">
-                  <div>
-                    <div className="flex justify-between text-[10px] font-bold text-slate-500 mb-1"><span>Sholat</span><span className={sholatScore === 5 ? 'text-emerald-500' : ''}>{sholatScore}/5</span></div>
-                    <div className="flex gap-0.5 h-1.5">{[...Array(5)].map((_, i) => <div key={`sholat-pt-${idx}-${i}`} className={`flex-1 rounded-full ${i < sholatScore ? 'bg-emerald-400' : 'bg-slate-200'}`}></div>)}</div>
+
+                <div className="relative z-10 flex w-full gap-4 pb-2 overflow-x-auto md:w-auto md:pb-0 scrollbar-thin scrollbar-thumb-white/10">
+                  {prayerTimes ? (
+                    ['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya'].map((sholat, idx) => (
+                      <div key={`prayer-${idx}`} className="bg-white/5 border border-white/10 rounded-2xl px-4 py-2.5 text-center min-w-[90px] shadow-sm">
+                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-wider">{sholat}</p>
+                        <p className="text-sm font-black text-emerald-400 mt-1">{prayerTimes[sholat]}</p>
+                      </div>
+                    ))
+                  ) : <p className="text-xs text-slate-400 animate-pulse">Memuat jadwal sholat...</p>}
+                </div>
+              </div>
+
+              {/* Bento Grid Harian */}
+              <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                {/* Ibadah Card */}
+                <div className="bg-white dark:bg-[#0B0F19] p-6 md:p-8 rounded-[2rem] shadow-sm border border-slate-200/50 dark:border-white/[0.05] lg:col-span-2">
+                  <h3 className="flex items-center gap-2 mb-6 text-base font-black text-slate-800 dark:text-white font-display"><FaPrayingHands className="text-emerald-500" /> Checklist Ibadah</h3>
+                  <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                    <div>
+                      <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3.5">Sholat Wajib</h4>
+                      <div className="space-y-2.5">
+                        {sholatWajib.map((sholat, idx) => (
+                          <div 
+                            key={`wajib-${idx}`} 
+                            onClick={() => handleToggleIbadah(sholat)} 
+                            className={`flex items-center justify-between p-3.5 rounded-xl border cursor-pointer transition-all ${
+                              ibadah && (ibadah[sholat] === 1 || ibadah[sholat] === true)
+                                ? 'bg-emerald-50/50 dark:bg-emerald-500/10 border-emerald-200/60 dark:border-emerald-500/20' 
+                                : 'bg-slate-50 dark:bg-[#151b2c]/30 border-slate-100 dark:border-white/[0.02] hover:border-emerald-350 dark:hover:border-emerald-500/30'
+                            }`}
+                          >
+                            <span className={`font-bold text-sm capitalize ${ibadah && (ibadah[sholat] === 1 || ibadah[sholat] === true) ? 'text-emerald-700 dark:text-emerald-400' : 'text-slate-600 dark:text-slate-400'}`}>{sholat}</span>
+                            <div className={`text-lg transition-colors ${ibadah && (ibadah[sholat] === 1 || ibadah[sholat] === true) ? 'text-emerald-500' : 'text-slate-300 dark:text-slate-700'}`}>
+                              {ibadah && (ibadah[sholat] === 1 || ibadah[sholat] === true) ? <FaCheckCircle /> : <FaRegCircle />}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3.5">Sholat Sunnah</h4>
+                      <div className="space-y-2.5">
+                        {['dhuha', 'tahajud'].map((sholat, idx) => (
+                          <div 
+                            key={`sunnah-${idx}`} 
+                            onClick={() => handleToggleIbadah(sholat)} 
+                            className={`flex items-center justify-between p-3.5 rounded-xl border cursor-pointer transition-all ${
+                              ibadah && (ibadah[sholat] === 1 || ibadah[sholat] === true)
+                                ? 'bg-indigo-50/50 dark:bg-indigo-500/10 border-indigo-200/60 dark:border-indigo-500/20' 
+                                : 'bg-slate-50 dark:bg-[#151b2c]/30 border-slate-100 dark:border-white/[0.02] hover:border-indigo-350 dark:hover:border-indigo-500/30'
+                            }`}
+                          >
+                            <span className={`font-bold text-sm capitalize ${ibadah && (ibadah[sholat] === 1 || ibadah[sholat] === true) ? 'text-indigo-700 dark:text-indigo-400' : 'text-slate-600 dark:text-slate-400'}`}>{sholat}</span>
+                            <div className={`text-lg transition-colors ${ibadah && (ibadah[sholat] === 1 || ibadah[sholat] === true) ? 'text-indigo-500' : 'text-slate-300 dark:text-slate-700'}`}>
+                              {ibadah && (ibadah[sholat] === 1 || ibadah[sholat] === true) ? <FaCheckCircle /> : <FaRegCircle />}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="flex justify-between text-[10px] font-bold text-slate-500 mb-1"><span>Amalan</span><span className={amalanScore === 5 ? 'text-emerald-500' : ''}>{amalanScore}/5</span></div>
-                    <div className="flex gap-0.5 h-1.5">{[...Array(5)].map((_, i) => <div key={`amalan-pt-${idx}-${i}`} className={`flex-1 rounded-full ${i < amalanScore ? 'bg-blue-400' : 'bg-slate-200'}`}></div>)}</div>
+                </div>
+
+                {/* Amalan & Puasa Card */}
+                <div className="space-y-6">
+                  {/* Puasa Card */}
+                  <div className="bg-white dark:bg-[#0B0F19] p-6 rounded-[2rem] shadow-sm border border-slate-200/50 dark:border-white/[0.05]">
+                    <h3 className="flex items-center gap-2 mb-4 text-sm font-black text-slate-800 dark:text-white font-display"><FaMoon className="text-indigo-500" /> Puasa Sunnah</h3>
+                    <div className="flex gap-3">
+                      {['puasa_senin', 'puasa_kamis'].map((hari, idx) => (
+                        <div 
+                          key={`puasa-${idx}`} 
+                          onClick={() => handleToggleIbadah(hari)} 
+                          className={`flex-1 p-3.5 rounded-xl border text-center cursor-pointer transition-all ${
+                            ibadah && (ibadah[hari] === 1 || ibadah[hari] === true)
+                              ? 'bg-gradient-to-br from-indigo-650 to-blue-600 border-indigo-600 text-white shadow-md' 
+                              : 'bg-slate-50 dark:bg-[#151b2c]/30 border-slate-200/60 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:border-indigo-300'
+                          }`}
+                        >
+                          <span className="text-[10px] font-black tracking-wider uppercase">{hari.replace('puasa_', '')}</span>
+                          <div className="mt-2 text-base">{ibadah && (ibadah[hari] === 1 || ibadah[hari] === true) ? <FaCheckCircle className="mx-auto" /> : <FaRegCircle className="mx-auto" />}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Amalan Harian Checklist Card */}
+                  <div className="bg-white dark:bg-[#0B0F19] p-6 rounded-[2rem] shadow-sm border border-slate-200/50 dark:border-white/[0.05]">
+                    <h3 className="flex items-center gap-2 mb-4 text-sm font-black text-slate-800 dark:text-white font-display"><FaLeaf className="text-emerald-500" /> Amalan Sunnah</h3>
+                    <div className="space-y-2">
+                      {dbAmalanFields.map((amal, idx) => (
+                        <div 
+                          key={`amalan-${idx}`} 
+                          onClick={() => handleToggleAmalan(amal)} 
+                          className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${
+                            amalan && (amalan[amal] === 1 || amalan[amal] === true)
+                              ? 'bg-emerald-50/50 dark:bg-emerald-500/10 border-emerald-200/60 dark:border-emerald-500/20' 
+                              : 'bg-white dark:bg-[#151b2c]/20 border-slate-100 dark:border-white/[0.02] hover:border-emerald-200'
+                          }`}
+                        >
+                          <span className={`text-xs font-bold capitalize ${amalan && (amalan[amal] === 1 || amalan[amal] === true) ? 'text-emerald-800 dark:text-emerald-400' : 'text-slate-650 dark:text-slate-400'}`}>{amal.replace('_', ' ')}</span>
+                          <div className={`text-base transition-colors ${amalan && (amalan[amal] === 1 || amalan[amal] === true) ? 'text-emerald-500' : 'text-slate-300 dark:text-slate-700'}`}>
+                            {amalan && (amalan[amal] === 1 || amalan[amal] === true) ? <FaCheckCircle /> : <FaRegCircle />}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
-            )
-          })}
-        </div>
-      </div>
+
+              {/* Riwayat Spiritual (7 Hari Terakhir) */}
+              <div className="bg-white dark:bg-[#0B0F19] p-6 md:p-8 rounded-[2rem] shadow-sm border border-slate-200/50 dark:border-white/[0.05]">
+                <h3 className="flex items-center gap-2 mb-2 text-base font-black text-slate-800 dark:text-white font-display">
+                  <FaCalendarCheck className="text-blue-500" /> Riwayat Spiritual (7 Hari Terakhir)
+                </h3>
+                <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 mb-6">* Klik kartu hari untuk mengedit riwayat yang terlewat.</p>
+                <div className="flex gap-4 pb-2 overflow-x-auto scrollbar-thin">
+                  {trackerDays.map((day, idx) => {
+                    const sholatScore = ['subuh', 'dzuhur', 'ashar', 'maghrib', 'isya'].filter(k => day[k as keyof typeof day]).length;
+                    const amalanScore = ['dzikir_pagi', 'dzikir_petang', 'istighfar', 'sholawat', 'sedekah'].filter(k => day[k as keyof typeof day]).length;
+                    const isToday = idx === trackerDays.length - 1;
+
+                    const dateObj = new Date(day.log_date);
+                    const dayName = dateObj.toLocaleDateString('id-ID', { weekday: 'short' });
+                    const dateNum = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+
+                    const handleEditHistory = async () => {
+                      if (isToday) return Swal.fire({ icon: 'info', title: 'Hari Ini', text: 'Silakan gunakan checklist di atas untuk mengupdate data hari ini.', toast: true, position: 'top-end', timer: 3000, showConfirmButton: false });
+
+                      const { value: formValues } = await Swal.fire({
+                        title: `Edit Riwayat`,
+                        html: `
+                          <div class="text-left font-sans">
+                            <p class="text-sm font-bold text-slate-500 mb-6 text-center">${dayName}, ${dateNum}</p>
+                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 mb-4">
+                              <h4 class="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-3 flex items-center gap-2"><i class="fa fa-praying-hands"></i> Sholat Wajib</h4>
+                              <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs font-bold text-slate-700">
+                                <label class="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-emerald-300 transition-colors"><input type="checkbox" id="h-subuh" class="w-4 h-4 accent-emerald-500" ${day.subuh ? 'checked' : ''}> Subuh</label>
+                                <label class="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-emerald-300 transition-colors"><input type="checkbox" id="h-dzuhur" class="w-4 h-4 accent-emerald-500" ${day.dzuhur ? 'checked' : ''}> Dzuhur</label>
+                                <label class="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-emerald-300 transition-colors"><input type="checkbox" id="h-ashar" class="w-4 h-4 accent-emerald-500" ${day.ashar ? 'checked' : ''}> Ashar</label>
+                                <label class="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-emerald-300 transition-colors"><input type="checkbox" id="h-maghrib" class="w-4 h-4 accent-emerald-500" ${day.maghrib ? 'checked' : ''}> Maghrib</label>
+                                <label class="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-emerald-300 transition-colors"><input type="checkbox" id="h-isya" class="w-4 h-4 accent-emerald-500" ${day.isya ? 'checked' : ''}> Isya</label>
+                              </div>
+                            </div>
+                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                              <h4 class="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-3 flex items-center gap-2"><i class="fa fa-leaf"></i> Amalan Harian</h4>
+                              <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs font-bold text-slate-700">
+                                <label class="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-300 transition-colors"><input type="checkbox" id="h-dzikir_pagi" class="w-4 h-4 accent-blue-500" ${day.dzikir_pagi ? 'checked' : ''}> Dzikir Pagi</label>
+                                <label class="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-300 transition-colors"><input type="checkbox" id="h-dzikir_petang" class="w-4 h-4 accent-blue-500" ${day.dzikir_petang ? 'checked' : ''}> Dzikir Pet</label>
+                                <label class="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-300 transition-colors"><input type="checkbox" id="h-istighfar" class="w-4 h-4 accent-blue-500" ${day.istighfar ? 'checked' : ''}> Istighfar</label>
+                                <label class="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-300 transition-colors"><input type="checkbox" id="h-sholawat" class="w-4 h-4 accent-blue-500" ${day.sholawat ? 'checked' : ''}> Sholawat</label>
+                                <label class="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-lg cursor-pointer hover:border-blue-300 transition-colors"><input type="checkbox" id="h-sedekah" class="w-4 h-4 accent-blue-500" ${day.sedekah ? 'checked' : ''}> Sedekah</label>
+                              </div>
+                            </div>
+                          </div>
+                        `,
+                        showCancelButton: true, confirmButtonText: 'Simpan', cancelButtonText: 'Batal', confirmButtonColor: '#10B981', customClass: { popup: 'rounded-[2rem] p-6 max-w-lg dark:bg-[#0B0F19] dark:text-white' },
+                        preConfirm: () => ({
+                          log_date: day.log_date,
+                          ibadah: { subuh: (document.getElementById('h-subuh') as HTMLInputElement).checked, dzuhur: (document.getElementById('h-dzuhur') as HTMLInputElement).checked, ashar: (document.getElementById('h-ashar') as HTMLInputElement).checked, maghrib: (document.getElementById('h-maghrib') as HTMLInputElement).checked, isya: (document.getElementById('h-isya') as HTMLInputElement).checked },
+                          amalan: { dzikir_pagi: (document.getElementById('h-dzikir_pagi') as HTMLInputElement).checked, dzikir_petang: (document.getElementById('h-dzikir_petang') as HTMLInputElement).checked, istighfar: (document.getElementById('h-istighfar') as HTMLInputElement).checked, sholawat: (document.getElementById('h-sholawat') as HTMLInputElement).checked, sedekah: (document.getElementById('h-sedekah') as HTMLInputElement).checked }
+                        })
+                      });
+
+                      if (formValues) {
+                        try {
+                          const res = await fetch(`${API_URL}/api/spiritual/history`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('token')}` }, body: JSON.stringify(formValues) });
+                          if (res.ok) { Swal.fire({ icon: 'success', title: 'Riwayat Diperbarui', toast: true, position: 'top-end', timer: 1500, showConfirmButton: false }); fetchSpiritualData(); }
+                        } catch (err) { Swal.fire('Error', 'Gagal menyimpan data', 'error'); }
+                      }
+                    };
+
+                    return (
+                      <div 
+                        key={`history-${day.log_date}-${idx}`} 
+                        onClick={handleEditHistory} 
+                        className={`min-w-[130px] p-4 rounded-2xl border transition-all cursor-pointer hover:-translate-y-1 hover:shadow-md ${
+                          isToday 
+                            ? 'bg-emerald-50/50 dark:bg-emerald-500/10 border-emerald-300 dark:border-emerald-500/30 shadow-sm' 
+                            : 'bg-slate-50 dark:bg-[#151b2c]/20 border-slate-100 dark:border-white/[0.02] hover:border-emerald-300'
+                        }`}
+                      >
+                        <div className="mb-3 text-center">
+                          <p className={`text-[9px] font-black uppercase tracking-wider ${isToday ? 'text-emerald-600 dark:text-emerald-450' : 'text-slate-400'}`}>{isToday ? 'Hari Ini' : dayName}</p>
+                          <p className="text-xs font-bold text-slate-700 dark:text-slate-350">{dateNum}</p>
+                        </div>
+                        <div className="space-y-3">
+                          <div>
+                            <div className="flex justify-between text-[9px] font-bold text-slate-500 dark:text-slate-400 mb-1">
+                              <span>Sholat</span>
+                              <span className={sholatScore === 5 ? 'text-emerald-500 font-extrabold' : ''}>{sholatScore}/5</span>
+                            </div>
+                            <div className="flex gap-0.5 h-1">{[...Array(5)].map((_, i) => <div key={`sholat-pt-${idx}-${i}`} className={`flex-1 rounded-full ${i < sholatScore ? 'bg-emerald-400' : 'bg-slate-200 dark:bg-white/10'}`}></div>)}</div>
+                          </div>
+                          <div>
+                            <div className="flex justify-between text-[9px] font-bold text-slate-500 dark:text-slate-400 mb-1">
+                              <span>Amalan</span>
+                              <span className={amalanScore === 5 ? 'text-blue-500 font-extrabold' : ''}>{amalanScore}/5</span>
+                            </div>
+                            <div className="flex gap-0.5 h-1">{[...Array(5)].map((_, i) => <div key={`amalan-pt-${idx}-${i}`} className={`flex-1 rounded-full ${i < amalanScore ? 'bg-blue-400' : 'bg-slate-200 dark:bg-white/10'}`}></div>)}</div>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'quran' && (
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+              {/* Quran Large Progress Banner Card */}
+              <div className="lg:col-span-2 bg-gradient-to-br from-emerald-800 to-teal-950 p-8 md:p-10 min-h-[300px] rounded-[2.5rem] shadow-xl text-white relative overflow-hidden flex flex-col justify-between border border-emerald-700/30">
+                <div className="absolute top-0 right-0 w-80 h-80 -translate-y-1/3 rounded-full pointer-events-none bg-white/5 blur-3xl translate-x-1/3"></div>
+
+                <div className="relative z-10 flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
+                  <div className="flex items-center gap-5">
+                    <div className="flex items-center justify-center w-16 h-16 text-4xl border bg-white/10 backdrop-blur-md rounded-2xl border-white/20 shrink-0"><FaBookOpen className="text-emerald-350" /></div>
+                    <div>
+                      <p className="text-[10px] font-black text-emerald-300 uppercase tracking-widest mb-1">Terakhir Dibaca</p>
+                      <h3 className="text-3xl font-black tracking-tight">{quran?.surah || 'Al-Fatihah'} <span className="text-xl font-bold text-emerald-300">Ayat {quran?.ayat || 1}</span></h3>
+                      <p className="mt-1 text-sm font-medium text-emerald-100">Juz {quran?.juz || 1} • Halaman {quran?.page || 1}</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => { 
+                      setEditSurah(quran?.surah || 'Al-Fatihah'); 
+                      setEditAyat(quran?.ayat || 1); 
+                      setEditPage(quran?.page || 1); 
+                      setEditJuz(quran?.juz || 1); 
+                      setIsQuranModalOpen(true); 
+                    }} 
+                    className="px-8 py-3.5 text-xs font-black bg-white dark:bg-[#0B0F19] text-emerald-850 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-slate-900 rounded-xl transition-all shadow-md shrink-0 w-full md:w-auto"
+                  >
+                    Update Tilawah
+                  </button>
+                </div>
+
+                <div className="relative z-10 pt-6 mt-8 border-t border-white/10">
+                  <div className="flex justify-between mb-2 text-xs font-bold text-emerald-100"><span>Progress Juz {quran?.juz || 1}</span><span>{Math.round(((quran?.page || 0) % 20) / 20 * 100) || 0}%</span></div>
+                  <div className="w-full h-3 overflow-hidden rounded-full bg-black/25"><div className="h-full rounded-full bg-emerald-400 transition-all duration-500" style={{ width: `${Math.min(100, Math.max(0, ((quran?.page || 0) % 20) / 20 * 100))}%` }}></div></div>
+                </div>
+              </div>
+
+              {/* Quick Update Quran Card (Form Inline) */}
+              <div className="bg-white dark:bg-[#0B0F19] p-6 rounded-[2rem] shadow-sm border border-slate-200/50 dark:border-white/[0.05]">
+                <h3 className="text-sm font-black text-slate-800 dark:text-white mb-4 font-display flex items-center gap-2"><FaBookOpen className="text-emerald-500" /> Catat Progress Tilawah</h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block mb-1.5 text-[9px] font-black tracking-widest uppercase text-slate-400 dark:text-slate-500">Pilih Surah</label>
+                    <select 
+                      value={editSurah} 
+                      onChange={e => setEditSurah(e.target.value)} 
+                      className="w-full p-3 font-bold border border-slate-200 dark:border-white/10 outline-none cursor-pointer rounded-xl bg-slate-50 dark:bg-slate-900/40 text-emerald-650 dark:text-emerald-400 focus:border-emerald-500"
+                    >
+                      {quranSurahs.map(s => <option key={s.no} value={s.name} className="dark:bg-[#0B0F19]">{s.no}. {s.name} ({s.ayat} ayat)</option>)}
+                    </select>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2">
+                    <div>
+                      <label className="block text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Ayat</label>
+                      <input type="number" min="1" max={maxAyat} value={editAyat} onChange={e => { let val = parseInt(e.target.value); if (val > maxAyat) val = maxAyat; setEditAyat(val); }} className="w-full p-3 font-bold text-center border border-slate-200 dark:border-white/10 outline-none rounded-xl bg-slate-50 dark:bg-slate-900/40 focus:border-emerald-500 dark:text-white" />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Halaman</label>
+                      <input type="number" min="1" max="604" value={editPage} onChange={e => setEditPage(parseInt(e.target.value))} className="w-full p-3 font-bold text-center border border-slate-200 dark:border-white/10 outline-none rounded-xl bg-slate-50 dark:bg-slate-900/40 focus:border-emerald-500 dark:text-white" />
+                    </div>
+                    <div>
+                      <label className="block text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">Juz</label>
+                      <input type="number" min="1" max="30" value={editJuz} onChange={e => setEditJuz(parseInt(e.target.value))} className="w-full p-3 font-bold text-center border border-slate-200 dark:border-white/10 outline-none rounded-xl bg-slate-50 dark:bg-slate-900/40 focus:border-emerald-500 dark:text-white" />
+                    </div>
+                  </div>
+
+                  <button onClick={handleSaveQuran} className="w-full py-3.5 font-black text-white bg-slate-900 dark:bg-white dark:text-slate-900 hover:bg-slate-800 dark:hover:bg-slate-100 rounded-xl transition-all shadow-md text-xs">Simpan Tilawah</button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'kontemplasi' && (
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+              {/* Left Column: Reflection */}
+              <div className="bg-white dark:bg-[#0B0F19] p-6 md:p-8 rounded-[2rem] shadow-sm border border-slate-200/50 dark:border-white/[0.05] h-fit">
+                <h3 className="flex items-center gap-2 mb-6 text-base font-black text-slate-800 dark:text-white font-display"><FaRegSmile className="text-rose-500" /> Refleksi & Muhasabah</h3>
+                <div className="space-y-5">
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">Syukur Hari Ini</label>
+                    <textarea 
+                      value={reflection?.gratitude || ''} 
+                      onChange={e => handleReflectionChange('gratitude', e.target.value)} 
+                      rows={3} 
+                      className="w-full p-3.5 text-xs font-medium border border-slate-200 dark:border-white/10 outline-none resize-none bg-slate-50 dark:bg-slate-900/40 dark:text-white rounded-xl focus:border-rose-400 focus:ring-2 focus:ring-rose-500/20" 
+                      placeholder="Tulis hal yang disyukuri hari ini..."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1.5">Muhasabah (Evaluasi Kesalahan)</label>
+                    <textarea 
+                      value={reflection?.mistake || ''} 
+                      onChange={e => handleReflectionChange('mistake', e.target.value)} 
+                      rows={3} 
+                      className="w-full p-3.5 text-xs font-medium border border-slate-200 dark:border-white/10 outline-none resize-none bg-slate-50 dark:bg-slate-900/40 dark:text-white rounded-xl focus:border-rose-400 focus:ring-2 focus:ring-rose-500/20" 
+                      placeholder="Apa yang perlu diperbaiki hari ini?"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2.5">Mood / Perasaan</label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { emoji: '😌', val: 'tenang' }, 
+                        { emoji: '😔', val: 'sedih' }, 
+                        { emoji: '😟', val: 'cemas' }, 
+                        { emoji: '🙏', val: 'bersyukur' }, 
+                        { emoji: '🔥', val: 'semangat' }
+                      ].map((m, idx) => (
+                        <button 
+                          key={`mood-${idx}`} 
+                          onClick={() => handleReflectionChange('mood', m.val)} 
+                          className={`p-2.5 rounded-xl text-lg flex items-center justify-center transition-all border ${
+                            reflection?.mood === m.val 
+                              ? 'bg-rose-50 border-rose-350 dark:bg-rose-500/10 dark:border-rose-500/30 shadow-sm scale-110' 
+                              : 'bg-white dark:bg-slate-900/20 border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/5'
+                          }`} 
+                          title={m.val}
+                        >
+                          {m.emoji}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Doa List */}
+              <div className="lg:col-span-2 bg-white dark:bg-[#0B0F19] p-6 md:p-8 rounded-[2rem] shadow-sm border border-slate-200/50 dark:border-white/[0.05]">
+                <div className="flex items-center justify-between pb-4 mb-6 border-b border-slate-100 dark:border-white/5">
+                  <h3 className="flex items-center gap-2 text-base font-black text-slate-800 dark:text-white font-display"><FaPrayingHands className="text-blue-500" /> Kumpulan Doa</h3>
+                  <button onClick={handleAddDoa} className="text-xs font-black text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-500/10 px-4 py-2 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-500/20 flex items-center gap-1.5 transition-colors">
+                    <FaPlus /> Tambah Doa
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  {doaList.length === 0 ? (
+                    <p className="py-10 text-xs font-bold tracking-widest text-center uppercase text-slate-450 dark:text-slate-500 col-span-full">Belum ada doa tersimpan.</p>
+                  ) : (
+                    doaList.map((doa, idx) => (
+                      <div key={`doa-${doa.id}-${idx}`} className="relative flex flex-col justify-between p-5 transition-all border border-slate-200/60 dark:border-white/5 bg-slate-50/50 dark:bg-[#151b2c]/10 rounded-2xl group hover:border-blue-400 hover:shadow-sm">
+                        <div className="absolute flex gap-2 transition-opacity opacity-100 md:opacity-0 group-hover:opacity-100 top-4 right-4">
+                          <button onClick={() => handleDeleteDoa(doa.id)} className="p-2 transition-colors bg-white dark:bg-[#0B0F19] border border-slate-100 dark:border-white/10 shadow-sm text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 rounded-lg"><FaTrash size={11} /></button>
+                        </div>
+                        <div className="mb-3">
+                          <span className="text-[9px] font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-600/10 px-2.5 py-1 rounded-md mb-2 inline-block">{doa.category}</span>
+                          <h4 className="pr-8 mb-1 text-sm font-black text-slate-900 dark:text-white leading-tight">{doa.title}</h4>
+                        </div>
+                        <p className="p-4 mt-2 text-xs italic font-medium leading-relaxed bg-white dark:bg-[#0B0F19] border border-slate-100/50 dark:border-white/[0.03] shadow-inner text-slate-600 dark:text-slate-350 rounded-xl">
+                          "{doa.content}"
+                        </p>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 };

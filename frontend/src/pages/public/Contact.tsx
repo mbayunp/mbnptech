@@ -8,6 +8,7 @@ import {
 import Swal from 'sweetalert2';
 import { API_URL } from '../../config/api';
 import { fadeUp, stagger } from '../../utils/animations';
+import MagneticGlowCard from '../../components/MagneticGlowCard';
 
 const Contact = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -67,36 +68,36 @@ const Contact = () => {
   ];
 
   const contactInfo = [
-    { icon: <FiUser size={20} />, title: 'Developer', value: 'M. Bayu Nurdiansyah P.', bg: 'bg-blue-50 text-blue-600', hoverBg: 'group-hover:bg-blue-600 group-hover:text-white' },
-    { icon: <FiMapPin size={20} />, title: 'Location', value: 'Bandung • Cianjur • Garut', bg: 'bg-sky-50 text-sky-600', hoverBg: 'group-hover:bg-sky-600 group-hover:text-white' },
-    { icon: <FiMail size={20} />, title: 'Email', value: 'muhammadbayunp@gmail.com', href: 'mailto:muhammadbayunp@gmail.com', bg: 'bg-indigo-50 text-indigo-600', hoverBg: 'group-hover:bg-indigo-600 group-hover:text-white' },
-    { icon: <FiPhoneCall size={20} />, title: 'WhatsApp', value: '0896-6393-3263', href: 'https://wa.me/6289663933263', bg: 'bg-emerald-50 text-emerald-600', hoverBg: 'group-hover:bg-emerald-500 group-hover:text-white' },
+    { icon: <FiUser size={20} />, title: 'Developer', value: 'M. Bayu Nurdiansyah P.', bg: 'bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400', hoverBg: 'group-hover:bg-blue-600 group-hover:text-white', glow: 'rgba(59, 130, 246, 0.1)' },
+    { icon: <FiMapPin size={20} />, title: 'Location', value: 'Bandung • Cianjur • Garut', bg: 'bg-sky-50 dark:bg-sky-950/30 text-sky-600 dark:text-sky-400', hoverBg: 'group-hover:bg-sky-600 group-hover:text-white', glow: 'rgba(14, 165, 233, 0.1)' },
+    { icon: <FiMail size={20} />, title: 'Email', value: 'muhammadbayunp@gmail.com', href: 'mailto:muhammadbayunp@gmail.com', bg: 'bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400', hoverBg: 'group-hover:bg-indigo-600 group-hover:text-white', glow: 'rgba(99, 102, 241, 0.1)' },
+    { icon: <FiPhoneCall size={20} />, title: 'WhatsApp', value: '0896-6393-3263', href: 'https://wa.me/6289663933263', bg: 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-600 dark:text-emerald-400', hoverBg: 'group-hover:bg-emerald-500 group-hover:text-white', glow: 'rgba(16, 185, 129, 0.1)' },
   ];
 
   return (
-    <div className="min-h-screen bg-[#fafafa] flex flex-col font-sans selection:bg-blue-200 selection:text-blue-900">
+    <div className="min-h-screen bg-[#fafafa] dark:bg-[#030712] flex flex-col font-sans selection:bg-blue-200 selection:text-blue-900 transition-colors duration-300">
 
       {/* Hero Section */}
       <section className="relative pt-20 pb-12 md:pt-24 md:pb-16 overflow-hidden text-center">
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-0 right-0 w-[70%] md:w-[50%] h-[65%] bg-gradient-to-bl from-blue-400/20 to-sky-300/10 rounded-full blur-[120px] -translate-y-1/4 translate-x-1/4" />
-          <div className="absolute bottom-0 left-0 w-[70%] md:w-[50%] h-[60%] bg-gradient-to-tr from-indigo-400/15 to-violet-300/10 rounded-full blur-[120px] translate-y-1/4 -translate-x-1/4" />
+          <div className="absolute top-0 right-0 w-[70%] md:w-[50%] h-[65%] bg-gradient-to-bl from-blue-400/20 to-sky-300/10 dark:from-blue-500/15 dark:to-sky-500/5 rounded-full blur-[120px] -translate-y-1/4 translate-x-1/4" />
+          <div className="absolute bottom-0 left-0 w-[70%] md:w-[50%] h-[60%] bg-gradient-to-tr from-indigo-400/15 to-violet-300/10 dark:from-indigo-500/15 dark:to-violet-500/5 rounded-full blur-[120px] translate-y-1/4 -translate-x-1/4" />
         </div>
 
         <div className="container mx-auto px-5 md:px-8 max-w-4xl relative z-10">
           <motion.div variants={stagger} initial="hidden" animate="show">
-            <motion.div variants={fadeUp} className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/80 backdrop-blur-md border border-slate-200/60 shadow-sm mb-8">
+            <motion.div variants={fadeUp} className="inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-white/80 dark:bg-white/5 backdrop-blur-md border border-slate-200/60 dark:border-white/10 shadow-sm mb-8">
               <span className="relative flex h-2.5 w-2.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-600" />
               </span>
-              <span className="text-xs font-black text-slate-700 tracking-widest uppercase">Let's Connect</span>
+              <span className="text-xs font-black text-slate-700 dark:text-slate-300 tracking-widest uppercase">Let's Connect</span>
             </motion.div>
 
-            <motion.h1 variants={fadeUp} className="font-display text-4xl sm:text-6xl md:text-[5rem] lg:text-[6rem] font-black text-slate-900 mb-5 tracking-tighter leading-[1.04]">
-              Contact <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-sky-500">MBNP</span>
+            <motion.h1 variants={fadeUp} className="font-display text-4xl sm:text-6xl md:text-[5rem] lg:text-[6rem] font-black text-slate-900 dark:text-white mb-5 tracking-tighter leading-[1.04]">
+              Contact <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-sky-500 dark:from-blue-400 dark:to-sky-400">MBNP</span>
             </motion.h1>
-            <motion.p variants={fadeUp} className="text-lg md:text-xl font-medium text-slate-600 mb-10 px-2">
+            <motion.p variants={fadeUp} className="text-lg md:text-xl font-medium text-slate-600 dark:text-slate-400 mb-10 px-2">
               Mari Diskusikan Ide Hebat Anda Hari Ini.
             </motion.p>
           </motion.div>
@@ -109,60 +110,59 @@ const Contact = () => {
 
           {/* Contact Info Cards */}
           <motion.div variants={stagger} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }} className="lg:col-span-2 space-y-4">
-            <motion.h2 variants={fadeUp} className="font-display text-xl md:text-2xl font-black text-slate-900 mb-6">Informasi Kontak</motion.h2>
+            <motion.h2 variants={fadeUp} className="font-display text-xl md:text-2xl font-black text-slate-900 dark:text-white mb-6">Informasi Kontak</motion.h2>
             {contactInfo.map((item, i) => (
-              <motion.div key={i} variants={fadeUp}
-                whileHover={{ scale: 1.02 }} transition={{ type: 'spring', stiffness: 200, damping: 20 }}>
+              <MagneticGlowCard key={i} glowColor={item.glow} hoverScale={1.02} className="!p-0 border border-slate-100 dark:border-white/[0.05]">
                 {item.href ? (
-                  <a href={item.href} target="_blank" rel="noopener noreferrer" className="bg-white p-6 md:p-7 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 flex items-center gap-4 transition-all group">
+                  <a href={item.href} target="_blank" rel="noopener noreferrer" className="p-6 md:p-7 flex items-center gap-4 transition-all group">
                     <div className={`w-12 h-12 ${item.bg} rounded-2xl flex items-center justify-center shrink-0 ${item.hoverBg} transition-all group-hover:scale-110`}>{item.icon}</div>
                     <div className="overflow-hidden">
-                      <p className="font-bold text-slate-900 text-sm">{item.title}</p>
-                      <p className="text-slate-600 font-medium text-sm mt-0.5 truncate hover:text-blue-600 transition-colors">{item.value}</p>
+                      <p className="font-bold text-slate-900 dark:text-white text-sm">{item.title}</p>
+                      <p className="text-slate-600 dark:text-slate-400 font-medium text-sm mt-0.5 truncate hover:text-blue-600 dark:hover:text-blue-400 transition-colors">{item.value}</p>
                     </div>
                   </a>
                 ) : (
-                  <div className="bg-white p-6 md:p-7 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-slate-200/50 flex items-center gap-4 transition-all group cursor-default">
+                  <div className="p-6 md:p-7 flex items-center gap-4 transition-all group cursor-default">
                     <div className={`w-12 h-12 ${item.bg} rounded-2xl flex items-center justify-center shrink-0 ${item.hoverBg} transition-all group-hover:scale-110`}>{item.icon}</div>
                     <div>
-                      <p className="font-bold text-slate-900 text-sm">{item.title}</p>
-                      <p className="text-slate-600 font-medium text-sm mt-0.5">{item.value}</p>
+                      <p className="font-bold text-slate-900 dark:text-white text-sm">{item.title}</p>
+                      <p className="text-slate-600 dark:text-slate-400 font-medium text-sm mt-0.5">{item.value}</p>
                     </div>
                   </div>
                 )}
-              </motion.div>
+              </MagneticGlowCard>
             ))}
           </motion.div>
 
           {/* Contact Form */}
           <motion.div variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }} className="lg:col-span-3">
-            <div className="bg-white p-5 md:p-12 rounded-[2.5rem] md:rounded-[3rem] border border-slate-100 shadow-xl shadow-slate-200/50 relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-blue-50 to-transparent rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-40 h-40 bg-gradient-to-tr from-indigo-50 to-transparent rounded-full translate-y-1/2 -translate-x-1/2 pointer-events-none" />
-              <h2 className="font-display text-2xl md:text-4xl font-black text-slate-900 mb-2 tracking-tight relative z-10">Kirim Pesan</h2>
-              <p className="text-sm md:text-base text-slate-500 mb-8 font-medium relative z-10">Jelaskan ide atau kebutuhan sistem Anda secara mendetail.</p>
+            <div className="bg-white dark:bg-[#0B0F19] p-5 md:p-12 rounded-[2.5rem] md:rounded-[3rem] border border-slate-100 dark:border-white/[0.05] shadow-xl shadow-slate-200/50 dark:shadow-none relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-blue-50 dark:from-blue-950/10 to-transparent rounded-full -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-40 h-40 bg-gradient-to-tr from-indigo-50 dark:from-indigo-950/10 to-transparent rounded-full translate-y-1/2 -translate-x-1/2 pointer-events-none" />
+              <h2 className="font-display text-2xl md:text-4xl font-black text-slate-900 dark:text-white mb-2 tracking-tight relative z-10">Kirim Pesan</h2>
+              <p className="text-sm md:text-base text-slate-500 dark:text-slate-400 mb-8 font-medium relative z-10">Jelaskan ide atau kebutuhan sistem Anda secara mendetail.</p>
 
               <form onSubmit={handleWhatsAppSubmit} className="space-y-5 relative z-10">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div>
-                    <label className="block text-xs font-black text-slate-600 mb-2 uppercase tracking-widest">Nama Lengkap</label>
-                    <input type="text" name="nama" required className="w-full px-5 py-3.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-600/10 focus:border-blue-500 outline-none bg-slate-50 font-medium transition-all text-sm" placeholder="Nama Anda" />
+                    <label className="block text-xs font-black text-slate-600 dark:text-slate-400 mb-2 uppercase tracking-widest">Nama Lengkap</label>
+                    <input type="text" name="nama" required className="w-full px-5 py-3.5 rounded-2xl border border-slate-200 dark:border-white/10 focus:ring-4 focus:ring-blue-600/10 focus:border-blue-500 dark:focus:border-blue-500 outline-none bg-slate-50 dark:bg-[#030712] text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 font-medium transition-all text-sm" placeholder="Nama Anda" />
                   </div>
                   <div>
-                    <label className="block text-xs font-black text-slate-600 mb-2 uppercase tracking-widest">Email Valid</label>
-                    <input type="email" name="email" required className="w-full px-5 py-3.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-600/10 focus:border-blue-500 outline-none bg-slate-50 font-medium transition-all text-sm" placeholder="email@perusahaan.com" />
+                    <label className="block text-xs font-black text-slate-600 dark:text-slate-400 mb-2 uppercase tracking-widest">Email Valid</label>
+                    <input type="email" name="email" required className="w-full px-5 py-3.5 rounded-2xl border border-slate-200 dark:border-white/10 focus:ring-4 focus:ring-blue-600/10 focus:border-blue-500 dark:focus:border-blue-500 outline-none bg-slate-50 dark:bg-[#030712] text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 font-medium transition-all text-sm" placeholder="email@perusahaan.com" />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div>
-                    <label className="block text-xs font-black text-slate-600 mb-2 uppercase tracking-widest">Nomor WhatsApp</label>
-                    <input type="text" name="phone" required className="w-full px-5 py-3.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-600/10 focus:border-blue-500 outline-none bg-slate-50 font-medium transition-all text-sm" placeholder="08..." />
+                    <label className="block text-xs font-black text-slate-600 dark:text-slate-400 mb-2 uppercase tracking-widest">Nomor WhatsApp</label>
+                    <input type="text" name="phone" required className="w-full px-5 py-3.5 rounded-2xl border border-slate-200 dark:border-white/10 focus:ring-4 focus:ring-blue-600/10 focus:border-blue-500 dark:focus:border-blue-500 outline-none bg-slate-50 dark:bg-[#030712] text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 font-medium transition-all text-sm" placeholder="08..." />
                   </div>
                   <div>
-                    <label className="block text-xs font-black text-slate-600 mb-2 uppercase tracking-widest">Jenis Proyek</label>
+                    <label className="block text-xs font-black text-slate-600 dark:text-slate-400 mb-2 uppercase tracking-widest">Jenis Proyek</label>
                     <div className="relative">
-                      <select name="layanan" required className="w-full px-5 py-3.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-600/10 focus:border-blue-500 outline-none bg-slate-50 font-medium transition-all appearance-none cursor-pointer text-sm">
+                      <select name="layanan" required className="w-full px-5 py-3.5 rounded-2xl border border-slate-200 dark:border-white/10 focus:ring-4 focus:ring-blue-600/10 focus:border-blue-500 dark:focus:border-blue-500 outline-none bg-slate-50 dark:bg-[#030712] text-slate-750 dark:text-white font-medium transition-all appearance-none cursor-pointer text-sm">
                         <option value="Website Company Profile">Website Company Profile</option>
                         <option value="Web Application">Web Application</option>
                         <option value="Sistem Informasi">Sistem Informasi</option>
@@ -175,9 +175,9 @@ const Contact = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-black text-slate-600 mb-2 uppercase tracking-widest">Estimasi Budget</label>
+                  <label className="block text-xs font-black text-slate-600 dark:text-slate-400 mb-2 uppercase tracking-widest">Estimasi Budget</label>
                   <div className="relative">
-                    <select name="budget" className="w-full px-5 py-3.5 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-600/10 focus:border-blue-500 outline-none bg-slate-50 font-medium transition-all appearance-none cursor-pointer text-sm">
+                    <select name="budget" className="w-full px-5 py-3.5 rounded-2xl border border-slate-200 dark:border-white/10 focus:ring-4 focus:ring-blue-600/10 focus:border-blue-500 dark:focus:border-blue-500 outline-none bg-slate-50 dark:bg-[#030712] text-slate-750 dark:text-white font-medium transition-all appearance-none cursor-pointer text-sm">
                       <option value="Belum ditentukan">Pilih range budget</option>
                       <option value="< 5 juta">&lt; 5 Juta</option>
                       <option value="5 - 10 juta">5 – 10 Juta</option>
@@ -189,8 +189,8 @@ const Contact = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-black text-slate-600 mb-2 uppercase tracking-widest">Deskripsi Proyek</label>
-                  <textarea name="pesan" required rows={4} className="w-full px-5 py-4 rounded-2xl border border-slate-200 focus:ring-4 focus:ring-blue-600/10 focus:border-blue-500 outline-none bg-slate-50 font-medium transition-all resize-none text-sm" placeholder="Ceritakan fitur utama atau masalah yang ingin diselesaikan..."></textarea>
+                  <label className="block text-xs font-black text-slate-600 dark:text-slate-400 mb-2 uppercase tracking-widest">Deskripsi Proyek</label>
+                  <textarea name="pesan" required rows={4} className="w-full px-5 py-4 rounded-2xl border border-slate-200 dark:border-white/10 focus:ring-4 focus:ring-blue-600/10 focus:border-blue-500 dark:focus:border-blue-500 outline-none bg-slate-50 dark:bg-[#030712] text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 font-medium transition-all resize-none text-sm" placeholder="Ceritakan fitur utama atau masalah yang ingin diselesaikan..."></textarea>
                 </div>
 
                 <button type="submit" disabled={isSubmitting}
@@ -204,56 +204,57 @@ const Contact = () => {
       </section>
 
       {/* Social Media Section */}
-      <section className="py-20 md:py-28 bg-white relative overflow-hidden">
-        <div className="absolute top-[-5%] left-[30%] w-[400px] h-[400px] bg-gradient-to-br from-sky-50/60 to-blue-50/30 rounded-full blur-[130px] pointer-events-none" />
+      <section className="py-20 md:py-28 bg-white dark:bg-[#030712] relative overflow-hidden transition-colors duration-300">
+        <div className="absolute top-[-5%] left-[30%] w-[400px] h-[400px] bg-gradient-to-br from-sky-50/60 to-blue-50/30 dark:from-sky-950/10 dark:to-blue-950/5 rounded-full blur-[130px] pointer-events-none" />
         <div className="container mx-auto px-5 md:px-8 max-w-5xl relative z-10">
           <motion.div variants={stagger} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-100px' }} className="text-center mb-12 md:mb-14">
-            <motion.p variants={fadeUp} className="text-xs font-black text-blue-600 uppercase tracking-widest mb-3">Social Networks</motion.p>
-            <motion.h2 variants={fadeUp} className="font-display text-3xl md:text-5xl font-black text-slate-900 tracking-tight">Terhubung Lebih Dekat</motion.h2>
+            <motion.p variants={fadeUp} className="text-xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-3">Social Networks</motion.p>
+            <motion.h2 variants={fadeUp} className="font-display text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight">Terhubung Lebih Dekat</motion.h2>
           </motion.div>
           <motion.div variants={stagger} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }}
             className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6">
             {[
-              { href: 'https://www.linkedin.com/in/mbayunp/', icon: <FiLinkedin size={28} />, label: 'LinkedIn', desc: 'Rekam jejak profesional & histori project.', color: '#0A66C2', hoverBorder: 'hover:border-[#0A66C2]', hoverBg: 'hover:bg-[#0A66C2]/5', iconHover: 'group-hover:bg-[#0A66C2] group-hover:text-white' },
-              { href: 'https://www.instagram.com/m.bayunp/', icon: <FiInstagram size={28} />, label: 'Instagram', desc: 'Karya visual & insight dunia digital.', color: '#E1306C', hoverBorder: 'hover:border-[#E1306C]', hoverBg: 'hover:bg-[#E1306C]/5', iconHover: 'group-hover:bg-gradient-to-tr group-hover:from-[#F56040] group-hover:to-[#C13584] group-hover:text-white' },
-              { href: 'https://www.facebook.com/bayu.bojongiv', icon: <FiFacebook size={28} />, label: 'Facebook', desc: 'Update terbaru seputar teknologi.', color: '#1877F2', hoverBorder: 'hover:border-[#1877F2]', hoverBg: 'hover:bg-[#1877F2]/5', iconHover: 'group-hover:bg-[#1877F2] group-hover:text-white' },
+              { href: 'https://www.linkedin.com/in/mbayunp/', icon: <FiLinkedin size={28} />, label: 'LinkedIn', desc: 'Rekam jejak profesional & histori project.', color: '#0A66C2', hoverBorder: 'hover:border-[#0A66C2] dark:hover:border-[#0A66C2]', hoverBg: 'hover:bg-[#0A66C2]/5 dark:hover:bg-[#0A66C2]/10', iconHover: 'group-hover:bg-[#0A66C2] group-hover:text-white', glow: 'rgba(10, 102, 194, 0.15)' },
+              { href: 'https://www.instagram.com/m.bayunp/', icon: <FiInstagram size={28} />, label: 'Instagram', desc: 'Karya visual & insight dunia digital.', color: '#E1306C', hoverBorder: 'hover:border-[#E1306C] dark:hover:border-[#E1306C]', hoverBg: 'hover:bg-[#E1306C]/5 dark:hover:bg-[#E1306C]/10', iconHover: 'group-hover:bg-gradient-to-tr group-hover:from-[#F56040] group-hover:to-[#C13584] group-hover:text-white', glow: 'rgba(225, 48, 108, 0.15)' },
+              { href: 'https://www.facebook.com/bayu.bojongiv', icon: <FiFacebook size={28} />, label: 'Facebook', desc: 'Update terbaru seputar teknologi.', color: '#1877F2', hoverBorder: 'hover:border-[#1877F2] dark:hover:border-[#1877F2]', hoverBg: 'hover:bg-[#1877F2]/5 dark:hover:bg-[#1877F2]/10', iconHover: 'group-hover:bg-[#1877F2] group-hover:text-white', glow: 'rgba(24, 119, 242, 0.15)' },
             ].map((soc, i) => (
-              <motion.a key={i} href={soc.href} target="_blank" rel="noopener noreferrer" variants={fadeUp}
-                whileHover={{ scale: 1.04, y: -5 }} transition={{ type: 'spring', stiffness: 200, damping: 20 }}
-                className={`group p-5 md:p-9 rounded-[2.5rem] bg-slate-50 border border-slate-100 ${soc.hoverBorder} ${soc.hoverBg} transition-all text-center cursor-pointer`}>
-                <div className={`w-16 h-16 mx-auto bg-white rounded-2xl shadow-sm flex items-center justify-center mb-5 group-hover:scale-110 transition-all ${soc.iconHover}`} style={{ color: soc.color }}>
-                  {soc.icon}
-                </div>
-                <h3 className="font-display text-lg md:text-xl font-bold text-slate-900 mb-2">{soc.label}</h3>
-                <p className="text-slate-500 text-xs md:text-sm leading-relaxed font-medium">{soc.desc}</p>
-              </motion.a>
+              <MagneticGlowCard key={i} glowColor={soc.glow} hoverScale={1.04}
+                className="group !p-0 bg-slate-50 dark:bg-[#0B0F19] border border-slate-100 dark:border-white/[0.05] transition-all cursor-pointer">
+                <a href={soc.href} target="_blank" rel="noopener noreferrer" className="block p-5 md:p-9 text-center">
+                  <div className={`w-16 h-16 mx-auto bg-white dark:bg-[#030712] border border-slate-100 dark:border-white/5 rounded-2xl shadow-sm flex items-center justify-center mb-5 group-hover:scale-110 transition-all ${soc.iconHover}`} style={{ color: soc.color }}>
+                    {soc.icon}
+                  </div>
+                  <h3 className="font-display text-lg md:text-xl font-bold text-slate-900 dark:text-white mb-2">{soc.label}</h3>
+                  <p className="text-slate-500 dark:text-slate-400 text-xs md:text-sm leading-relaxed font-medium">{soc.desc}</p>
+                </a>
+              </MagneticGlowCard>
             ))}
           </motion.div>
         </div>
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20 md:py-28 bg-slate-50 border-t border-slate-100 relative overflow-hidden">
-        <div className="absolute top-0 right-1/3 w-[400px] h-[300px] bg-gradient-to-bl from-blue-50/60 to-indigo-50/20 rounded-full blur-[130px] pointer-events-none" />
+      <section className="py-20 md:py-28 bg-slate-50 dark:bg-[#0B0F19] border-t border-slate-100 dark:border-white/[0.05] relative overflow-hidden transition-colors duration-300">
+        <div className="absolute top-0 right-1/3 w-[400px] h-[300px] bg-gradient-to-bl from-blue-50/60 to-indigo-50/20 dark:from-blue-950/10 dark:to-indigo-950/5 rounded-full blur-[130px] pointer-events-none" />
         <div className="container mx-auto px-5 md:px-8 max-w-3xl relative z-10">
           <motion.div variants={stagger} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-100px' }} className="text-center mb-12 md:mb-14">
-            <motion.p variants={fadeUp} className="text-xs font-black text-blue-600 uppercase tracking-widest mb-3">FAQ</motion.p>
-            <motion.h2 variants={fadeUp} className="font-display text-3xl md:text-5xl font-black text-slate-900 tracking-tight">Pertanyaan Umum</motion.h2>
+            <motion.p variants={fadeUp} className="text-xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest mb-3">FAQ</motion.p>
+            <motion.h2 variants={fadeUp} className="font-display text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight">Pertanyaan Umum</motion.h2>
           </motion.div>
           <motion.div variants={stagger} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }} className="space-y-3 md:space-y-4">
             {faqs.map((faq, index) => (
               <motion.div key={index} variants={fadeUp}
-                className={`bg-white rounded-[1.5rem] border transition-all duration-300 overflow-hidden ${openFaq === index ? 'border-blue-300 shadow-lg shadow-blue-100/50' : 'border-slate-200 hover:border-slate-300'}`}>
+                className={`bg-white dark:bg-[#030712] rounded-[1.5rem] border transition-all duration-300 overflow-hidden ${openFaq === index ? 'border-blue-300 dark:border-blue-900/50 shadow-lg shadow-blue-100/50 dark:shadow-none' : 'border-slate-200 dark:border-white/[0.05] hover:border-slate-300 dark:hover:border-white/10'}`}>
                 <button onClick={() => setOpenFaq(openFaq === index ? null : index)} className="w-full flex items-center justify-between p-5 md:p-6 text-left">
-                  <span className={`font-bold text-base pr-4 transition-colors ${openFaq === index ? 'text-blue-600' : 'text-slate-800'}`}>{faq.q}</span>
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 ${openFaq === index ? 'bg-blue-600 text-white rotate-180' : 'bg-slate-100 text-slate-400'}`}>
+                  <span className={`font-bold text-base pr-4 transition-colors ${openFaq === index ? 'text-blue-600 dark:text-blue-400' : 'text-slate-800 dark:text-slate-200'}`}>{faq.q}</span>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-all duration-300 ${openFaq === index ? 'bg-blue-600 text-white rotate-180' : 'bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-slate-500'}`}>
                     <FiChevronDown size={14} />
                   </div>
                 </button>
                 <AnimatePresence>
                   {openFaq === index && (
                     <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.3 }} className="overflow-hidden">
-                      <div className="p-5 md:p-6 pt-0 text-slate-500 font-medium leading-relaxed text-sm border-t border-slate-50">{faq.a}</div>
+                      <div className="p-5 md:p-6 pt-0 text-slate-500 dark:text-slate-400 font-medium leading-relaxed text-sm border-t border-slate-50 dark:border-white/[0.05]">{faq.a}</div>
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -264,14 +265,14 @@ const Contact = () => {
       </section>
 
       {/* Final CTA */}
-      <section className="py-24 md:py-36 bg-[#0F172A] text-white text-center relative overflow-hidden">
+      <section className="py-24 md:py-36 bg-[#0F172A] dark:bg-[#030712] text-white text-center relative overflow-hidden transition-colors duration-300">
         <div className="absolute top-[-10%] right-[10%] w-[500px] h-[400px] bg-blue-700/20 rounded-full blur-[150px] pointer-events-none" />
         <div className="absolute bottom-[-10%] left-[10%] w-[400px] h-[400px] bg-violet-700/15 rounded-full blur-[120px] pointer-events-none" />
         <div className="container mx-auto px-5 md:px-8 max-w-3xl relative z-10">
           <motion.div variants={stagger} initial="hidden" whileInView="show" viewport={{ once: true, margin: '-80px' }}>
             <motion.h2 variants={fadeUp} className="font-display text-4xl sm:text-5xl md:text-7xl font-black text-white mb-6 tracking-tighter leading-[1.1]">
               Masih Ragu? <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-blue-500">Mari Mengobrol.</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-sky-400 to-blue-500 dark:from-sky-300 dark:to-blue-400">Mari Mengobrol.</span>
             </motion.h2>
             <motion.p variants={fadeUp} className="text-slate-400 text-base md:text-xl mb-12 leading-relaxed font-medium">
               Konsultasi awal gratis! Jangan ragu untuk membicarakan rencana atau kendala sistem yang sedang Anda hadapi.

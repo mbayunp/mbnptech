@@ -24,6 +24,7 @@ const inquiryRoutes = require('./routes/inquiryRoutes');
 const weddingRoutes = require('./routes/weddingRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
+const jarvisRoutes = require('./routes/jarvisRoutes');
 
 // Gunakan Routes
 app.use('/api/auth', authRoutes);
@@ -39,6 +40,7 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/wedding', weddingRoutes);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/jarvis', jarvisRoutes);
 
 
 // Route Dasar

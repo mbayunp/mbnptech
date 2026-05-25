@@ -134,19 +134,19 @@ const FinanceQuickAdd = () => {
 
   if (!isUnlocked) {
     return (
-      <div className="min-h-screen bg-slate-100 flex items-center justify-center px-4 selection:bg-blue-200">
-        <div className="w-full max-w-sm bg-white p-8 md:p-10 rounded-[2.5rem] shadow-2xl text-center border border-slate-200">
-          <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 text-3xl mx-auto mb-6"><FaLock /></div>
-          <h2 className="text-3xl font-black text-slate-900 mb-2">Akses Terkunci</h2>
-          <p className="text-slate-500 text-sm mb-8 font-medium">Masukkan PIN untuk mencatat keuangan.</p>
+      <div className="min-h-screen bg-slate-100 dark:bg-[#030712] flex items-center justify-center px-4 selection:bg-blue-200 transition-colors duration-300">
+        <div className="w-full max-w-sm bg-white dark:bg-[#0B0F19] p-8 md:p-10 rounded-[2.5rem] shadow-2xl dark:shadow-none border border-slate-200 dark:border-white/[0.05]">
+          <div className="w-20 h-20 bg-slate-100 dark:bg-[#030712] rounded-full flex items-center justify-center text-slate-400 dark:text-slate-500 text-3xl mx-auto mb-6"><FaLock /></div>
+          <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-2 tracking-tight">Akses Terkunci</h2>
+          <p className="text-slate-500 dark:text-slate-400 text-sm mb-8 font-medium">Masukkan PIN untuk mencatat keuangan.</p>
 
           <form onSubmit={handlePinSubmit}>
             <input
               type="password" inputMode="numeric" maxLength={6} value={pin} onChange={(e) => setPin(e.target.value)}
               placeholder="••••" autoFocus
-              className="w-full text-center tracking-[1em] font-black text-3xl min-h-[64px] px-4 py-4 rounded-2xl border-2 border-slate-200 focus:border-blue-500 outline-none mb-6 transition-colors"
+              className="w-full text-center tracking-[1em] font-black text-3xl min-h-[64px] px-4 py-4 rounded-2xl border-2 border-slate-200 dark:border-white/10 focus:border-blue-500 dark:focus:border-blue-500 outline-none bg-white dark:bg-[#030712] text-slate-900 dark:text-white mb-6 transition-colors"
             />
-            <button type="submit" className="w-full min-h-[60px] py-4 bg-slate-900 text-white font-black rounded-2xl hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 text-lg">
+            <button type="submit" className="w-full min-h-[60px] py-4 bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black rounded-2xl hover:bg-blue-600 dark:hover:bg-blue-500 dark:hover:text-white transition-colors flex items-center justify-center gap-2 text-lg">
               <FaUnlock /> Buka Brankas
             </button>
           </form>
@@ -156,107 +156,107 @@ const FinanceQuickAdd = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] py-8 px-4 flex items-center justify-center font-sans selection:bg-blue-200">
-      <div className="w-full max-w-xl bg-white p-6 md:p-10 rounded-[2.5rem] shadow-xl border border-slate-100">
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-[#030712] py-8 px-4 flex items-center justify-center font-sans selection:bg-blue-200 transition-colors duration-300">
+      <div className="w-full max-w-xl bg-white dark:bg-[#0B0F19] p-6 md:p-10 rounded-[2.5rem] shadow-xl border border-slate-100 dark:border-white/[0.05]">
 
-        <div className="flex items-center justify-between mb-8 pb-6 border-b border-slate-100">
+        <div className="flex items-center justify-between mb-8 pb-6 border-b border-slate-100 dark:border-white/[0.05]">
           <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-xl shrink-0">
+            <div className="w-12 h-12 bg-blue-50 dark:bg-blue-950/30 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center text-xl shrink-0">
               <FaWallet />
             </div>
             <div>
-              <h1 className="text-2xl font-black text-slate-900 leading-tight">Quick Note</h1>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-0.5">Finance Tracker</p>
+              <h1 className="text-2xl font-black text-slate-900 dark:text-white leading-none tracking-tight">Quick Note</h1>
+              <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1.5 leading-none">Finance Tracker</p>
             </div>
           </div>
-          <button onClick={() => setIsUnlocked(false)} className="w-10 h-10 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition-colors" title="Kunci Kembali">
+          <button onClick={() => setIsUnlocked(false)} className="w-10 h-10 bg-slate-50 dark:bg-white/5 text-slate-400 dark:text-slate-500 rounded-full flex items-center justify-center hover:bg-red-50 dark:hover:bg-red-950/20 hover:text-red-500 dark:hover:text-red-400 transition-colors" title="Kunci Kembali">
             <FaLock size={14}/>
           </button>
         </div>
 
         <form onSubmit={handleFinanceSubmit} className="space-y-6">
 
-          <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200">
+          <div className="flex bg-slate-100 dark:bg-[#030712] p-1.5 rounded-2xl border border-slate-200 dark:border-white/[0.05]">
             <button
               type="button"
               onClick={() => setTransactionType('expense')}
-              className={`flex-1 min-h-[52px] text-sm md:text-base font-black rounded-xl transition-all ${transactionType === 'expense' ? 'bg-white text-rose-600 shadow-md border border-slate-200/50' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`flex-1 min-h-[52px] text-sm md:text-base font-black rounded-xl transition-all ${transactionType === 'expense' ? 'bg-white dark:bg-[#0B0F19] text-rose-600 dark:text-rose-450 shadow-md border border-slate-200/50 dark:border-white/5' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
             >
               📉 Pengeluaran
             </button>
             <button
               type="button"
               onClick={() => setTransactionType('income')}
-              className={`flex-1 min-h-[52px] text-sm md:text-base font-black rounded-xl transition-all ${transactionType === 'income' ? 'bg-white text-emerald-600 shadow-md border border-slate-200/50' : 'text-slate-500 hover:text-slate-700'}`}
+              className={`flex-1 min-h-[52px] text-sm md:text-base font-black rounded-xl transition-all ${transactionType === 'income' ? 'bg-white dark:bg-[#0B0F19] text-emerald-600 dark:text-emerald-450 shadow-md border border-slate-200/50 dark:border-white/5' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300'}`}
             >
               📈 Pemasukan
             </button>
           </div>
 
           <div>
-            <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2">Nominal Uang (Rp)</label>
+            <label className="block text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Nominal Uang (Rp)</label>
             <div className="relative">
-              <span className={`absolute left-5 top-1/2 -translate-y-1/2 font-black text-2xl md:text-3xl ${transactionType === 'expense' ? 'text-rose-400' : 'text-emerald-400'}`}>Rp</span>
+              <span className={`absolute left-5 top-1/2 -translate-y-1/2 font-black text-2xl md:text-3xl ${transactionType === 'expense' ? 'text-rose-400 dark:text-rose-500/80' : 'text-emerald-400 dark:text-emerald-500/80'}`}>Rp</span>
               <input
                 type="text" inputMode="numeric" required
                 value={displayAmount} onChange={handleAmountChange} placeholder="0"
-                className={`w-full pl-16 md:pl-20 pr-6 min-h-[72px] md:min-h-[80px] rounded-[1.5rem] border-2 bg-slate-50 outline-none transition-all text-3xl md:text-4xl font-black ${transactionType === 'expense' ? 'border-rose-100 focus:bg-white focus:border-rose-500 text-rose-600' : 'border-emerald-100 focus:bg-white focus:border-emerald-500 text-emerald-600'}`}
+                className={`w-full pl-16 md:pl-20 pr-6 min-h-[72px] md:min-h-[80px] rounded-[1.5rem] border-2 bg-slate-50 dark:bg-[#030712] outline-none transition-all text-3xl md:text-4xl font-black ${transactionType === 'expense' ? 'border-rose-100 dark:border-rose-950/20 focus:bg-white dark:focus:bg-[#0B0F19] focus:border-rose-500 dark:focus:border-rose-550 text-rose-600 dark:text-rose-400' : 'border-emerald-100 dark:border-emerald-950/20 focus:bg-white dark:focus:bg-[#0B0F19] focus:border-emerald-500 dark:focus:border-emerald-550 text-emerald-600 dark:text-emerald-400'}`}
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
-              <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><FaCreditCard/> Sumber Dana</label>
+              <label className="block text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5"><FaCreditCard/> Sumber Dana</label>
               <div className="relative">
-                <select value={source} onChange={(e) => setSource(e.target.value)} className="w-full px-5 min-h-[56px] rounded-2xl border-2 border-slate-100 focus:border-blue-500 focus:bg-white outline-none bg-slate-50 text-base font-bold text-slate-700 appearance-none cursor-pointer transition-all">
+                <select value={source} onChange={(e) => setSource(e.target.value)} className="w-full px-5 min-h-[56px] rounded-2xl border-2 border-slate-100 dark:border-white/10 focus:border-blue-500 focus:bg-white dark:focus:bg-[#0B0F19] outline-none bg-slate-50 dark:bg-[#030712] text-base font-bold text-slate-700 dark:text-slate-350 appearance-none cursor-pointer transition-all">
                   {SOURCES.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
-                <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-xs">▼</div>
+                <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 dark:text-slate-500 text-xs">▼</div>
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><FaTag/> Kategori</label>
+              <label className="block text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5"><FaTag/> Kategori</label>
               <div className="relative">
-                <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full px-5 min-h-[56px] rounded-2xl border-2 border-slate-100 focus:border-blue-500 focus:bg-white outline-none bg-slate-50 text-base font-bold text-slate-700 appearance-none cursor-pointer transition-all">
+                <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full px-5 min-h-[56px] rounded-2xl border-2 border-slate-100 dark:border-white/10 focus:border-blue-500 focus:bg-white dark:focus:bg-[#0B0F19] outline-none bg-slate-50 dark:bg-[#030712] text-base font-bold text-slate-700 dark:text-slate-350 appearance-none cursor-pointer transition-all">
                   {transactionType === 'income' 
                     ? INCOME_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)
                     : EXPENSE_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)
                   }
                 </select>
-                <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 text-xs">▼</div>
+                <div className="absolute right-5 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 dark:text-slate-500 text-xs">▼</div>
               </div>
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
-              <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><FaCalendarAlt/> Tanggal</label>
+              <label className="block text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5"><FaCalendarAlt/> Tanggal</label>
               <input
                 type="date" required 
                 value={qaDate} 
                 onChange={(e) => setQaDate(e.target.value)}
-                className="w-full px-5 min-h-[56px] rounded-2xl border-2 border-slate-100 focus:border-blue-500 focus:bg-white outline-none bg-slate-50 transition-all font-bold text-slate-700 text-base"
+                className="w-full px-5 min-h-[56px] rounded-2xl border-2 border-slate-100 dark:border-white/10 focus:border-blue-500 focus:bg-white dark:focus:bg-[#0B0F19] outline-none bg-slate-50 dark:bg-[#030712] transition-all font-bold text-slate-700 dark:text-slate-300 text-base"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-1.5"><FaPen/> Catatan (Opsional)</label>
+              <label className="block text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 flex items-center gap-1.5"><FaPen/> Catatan (Opsional)</label>
               <input
                 type="text" value={description} onChange={handleDescriptionChange}
                 placeholder='Ketik "makan", "bensin"...'
-                className="w-full px-5 min-h-[56px] rounded-2xl border-2 border-slate-100 focus:border-blue-500 focus:bg-white outline-none bg-slate-50 transition-all font-bold text-slate-700 text-base"
+                className="w-full px-5 min-h-[56px] rounded-2xl border-2 border-slate-100 dark:border-white/10 focus:border-blue-500 focus:bg-white dark:focus:bg-[#0B0F19] outline-none bg-slate-50 dark:bg-[#030712] transition-all font-bold text-slate-700 dark:text-slate-300 text-base"
               />
             </div>
           </div>
           
-          <p className="text-[10px] font-bold text-slate-400 text-center !mt-3">*Kategori akan otomatis mendeteksi kata yang Anda ketik di catatan.</p>
+          <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 text-center !mt-3">*Kategori akan otomatis mendeteksi kata yang Anda ketik di catatan.</p>
 
           <button
             type="submit" disabled={isLoading}
             className={`w-full min-h-[64px] text-white font-black rounded-2xl transition-all text-lg flex items-center justify-center gap-3 mt-8 shadow-xl hover:-translate-y-1
-              ${isLoading ? 'bg-slate-400' : transactionType === 'expense' ? 'bg-rose-500 hover:bg-rose-600 shadow-rose-500/30' : 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/30'}`}
+              ${isLoading ? 'bg-slate-400' : transactionType === 'expense' ? 'bg-rose-500 hover:bg-rose-600 shadow-rose-500/30 dark:shadow-none' : 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-500/30 dark:shadow-none'}`}
           >
             {isLoading ? 'Menyimpan Data...' : 'Simpan Transaksi Sekarang'} <FaArrowRight className="text-base opacity-80" />
           </button>
